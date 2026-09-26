@@ -24,7 +24,7 @@ import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.constraints.Support;
 import org.clauseway.pldb.constraints.TableConstraints;
 import org.clauseway.pldb.inmemory.AnswerStore;
-import org.clauseway.pldb.relations.Answer;
+import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.relations.Property;
 import org.clauseway.pldb.relations.Relation;
@@ -105,7 +105,7 @@ public class TableConstraintsTest {
 		// pricing at Long.MAX_VALUE
 		AnswerSource barrier = new AnswerSource() {
 			@Override
-			public Iterable<Answer> answers(Call<Relation> probe) {
+			public Iterable<Answer<Relation>> answers(Call<Relation> probe) {
 				return db.answers(probe);
 			}
 

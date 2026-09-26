@@ -1,5 +1,6 @@
 package org.clauseway.pldb.relations;
 
+import org.clauseway.logic.solving.Answer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -76,12 +77,12 @@ public class RelationN implements Relation {
 		return TableConstraints.posted(producer, rel, Arrays.asList(args));
 	}
 
-	public Answer apply(Object... vs) {
+	public Answer<Relation> apply(Object... vs) {
 		return fact(vs);
 	}
 
 	/** The relation's stored-row face: ground values in declared order. */
-	public Answer fact(Object... vs) {
+	public Answer<Relation> fact(Object... vs) {
 		return Answers.answer(this, Arrays.asList(vs));
 	}
 }

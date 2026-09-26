@@ -31,7 +31,7 @@ import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.inmemory.AnswerStore;
-import org.clauseway.pldb.relations.Answer;
+import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Answers;
 import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.relations.Property;
@@ -92,7 +92,7 @@ public class SqlTheoryBatteryTest {
 	private Connection connection;
 
 	/** The whole reference relation, enumerated through the answers face. */
-	private static Stream<Answer> allFacts(Relation relation) {
+	private static Stream<Answer<Relation>> allFacts(Relation relation) {
 		List<Term<?>> members = new ArrayList<>();
 		for (int i = 0; i < relation.getArgs().length; i++) {
 			members.add(Any.of(i));
@@ -110,12 +110,12 @@ public class SqlTheoryBatteryTest {
 			ddl.execute("CREATE TABLE person(id BIGINT, name VARCHAR(64))");
 			ddl.execute("INSERT INTO person VALUES " +
 					allFacts(personRel())
-							.map(f -> "(" + f.get(id).get() + ", '" + f.get(name).get() + "') ")
+							.map(f -> "(" + Answers.get(f, id).get() + ", '" + Answers.get(f, name).get() + "') ")
 							.collect(Collectors.joining(",")));
 			ddl.execute("CREATE TABLE edge(lo BIGINT, hi BIGINT)");
 			ddl.execute("INSERT INTO edge VALUES " +
 					allFacts(edgeRel())
-							.map(f -> "(" + f.get(lo).get() + ", " + f.get(hi).get() + ") ")
+							.map(f -> "(" + Answers.get(f, lo).get() + ", " + Answers.get(f, hi).get() + ") ")
 							.collect(Collectors.joining(",")));
 		}
 	}

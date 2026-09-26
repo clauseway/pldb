@@ -31,7 +31,7 @@ import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerProducer;
 import org.clauseway.pldb.GoalProducer;
-import org.clauseway.pldb.relations.Answer;
+import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Relation;
 import org.clauseway.vavr.collection.Array;
 
@@ -119,7 +119,7 @@ public class TableParkingPropagator extends ParkingPropagator<TableConstraints> 
 	 */
 	private Fiber<JoinMap<Reified<?>, Condition>> extension(Call<Relation> probe, Knowledge pkg) {
 		Scope sub = Scope.scope("TableParkingPropagatorProduction");
-		Queue<Answer> delivered = new ConcurrentLinkedQueue<>();
+		Queue<Answer<Relation>> delivered = new ConcurrentLinkedQueue<>();
 		return Fiber.claim(sub, producer.apply(pkg).produce(probe, answer -> {
 					delivered.add(answer);
 					return Fiber.done(Nothing.nothing());

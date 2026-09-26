@@ -3,6 +3,7 @@ package org.clauseway.pldb.relations;
 // ABOUTME: The namespaced door: the class qualifies the name, so same-shaped
 // ABOUTME: relations from two vocabularies stay distinct everywhere identity keys.
 
+import org.clauseway.logic.solving.Answer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
 
@@ -53,7 +54,7 @@ public class NamespacedRelationTest {
 	public void namespacedTwinsKeepSeparateExtensions() {
 		// the silent-merge hazard made unrepresentable: same bare name, same
 		// columns, two namespaces — the store keys them apart
-		Answer row = Answers.answer(loan(Lending.class),
+		Answer<Relation> row = Answers.answer(loan(Lending.class),
 				Arrays.asList((Object) "m1", "c1"));
 		AnswerStore store = AnswerStore.empty()
 				.with(loan(Lending.class), row);

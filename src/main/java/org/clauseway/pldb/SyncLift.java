@@ -8,7 +8,7 @@ import org.clauseway.functional.Nothing;
 import org.clauseway.functional.fibers.Emitter;
 import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.logic.solving.Call;
-import org.clauseway.pldb.relations.Answer;
+import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Relation;
 
 /**
@@ -25,9 +25,9 @@ class SyncLift implements AnswerProducer {
 	AnswerSource source;
 
 	@Override
-	public Fiber<Nothing> produce(Call<Relation> probe, Emitter<Answer> emit) {
+	public Fiber<Nothing> produce(Call<Relation> probe, Emitter<Answer<Relation>> emit) {
 		Fiber<Nothing> emissions = Fiber.done(Nothing.nothing());
-		for (Answer answer : source.answers(probe)) {
+		for (Answer<Relation> answer : source.answers(probe)) {
 			emissions = emissions.flatMap(emitted -> emit.emit(answer));
 		}
 		return emissions;

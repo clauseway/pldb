@@ -8,7 +8,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.clauseway.logic.solving.Call;
-import org.clauseway.pldb.relations.Answer;
+import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.relations.Relation;
 
@@ -109,7 +109,7 @@ public class CachingSqlFetch implements JdbcSource {
 	}
 
 	@Override
-	public Iterable<Answer> answers(Call<Relation> probe) {
+	public Iterable<Answer<Relation>> answers(Call<Relation> probe) {
 		return cached.answers(probe);
 	}
 

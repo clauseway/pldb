@@ -23,7 +23,7 @@ import org.clauseway.logic.solving.Call;
 import org.clauseway.logic.tabling.table.Table;
 import org.clauseway.logic.tabling.table.TableEntry;
 import org.clauseway.logic.unification.terms.Unifiable;
-import org.clauseway.pldb.relations.Answer;
+import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Relation;
 import org.clauseway.vavr.collection.Array;
 
@@ -50,7 +50,7 @@ public final class GoalProducer implements AnswerProducer {
 	}
 
 	@Override
-	public Fiber<Nothing> produce(Call<Relation> probe, Emitter<Answer> emit) {
+	public Fiber<Nothing> produce(Call<Relation> probe, Emitter<Answer<Relation>> emit) {
 		Unifiable<Object> anchor = lval((Object) Tuple.ofAll(heads.map(Unifiable::getObjectTerm).toJavaArray()));
 		Goal seeded = Conjunction.of(
 				Residues.restate(probe.getArguments(), probe.getResidues(), anchor),

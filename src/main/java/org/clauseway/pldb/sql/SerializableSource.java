@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.function.Predicate;
 import org.clauseway.logic.solving.Call;
-import org.clauseway.pldb.relations.Answer;
+import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.relations.Relation;
 import org.clauseway.pldb.transaction.NativeSerialization;
@@ -54,7 +54,7 @@ public final class SerializableSource implements JdbcSource, NativeSerialization
 	 * and a refusal in this source's dialect means the world moved.
 	 */
 	@Override
-	public boolean commit(List<Answer> asserted, List<Answer> retracted) {
+	public boolean commit(List<Answer<Relation>> asserted, List<Answer<Relation>> retracted) {
 		try {
 			SqlFlush door = SqlFlush.over(getConnection(), inner.codecs());
 			door.flush(asserted);
@@ -94,7 +94,7 @@ public final class SerializableSource implements JdbcSource, NativeSerialization
 	}
 
 	@Override
-	public Iterable<Answer> answers(Call<Relation> probe) {
+	public Iterable<Answer<Relation>> answers(Call<Relation> probe) {
 		return inner.answers(probe);
 	}
 

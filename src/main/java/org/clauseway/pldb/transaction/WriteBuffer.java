@@ -20,7 +20,7 @@ import org.clauseway.logic.solving.Call;
 import org.clauseway.logic.unification.terms.Reified;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.inmemory.AnswerStore;
-import org.clauseway.pldb.relations.Answer;
+import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Answers;
 import org.clauseway.pldb.relations.Relation;
 import org.clauseway.vavr.collection.Array;
@@ -42,29 +42,29 @@ public class WriteBuffer implements AnswerSource {
 	AnswerSource base;
 	AnswerStore insertions;
 	AnswerStore removals;
-	Array<Answer> stagedAssertions;
-	Array<Answer> stagedRetractions;
+	Array<Answer<Relation>> stagedAssertions;
+	Array<Answer<Relation>> stagedRetractions;
 
 	public static WriteBuffer over(AnswerSource base) {
 		return new WriteBuffer(base, AnswerStore.empty(), AnswerStore.empty(),
 				Array.empty(), Array.empty());
 	}
 
-	public WriteBuffer asserting(List<Answer> rows) {
+	public WriteBuffer asserting(List<Answer<Relation>> rows) {
 		refuseCollision(removals, rows);
 		return new WriteBuffer(base, insertions.asserting(rows), removals,
 				stagedAssertions.appendAll(rows), stagedRetractions);
 	}
 
-	public WriteBuffer retracting(List<Answer> rows) {
+	public WriteBuffer retracting(List<Answer<Relation>> rows) {
 		refuseCollision(insertions, rows);
 		return new WriteBuffer(base, insertions, removals.asserting(rows),
 				stagedAssertions, stagedRetractions.appendAll(rows));
 	}
 
 	/** A fact staged with the opposite polarity refuses the write whole. */
-	private static void refuseCollision(AnswerStore opposite, List<Answer> rows) {
-		for (Answer row : rows) {
+	private static void refuseCollision(AnswerStore opposite, List<Answer<Relation>> rows) {
+		for (Answer<Relation> row : rows) {
 			if (opposite.answers(Call.of(row.getRelation(), row.getReified()))
 					.iterator().hasNext()) {
 				throw new IllegalStateException("the fact " + row.getRelation().getName()
@@ -75,17 +75,17 @@ public class WriteBuffer implements AnswerSource {
 	}
 
 	/** The rows this value's lineage staged to land, in staging order. */
-	public List<Answer> stagedAssertions() {
+	public List<Answer<Relation>> stagedAssertions() {
 		return stagedAssertions.toJavaList();
 	}
 
 	/** The rows this value's lineage staged to remove, in staging order. */
-	public List<Answer> stagedRetractions() {
+	public List<Answer<Relation>> stagedRetractions() {
 		return stagedRetractions.toJavaList();
 	}
 
 	@Override
-	public Iterable<Answer> answers(Call<Relation> probe) {
+	public Iterable<Answer<Relation>> answers(Call<Relation> probe) {
 		return overlay(probe, base.answers(probe));
 	}
 
@@ -96,8 +96,8 @@ public class WriteBuffer implements AnswerSource {
 	 * a staged row that SUBSUMES a base row shadows it out of the
 	 * delivery; same-key duplicates still ⊕-fold in the cell below.
 	 */
-	public Iterable<Answer> overlay(Call<Relation> probe, Iterable<Answer> baseAnswers) {
-		List<Answer> staged = StreamSupport.stream(insertions.answers(probe).spliterator(), false)
+	public Iterable<Answer<Relation>> overlay(Call<Relation> probe, Iterable<Answer<Relation>> baseAnswers) {
+		List<Answer<Relation>> staged = StreamSupport.stream(insertions.answers(probe).spliterator(), false)
 				.collect(Collectors.toList());
 		Set<Reified<?>> removed = StreamSupport.stream(removals.answers(probe).spliterator(), false)
 				.map(Answer::getReified)
@@ -113,7 +113,7 @@ public class WriteBuffer implements AnswerSource {
 						Exceptions.throwingBiOp(UnsupportedOperationException::new));
 		return IntStream.range(0, folded.size())
 				.mapToObj(folded::get)
-				.map(entry -> Answer.of(probe.getRelation(), entry))
+				.map(entry -> Answer.of(probe.getRelation(), entry._1, entry._2))
 				.collect(Collectors.toList());
 	}
 

@@ -14,7 +14,7 @@ import lombok.Value;
 import org.clauseway.logic.solving.Call;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
-import org.clauseway.pldb.relations.Answer;
+import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.relations.Relation;
 import org.junit.Test;
@@ -33,13 +33,13 @@ public class PinAtFirstTouchTest {
 		private int generation;
 
 		@Override
-		public Pinned<Iterable<Answer>> read(Call<Relation> probe) {
+		public Pinned<Iterable<Answer<Relation>>> read(Call<Relation> probe) {
 			events.add("read:" + probe.getRelation().getName());
 			return Pinned.of(Collections.emptyList(), new Generation(generation++));
 		}
 
 		@Override
-		public boolean commit(Footprint read, List<Answer> asserted, List<Answer> retracted) {
+		public boolean commit(Footprint read, List<Answer<Relation>> asserted, List<Answer<Relation>> retracted) {
 			events.add("commit:" + read.pins().size());
 			committed.addAll(read.pins().values());
 			return true;

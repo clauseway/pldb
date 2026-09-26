@@ -26,7 +26,7 @@ import org.clauseway.logic.solving.Residues;
 import org.clauseway.logic.solving.Call;
 import org.clauseway.logic.unification.terms.Any;
 import org.clauseway.logic.unification.terms.Term;
-import org.clauseway.pldb.relations.Answer;
+import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Answers;
 import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.relations.Property;
@@ -140,10 +140,10 @@ public final class SqlFetch implements JdbcSource {
 	}
 
 	@Override
-	public synchronized Iterable<Answer> answers(Call<Relation> probe) {
+	public synchronized Iterable<Answer<Relation>> answers(Call<Relation> probe) {
 		Relation relation = probe.getRelation();
 		IndexedSeq<Term<Object>> args = Array.ofAll(Answers.positions(probe.getArguments()));
-		List<Answer> answers = new ArrayList<>();
+		List<Answer<Relation>> answers = new ArrayList<>();
 		answers.addAll(rows(relation, args, push(relation, args, probe.getResidues())));
 		return answers;
 	}
@@ -252,7 +252,7 @@ public final class SqlFetch implements JdbcSource {
 		return new RegionSql(conditions, parameters);
 	}
 
-	private List<Answer> rows(Relation relation, IndexedSeq<Term<Object>> args, List<SqlPredicate> predicates) {
+	private List<Answer<Relation>> rows(Relation relation, IndexedSeq<Term<Object>> args, List<SqlPredicate> predicates) {
 		Property<?>[] columns = relation.getArgs();
 		List<String> unboundColumns = new ArrayList<>();
 		List<Property<?>> unboundProperties = new ArrayList<>();
@@ -276,7 +276,7 @@ public final class SqlFetch implements JdbcSource {
 				statement.setObject(index++, parameter);
 			}
 			try (ResultSet rows = statement.executeQuery()) {
-				List<Answer> facts = new ArrayList<>();
+				List<Answer<Relation>> facts = new ArrayList<>();
 				while (rows.next()) {
 					Object[] values = new Object[unboundColumns.size()];
 					for (int i = 0; i < values.length; i++) {

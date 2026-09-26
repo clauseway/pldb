@@ -15,7 +15,7 @@ import org.clauseway.logic.solving.Call;
 import org.clauseway.logic.unification.terms.Reified;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.Writer;
-import org.clauseway.pldb.relations.Answer;
+import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Answers;
 import org.clauseway.pldb.relations.Relation;
 import org.clauseway.vavr.collection.LinkedHashMap;
@@ -60,7 +60,7 @@ public class AnswerStore implements AnswerSource, Writer<AnswerStore> {
 		return new AnswerStore(LinkedHashMap.empty());
 	}
 
-	public AnswerStore with(Relation relation, Answer answer) {
+	public AnswerStore with(Relation relation, Answer<Relation> answer) {
 		AnswerIndex answers = relations.getOrElse(relation, AnswerIndex.empty());
 		return new AnswerStore(
 				relations.put(relation, answers.with(positions(relation), answer)));
@@ -68,17 +68,17 @@ public class AnswerStore implements AnswerSource, Writer<AnswerStore> {
 
 	/** The strict write face; {@link #with} stays the seam's permissive dock. */
 	@Override
-	public AnswerStore asserting(List<Answer> rows) {
+	public AnswerStore asserting(List<Answer<Relation>> rows) {
 		AnswerStore grown = this;
-		for (Answer row : rows) {
+		for (Answer<Relation> row : rows) {
 			grown = grown.with(row.getRelation(), Answers.landable(row));
 		}
 		return grown;
 	}
 
-	public AnswerStore withAll(Relation relation, Iterable<Answer> answers) {
+	public AnswerStore withAll(Relation relation, Iterable<Answer<Relation>> answers) {
 		AnswerStore grown = this;
-		for (Answer answer : answers) {
+		for (Answer<Relation> answer : answers) {
 			grown = grown.with(relation, answer);
 		}
 		return grown;
@@ -89,9 +89,9 @@ public class AnswerStore implements AnswerSource, Writer<AnswerStore> {
 	 * ⊕-folded condition with it; retracting the absent is a no-op.
 	 */
 	@Override
-	public AnswerStore retracting(List<Answer> rows) {
+	public AnswerStore retracting(List<Answer<Relation>> rows) {
 		AnswerStore shrunk = this;
-		for (Answer row : rows) {
+		for (Answer<Relation> row : rows) {
 			shrunk = shrunk.without(row.getRelation(),
 					Answers.landable(row).getReified());
 		}
@@ -106,7 +106,7 @@ public class AnswerStore implements AnswerSource, Writer<AnswerStore> {
 	}
 
 	@Override
-	public Iterable<Answer> answers(Call<Relation> probe) {
+	public Iterable<Answer<Relation>> answers(Call<Relation> probe) {
 		return relations.get(probe.getRelation())
 				.map(answers -> answers.answers(probe.getRelation(), positions(probe.getRelation()), probe))
 				.getOrElse(Collections.emptyList());

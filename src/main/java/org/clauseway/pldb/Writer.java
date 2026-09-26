@@ -3,11 +3,12 @@ package org.clauseway.pldb;
 // ABOUTME: The write face: Answer rows are the currency, Literal statements the
 // ABOUTME: threshold sugar — both polarities, holes and guards refusing loudly.
 
+import org.clauseway.pldb.relations.Relation;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.clauseway.pldb.relations.Answer;
+import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Literal;
 
 /**
@@ -25,9 +26,9 @@ import org.clauseway.pldb.relations.Literal;
  */
 public interface Writer<S extends Writer<S>> {
 
-	S asserting(List<Answer> rows);
+	S asserting(List<Answer<Relation>> rows);
 
-	S retracting(List<Answer> rows);
+	S retracting(List<Answer<Relation>> rows);
 
 	default S asserting(Collection<Literal> rows) {
 		return asserting(facts(rows));
@@ -46,7 +47,7 @@ public interface Writer<S extends Writer<S>> {
 	}
 
 	/** The threshold conversion: statements become rows, holes refuse. */
-	static List<Answer> facts(Collection<Literal> rows) {
+	static List<Answer<Relation>> facts(Collection<Literal> rows) {
 		return rows.stream().map(Literal::fact).collect(Collectors.toList());
 	}
 }

@@ -5,7 +5,7 @@ package org.clauseway.pldb;
 
 import org.clauseway.logic.solving.Condition;
 import org.clauseway.logic.solving.Call;
-import org.clauseway.pldb.relations.Answer;
+import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Relation;
 
 /**
@@ -25,7 +25,7 @@ import org.clauseway.pldb.relations.Relation;
  */
 public interface AnswerSource {
 
-	Iterable<Answer> answers(Call<Relation> probe);
+	Iterable<Answer<Relation>> answers(Call<Relation> probe);
 
 	/**
 	 * Upper bound on the answers {@link #answers} would yield — the
@@ -34,12 +34,12 @@ public interface AnswerSource {
 	 * counts, backends with sized buckets should override.
 	 */
 	default long estimate(Call<Relation> probe) {
-		Iterable<Answer> bucket = answers(probe);
+		Iterable<Answer<Relation>> bucket = answers(probe);
 		if (bucket instanceof java.util.Collection) {
 			return ((java.util.Collection<?>) bucket).size();
 		}
 		long n = 0;
-		for (@SuppressWarnings("unused") Answer a : bucket) {
+		for (@SuppressWarnings("unused") Answer<Relation> a : bucket) {
 			n++;
 		}
 		return n;

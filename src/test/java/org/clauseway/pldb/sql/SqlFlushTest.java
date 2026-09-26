@@ -3,6 +3,8 @@ package org.clauseway.pldb.sql;
 // ABOUTME: The write face: facts land as INSERTs by the schema convention, and a
 // ABOUTME: structural column value refuses by relation and column before any row lands.
 
+import org.clauseway.pldb.relations.Relation;
+import org.clauseway.logic.solving.Answer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -98,7 +100,7 @@ public class SqlFlushTest {
 
 	@Test
 	public void anEmptyFlushIsANoOp() throws Exception {
-		SqlFlush.over(connection).flush(Collections.<org.clauseway.pldb.relations.Answer> emptyList());
+		SqlFlush.over(connection).flush(Collections.<Answer<Relation>> emptyList());
 		assertThat(namesReadBack()).isEmpty();
 	}
 }

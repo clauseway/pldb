@@ -9,7 +9,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import org.clauseway.logic.solving.Call;
 import org.clauseway.pldb.AnswerSource;
-import org.clauseway.pldb.relations.Answer;
+import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Relation;
 
 /**
@@ -44,7 +44,7 @@ public abstract class AbstractTransaction implements Transaction {
 	}
 
 	@Override
-	public Iterable<Answer> answers(Call<Relation> probe) {
+	public Iterable<Answer<Relation>> answers(Call<Relation> probe) {
 		return writeBuffer.answers(probe);
 	}
 

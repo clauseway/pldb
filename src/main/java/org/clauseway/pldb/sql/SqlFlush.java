@@ -3,6 +3,7 @@ package org.clauseway.pldb.sql;
 // ABOUTME: The JDBC write face: asserted facts land as INSERTs, retracted facts
 // ABOUTME: leave as by-fact DELETEs — one schema convention, one codec registry.
 
+import org.clauseway.pldb.relations.Answers;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -17,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.clauseway.pldb.Writer;
-import org.clauseway.pldb.relations.Answer;
+import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.relations.Property;
 import org.clauseway.pldb.relations.Relation;
@@ -70,7 +71,7 @@ public class SqlFlush {
 		delete(Writer.facts(statements));
 	}
 
-	public void flush(List<Answer> rows) {
+	public void flush(List<Answer<Relation>> rows) {
 		try {
 			for (Map.Entry<Relation, List<Row>> table : encodedByRelation(rows).entrySet()) {
 				insert(table.getKey(), table.getValue());
@@ -87,7 +88,7 @@ public class SqlFlush {
 		Array<Object> cells;
 	}
 
-	private Map<Relation, List<Row>> encodedByRelation(List<Answer> rows) {
+	private Map<Relation, List<Row>> encodedByRelation(List<Answer<Relation>> rows) {
 		return rows.stream()
 				.map(this::encoded)
 				.collect(Collectors.groupingBy(Row::getRelation, LinkedHashMap::new, Collectors.toList()));
@@ -123,7 +124,7 @@ public class SqlFlush {
 	 * in the predicate. Batched per (relation, null-shape); the caller
 	 * owns the transaction.
 	 */
-	public void delete(List<Answer> rows) {
+	public void delete(List<Answer<Relation>> rows) {
 		try {
 			for (Map.Entry<Relation, List<Row>> table : encodedByRelation(rows).entrySet()) {
 				Map<String, List<Row>> byShape = table.getValue().stream()
@@ -201,9 +202,9 @@ public class SqlFlush {
 	 * validates or none of it lands. A null cell rides the nullable
 	 * declaration; everything else must have a codec.
 	 */
-	private Row encoded(Answer fact) {
+	private Row encoded(Answer<Relation> fact) {
 		Property<?>[] columns = fact.getRelation().getArgs();
-		List<Object> values = fact.values();
+		List<Object> values = Answers.values(fact.getReified());
 		Object[] cells = new Object[columns.length];
 		for (int i = 0; i < columns.length; i++) {
 			Object value = values.get(i);

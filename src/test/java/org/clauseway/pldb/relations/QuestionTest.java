@@ -3,6 +3,8 @@ package org.clauseway.pldb.relations;
 // ABOUTME: Answers-as-rows receipts: each answer grounds every template, constants
 // ABOUTME: ride, clusters land whole, and a free cell rides wide for the doors to judge.
 
+import org.clauseway.pldb.relations.Answers;
+import org.clauseway.logic.solving.Answer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -32,12 +34,12 @@ public class QuestionTest {
 	}
 
 	/** The test's engine choice, stated where the doctrine wants it. */
-	private static List<Answer> selected(Goal question, Literal... schemas) {
+	private static List<Answer<Relation>> selected(Goal question, Literal... schemas) {
 		return new BreadthFirstScheduler<>(Question.select(question, schemas)).get();
 	}
 
-	private static String render(Answer row) {
-		return row.getRelation().getName() + row.values();
+	private static String render(Answer<Relation> row) {
+		return row.getRelation().getName() + Answers.values(row.getReified());
 	}
 
 	@Test
@@ -90,10 +92,10 @@ public class QuestionTest {
 		Unifiable<String> copy = lvar();
 		Goal question = id.unifies(1);
 
-		List<Answer> wide = selected(question, loan(id, copy));
+		List<Answer<Relation>> wide = selected(question, loan(id, copy));
 		assertThat(wide).hasSize(1);
-		assertThat(wide.get(0).<Integer> get(Property.of("loanId"))).contains(1);
-		assertThat(wide.get(0).<String> get(Property.of("copy"))).isEmpty();
+		assertThat(Answers.get(wide.get(0), Property.of("loanId"))).contains(1);
+		assertThat(Answers.get(wide.get(0), Property.of("copy"))).isEmpty();
 	}
 
 	@Test
@@ -104,12 +106,12 @@ public class QuestionTest {
 		Unifiable<String> copy = lvar();
 		Goal question = id.unifies(1).and(exclude(copy.unifies("c9")));
 
-		List<Answer> rows = selected(question, loan(id, copy));
+		List<Answer<Relation>> rows = selected(question, loan(id, copy));
 		assertThat(rows).hasSize(1);
 		assertThat(rows.get(0).getCondition())
 				.describedAs("the derivation's guard rides the row")
 				.isNotEqualTo(Condition.ONE);
-		assertThat(rows.get(0).<String> get(Property.of("copy"))).isEmpty();
+		assertThat(Answers.get(rows.get(0), Property.of("copy"))).isEmpty();
 		assertThat(rows.get(0).unconditional().getCondition())
 				.describedAs("the explicit strengthening drops the guard")
 				.isEqualTo(Condition.ONE);
@@ -121,7 +123,7 @@ public class QuestionTest {
 		Unifiable<String> copy = lvar();
 		Goal question = id.unifies(1).and(exclude(copy.unifies("c9")));
 
-		List<Answer> rows = selected(question, loan(id, copy), returned(id));
+		List<Answer<Relation>> rows = selected(question, loan(id, copy), returned(id));
 		assertThat(rows).hasSize(2);
 		assertThat(rows.get(0).getCondition())
 				.describedAs("one derivation, one guard — every row of the cluster carries it")

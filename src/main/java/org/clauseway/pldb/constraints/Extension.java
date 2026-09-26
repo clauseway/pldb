@@ -27,7 +27,7 @@ import org.clauseway.logic.solving.Call;
 import org.clauseway.logic.unification.terms.Reified;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
-import org.clauseway.pldb.relations.Answer;
+import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Answers;
 import org.clauseway.pldb.relations.Relation;
 import org.clauseway.vavr.collection.Array;
@@ -70,7 +70,7 @@ final class Extension {
 	}
 
 	/** Answers ⊕-folded per row: duplicate derivations factor by distributivity. */
-	static JoinMap<Reified<?>, Condition> fold(Iterable<Answer> answers) {
+	static JoinMap<Reified<?>, Condition> fold(Iterable<Answer<Relation>> answers) {
 		return StreamSupport.stream(answers.spliterator(), false)
 				.reduce(JoinMap.empty(Condition.RING),
 						(l, r) -> l.append(r.getReified(), r.getCondition()).getOrElse(l),

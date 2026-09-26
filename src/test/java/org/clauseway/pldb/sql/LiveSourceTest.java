@@ -22,7 +22,7 @@ import org.clauseway.logic.unification.terms.Any;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
-import org.clauseway.pldb.relations.Answer;
+import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Answers;
 import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.relations.Relation;
@@ -96,7 +96,7 @@ public class LiveSourceTest {
 		return Call.of(shape.getRel(), Answers.image(anys));
 	}
 
-	private static List<String> names(Iterable<Answer> answers) {
+	private static List<String> names(Iterable<Answer<Relation>> answers) {
 		return StreamSupport.stream(answers.spliterator(), false)
 				.map(answer -> answer.getReified().toString())
 				.sorted()

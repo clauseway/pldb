@@ -30,7 +30,7 @@ import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.GoalProducer;
 import org.clauseway.pldb.inmemory.AnswerStore;
-import org.clauseway.pldb.relations.Answer;
+import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Answers;
 import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.relations.Property;
@@ -269,7 +269,7 @@ public class TableParkingPropagatorTest {
 		GoalProducer producing = GoalProducer.of(rRel(),
 				exclude(gi.unifies(2)), Arrays.asList(gi, gt), Table.empty());
 		Call<Relation> wide = Call.of(rRel(), Answers.image(Any.of(0), Any.of(1)));
-		List<Answer> canned = new ArrayList<>();
+		List<Answer<Relation>> canned = new ArrayList<>();
 		new BreadthFirstScheduler<>(producing.produce(wide, answer -> {
 			canned.add(answer);
 			return Fiber.done(Nothing.nothing());

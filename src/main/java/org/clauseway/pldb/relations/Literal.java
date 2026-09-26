@@ -3,6 +3,7 @@ package org.clauseway.pldb.relations;
 // ABOUTME: A relation applied to arguments — ONE public type, with how it reads
 // ABOUTME: (source, producer, or rule) as a polymorphic Reading behind it.
 
+import org.clauseway.logic.solving.Answer;
 import static org.clauseway.logic.unification.terms.LVal.lval;
 
 import java.util.ArrayList;
@@ -283,7 +284,7 @@ public class Literal implements Goal, Bounded, Postable {
 	 * Refuses loudly by relation and column name — a fact with a hole is a
 	 * question, not knowledge.
 	 */
-	public Answer fact() {
+	public Answer<Relation> fact() {
 		Array<Object> values = args.zipWithIndex().map(t -> {
 			if (!t._1.isVal()) {
 				throw new IllegalStateException("fact() over " + rel.getName()
@@ -322,7 +323,7 @@ public class Literal implements Goal, Bounded, Postable {
 	}
 
 	/** One answer, forked per condition conjunct, each restated at the anchor. */
-	private static Goal deliver(Answer answer, Unifiable<?> anchor) {
+	private static Goal deliver(Answer<Relation> answer, Unifiable<?> anchor) {
 		return answer.getCondition().conjuncts().toJavaStream()
 				.map(conjunct -> (Goal) Residues.restate(answer.getReified(), conjunct, anchor))
 				.reduce(Goal::or)

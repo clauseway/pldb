@@ -17,7 +17,7 @@ import org.clauseway.logic.goals.optimizer.OrderingOptimizer;
 import org.clauseway.logic.solving.Call;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.inmemory.AnswerStore;
-import org.clauseway.pldb.relations.Answer;
+import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.relations.Property;
 import org.clauseway.pldb.relations.Relation;
@@ -51,8 +51,8 @@ public class PlannerTest {
 		}
 
 		@Override
-		public Iterable<Answer> answers(Call<Relation> probe) {
-			List<Answer> out = new ArrayList<>();
+		public Iterable<Answer<Relation>> answers(Call<Relation> probe) {
+			List<Answer<Relation>> out = new ArrayList<>();
 			inner.answers(probe).forEach(row -> {
 				yielded.incrementAndGet();
 				out.add(row);

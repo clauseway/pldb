@@ -3,9 +3,10 @@ package org.clauseway.pldb.transaction;
 // ABOUTME: Native serialization: the backend validates read sets at commit
 // ABOUTME: itself; the source owns the whole commit door and its dialect.
 
+import org.clauseway.pldb.relations.Relation;
 import java.util.List;
 import org.clauseway.pldb.AnswerSource;
-import org.clauseway.pldb.relations.Answer;
+import org.clauseway.logic.solving.Answer;
 
 /**
  * A source whose backend serializes transactions itself — an
@@ -21,5 +22,5 @@ import org.clauseway.pldb.relations.Answer;
  */
 public interface NativeSerialization extends AnswerSource, AutoCloseable {
 
-	boolean commit(List<Answer> asserted, List<Answer> retracted);
+	boolean commit(List<Answer<Relation>> asserted, List<Answer<Relation>> retracted);
 }

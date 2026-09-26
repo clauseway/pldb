@@ -7,7 +7,7 @@ import org.clauseway.functional.Nothing;
 import org.clauseway.functional.fibers.Emitter;
 import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.logic.solving.Call;
-import org.clauseway.pldb.relations.Answer;
+import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Relation;
 
 /**
@@ -25,7 +25,7 @@ import org.clauseway.pldb.relations.Relation;
  */
 public interface AnswerProducer {
 
-	Fiber<Nothing> produce(Call<Relation> probe, Emitter<Answer> emit);
+	Fiber<Nothing> produce(Call<Relation> probe, Emitter<Answer<Relation>> emit);
 
 	/** Upper bound on produce's emissions — pricing, always synchronous. */
 	default long estimate(Call<Relation> probe) {

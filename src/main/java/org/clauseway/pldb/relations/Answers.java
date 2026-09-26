@@ -3,11 +3,13 @@ package org.clauseway.pldb.relations;
 // ABOUTME: The answer codec at the seam: a Fact encodes as its ground reified row
 // ABOUTME: at ONE; images decode per position into cells or values.
 
+import org.clauseway.logic.solving.Answer;
 import static org.clauseway.logic.unification.terms.LVal.lval;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -17,6 +19,7 @@ import org.clauseway.functional.tuples.Tuple;
 import org.clauseway.logic.solving.Condition;
 import org.clauseway.logic.unification.terms.Reified;
 import org.clauseway.logic.unification.terms.Term;
+import org.clauseway.vavr.control.Try;
 
 /**
  * The seam's value codec, written once. An answer is the cell's entry
@@ -40,7 +43,7 @@ public final class Answers {
 	}
 
 	/** A ground row as the answer shape: values reified, conditioned ONE. */
-	public static Answer answer(Relation relation, List<?> values) {
+	public static Answer<Relation> answer(Relation relation, List<?> values) {
 		return Answer.of(relation, image(values.stream()
 				.map(v -> (Term<?>) lval(v))
 				.collect(Collectors.toList())), Condition.ONE);
@@ -57,7 +60,7 @@ public final class Answers {
 	 * more), and the wide's condition must ABSORB the narrow's (a guarded
 	 * wide never swallows an unconditional row).
 	 */
-	public static boolean subsumes(Answer wide, Answer narrow) {
+	public static boolean subsumes(Answer<Relation> wide, Answer<Relation> narrow) {
 		List<Term<Object>> w = positions(wide.getReified());
 		List<Term<Object>> n = positions(narrow.getReified());
 		if (w.size() != n.size()) {
@@ -90,7 +93,7 @@ public final class Answers {
 	 * refuses by relation and column; a guarded row refuses toward the
 	 * explicit choice ({@link Answer#unconditional()}).
 	 */
-	public static Answer landable(Answer row) {
+	public static Answer<Relation> landable(Answer<Relation> row) {
 		List<Term<Object>> cells = positions(row.getReified());
 		for (int i = 0; i < cells.size(); i++) {
 			if (!cells.get(i).isVal()) {
@@ -110,6 +113,16 @@ public final class Answers {
 	/** The row's raw values, positional. The row must be fully ground. */
 	public static List<Object> values(Reified<?> row) {
 		return positions(row).stream().map(Term::get).collect(Collectors.toList());
+	}
+
+	/** The named column's value — empty for an unknown column or a wide cell. */
+	@SuppressWarnings("unchecked")
+	public static <T> Optional<T> get(Answer<Relation> answer, Property<T> property) {
+		return answer.getRelation().indexOf(property)
+				.map(i -> positions(answer.getReified()).get(i))
+				.filter(cell -> cell.isVal())
+				.flatMap(cell -> Try.of(() -> (T) ((Term<Object>) cell).get())
+						.toJavaOptional());
 	}
 
 	/**

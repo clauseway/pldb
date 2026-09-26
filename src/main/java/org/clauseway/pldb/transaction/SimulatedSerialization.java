@@ -6,7 +6,7 @@ package org.clauseway.pldb.transaction;
 import java.util.List;
 import org.clauseway.logic.solving.Call;
 import org.clauseway.pldb.AnswerSource;
-import org.clauseway.pldb.relations.Answer;
+import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Relation;
 
 /**
@@ -38,12 +38,12 @@ import org.clauseway.pldb.relations.Relation;
  */
 public interface SimulatedSerialization extends AnswerSource, AutoCloseable {
 
-	Pinned<Iterable<Answer>> read(Call<Relation> probe);
+	Pinned<Iterable<Answer<Relation>>> read(Call<Relation> probe);
 
-	boolean commit(Footprint read, List<Answer> asserted, List<Answer> retracted);
+	boolean commit(Footprint read, List<Answer<Relation>> asserted, List<Answer<Relation>> retracted);
 
 	@Override
-	default Iterable<Answer> answers(Call<Relation> probe) {
+	default Iterable<Answer<Relation>> answers(Call<Relation> probe) {
 		return read(probe).getValue();
 	}
 }

@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.clauseway.logic.solving.Call;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.inmemory.AnswerStore;
-import org.clauseway.pldb.relations.Answer;
+import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Relation;
 
 /**
@@ -56,7 +56,7 @@ public final class CachingAnswerSource implements AnswerSource {
 	}
 
 	@Override
-	public synchronized Iterable<Answer> answers(Call<Relation> probe) {
+	public synchronized Iterable<Answer<Relation>> answers(Call<Relation> probe) {
 		if (!covers(probe)) {
 			// landing is idempotent by the store's own law: a duplicate image
 			// ⊕-folds inert, and a conditional answer lands WITH its guard —

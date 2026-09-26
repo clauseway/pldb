@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import org.clauseway.logic.solving.Call;
-import org.clauseway.pldb.relations.Answer;
+import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Relation;
 
 /**
@@ -23,11 +23,11 @@ import org.clauseway.pldb.relations.Relation;
 public class Simulated extends AbstractTransaction {
 
 	private final SimulatedSerialization serialization;
-	private final ConcurrentMap<Call<Relation>, Pinned<Iterable<Answer>>> reads;
+	private final ConcurrentMap<Call<Relation>, Pinned<Iterable<Answer<Relation>>>> reads;
 	private final Footprint premise;
 
 	Simulated(WriteBuffer writeBuffer, SimulatedSerialization serialization,
-			ConcurrentMap<Call<Relation>, Pinned<Iterable<Answer>>> reads, Footprint premise) {
+			ConcurrentMap<Call<Relation>, Pinned<Iterable<Answer<Relation>>>> reads, Footprint premise) {
 		super(writeBuffer);
 		this.serialization = serialization;
 		this.reads = reads;
@@ -35,25 +35,25 @@ public class Simulated extends AbstractTransaction {
 	}
 
 	@Override
-	public Iterable<Answer> answers(Call<Relation> probe) {
-		Pinned<Iterable<Answer>> read = reads.computeIfAbsent(probe, serialization::read);
+	public Iterable<Answer<Relation>> answers(Call<Relation> probe) {
+		Pinned<Iterable<Answer<Relation>>> read = reads.computeIfAbsent(probe, serialization::read);
 		return writeBuffer.overlay(probe, read.getValue());
 	}
 
 	@Override
-	public Transaction asserting(List<Answer> rows) {
+	public Transaction asserting(List<Answer<Relation>> rows) {
 		return new Simulated(writeBuffer.asserting(rows), serialization, reads, premise);
 	}
 
 	@Override
-	public Transaction retracting(List<Answer> rows) {
+	public Transaction retracting(List<Answer<Relation>> rows) {
 		return new Simulated(writeBuffer.retracting(rows), serialization, reads, premise);
 	}
 
 	/** The ledger folded: every region this transaction read, at its pin. */
 	public Footprint footprint() throws Transaction.Conflict {
 		Footprint folded = Footprint.empty();
-		for (Map.Entry<Call<Relation>, Pinned<Iterable<Answer>>> read : reads.entrySet()) {
+		for (Map.Entry<Call<Relation>, Pinned<Iterable<Answer<Relation>>>> read : reads.entrySet()) {
 			folded = folded.union(Footprint.of(read.getKey(), read.getValue().getPin()));
 		}
 		return folded;

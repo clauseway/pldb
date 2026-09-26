@@ -16,7 +16,7 @@ import lombok.AllArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.clauseway.logic.solving.Call;
-import org.clauseway.pldb.relations.Answer;
+import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Relation;
 import org.clauseway.pldb.transaction.Footprint;
 import org.clauseway.pldb.transaction.Pin;
@@ -80,13 +80,13 @@ public class VersionedWatermark implements JdbcSource, SimulatedSerialization {
 	 * lane both orderings are load-bearing.
 	 */
 	@Override
-	public Pinned<Iterable<Answer>> read(Call<Relation> probe) {
+	public Pinned<Iterable<Answer<Relation>>> read(Call<Relation> probe) {
 		Pin pin = regionPin(source.getConnection(), probe);
 		return Pinned.of(source.answers(probe), pin);
 	}
 
 	@Override
-	public boolean commit(Footprint read, List<Answer> asserted, List<Answer> retracted) {
+	public boolean commit(Footprint read, List<Answer<Relation>> asserted, List<Answer<Relation>> retracted) {
 		try (Connection commit = commits.get()) {
 			commit.setAutoCommit(false);
 			try {
@@ -191,7 +191,7 @@ public class VersionedWatermark implements JdbcSource, SimulatedSerialization {
 	}
 
 	@Override
-	public Iterable<Answer> answers(Call<Relation> probe) {
+	public Iterable<Answer<Relation>> answers(Call<Relation> probe) {
 		return source.answers(probe);
 	}
 

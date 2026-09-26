@@ -13,7 +13,7 @@ import org.clauseway.logic.solving.Condition;
 import org.clauseway.logic.solving.Call;
 import org.clauseway.logic.unification.terms.Reified;
 import org.clauseway.logic.unification.terms.Term;
-import org.clauseway.pldb.relations.Answer;
+import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Answers;
 import org.clauseway.pldb.relations.Relation;
 import org.clauseway.vavr.collection.HashMap;
@@ -30,7 +30,7 @@ class AnswerIndex {
 		return new AnswerIndex(LinkedHashMap.empty(), HashMap.empty());
 	}
 
-	AnswerIndex with(Set<Integer> positions, Answer answer) {
+	AnswerIndex with(Set<Integer> positions, Answer<Relation> answer) {
 		Reified<?> image = answer.getReified();
 		Condition folded = byImage.get(image)
 				.map(resident -> Condition.RING.plus(resident, answer.getCondition()))
@@ -68,7 +68,7 @@ class AnswerIndex {
 		return new AnswerIndex(byImage.remove(image), indexed);
 	}
 
-	Iterable<Answer> answers(Relation relation, Set<Integer> positions, Call<?> probe) {
+	Iterable<Answer<Relation>> answers(Relation relation, Set<Integer> positions, Call<?> probe) {
 		List<Term<Object>> args = Answers.positions(probe.getArguments());
 		Set<Reified<?>> candidates = candidates(positions, args);
 		return byImage.toJavaStream()

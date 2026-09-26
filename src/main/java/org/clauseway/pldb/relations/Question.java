@@ -4,6 +4,7 @@ package org.clauseway.pldb.relations;
 // ABOUTME: Answers WITH their guards — rows a caller reads, a persist lands, or a
 // ABOUTME: retract removes; the same extraction the produce seam mints with.
 
+import org.clauseway.logic.solving.Answer;
 import static org.clauseway.logic.unification.terms.LVal.lval;
 
 import java.util.Arrays;
@@ -49,7 +50,7 @@ public class Question {
 	 * (cold and finite, structurally), awaiting whatever engine the
 	 * caller constructs — the scheduler is deliberately not chosen here.
 	 */
-	public static Fiber<List<Answer>> select(Goal question, Literal... schemas) {
+	public static Fiber<List<Answer<Relation>>> select(Goal question, Literal... schemas) {
 		Array<Unifiable<?>> variables = variablesOf(schemas);
 		return Exhaustion.collected(rows(question,
 				lval(Tuple.ofAll(variables.map(Unifiable::getObjectTerm).toJavaArray())),
@@ -62,7 +63,7 @@ public class Question {
 	 * ({@code Residues.all} at the anchor, walking + slot
 	 * canonicalization), collected instead of emitted.
 	 */
-	private static Cont<Answer, Nothing> rows(Goal question, Unifiable<?> anchor,
+	private static Cont<Answer<Relation>, Nothing> rows(Goal question, Unifiable<?> anchor,
 			Array<Unifiable<?>> variables, Literal[] schemas) {
 		return Cont.suspend(k -> question.apply(Knowledge.empty().withStore(Table.empty()))
 				.apply(answerPkg -> Residues.all(answerPkg, anchor)
@@ -101,7 +102,7 @@ public class Question {
 	 * One answer, every schema: the whole cluster this derivation names,
 	 * every row under the derivation's one guard.
 	 */
-	private static Stream<Answer> facts(Map<Unifiable<?>, Term<?>> bound,
+	private static Stream<Answer<Relation>> facts(Map<Unifiable<?>, Term<?>> bound,
 			Condition condition, Literal[] schemas) {
 		return Arrays.stream(schemas)
 				.map(schema -> Answer.of(schema.getRel(),

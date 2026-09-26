@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 import lombok.Value;
 import org.clauseway.logic.solving.Call;
-import org.clauseway.pldb.relations.Answer;
+import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Relation;
 import org.clauseway.pldb.transaction.Footprint;
 import org.clauseway.pldb.transaction.Pin;
@@ -58,7 +58,7 @@ public final class SharedDatabase {
 	 * The commit protocol, whole: the monitor is the commit lock, the
 	 * generation compare is the proof, the persistent grow is the flush.
 	 */
-	private synchronized boolean commit(Footprint read, List<Answer> asserted, List<Answer> retracted) {
+	private synchronized boolean commit(Footprint read, List<Answer<Relation>> asserted, List<Answer<Relation>> retracted) {
 		if (!covers(read)) {
 			return false;
 		}
@@ -66,10 +66,10 @@ public final class SharedDatabase {
 				.asserting(asserted)
 				.retracting(retracted);
 		Map<Relation, Long> marks = new HashMap<>(current.getMarks());
-		for (Answer row : asserted) {
+		for (Answer<Relation> row : asserted) {
 			marks.merge(row.getRelation(), 1L, Long::sum);
 		}
-		for (Answer row : retracted) {
+		for (Answer<Relation> row : retracted) {
 			marks.merge(row.getRelation(), 1L, Long::sum);
 		}
 		current = new Versioned(next, marks);
@@ -99,19 +99,19 @@ public final class SharedDatabase {
 		}
 
 		@Override
-		public Pinned<Iterable<Answer>> read(Call<Relation> probe) {
+		public Pinned<Iterable<Answer<Relation>>> read(Call<Relation> probe) {
 			Relation relation = probe.getRelation();
 			return Pinned.of(captured.getValue().answers(probe),
 					new MarkPin(relation, captured.getMarks().get(relation)));
 		}
 
 		@Override
-		public boolean commit(Footprint read, List<Answer> asserted, List<Answer> retracted) {
+		public boolean commit(Footprint read, List<Answer<Relation>> asserted, List<Answer<Relation>> retracted) {
 			return SharedDatabase.this.commit(read, asserted, retracted);
 		}
 
 		@Override
-		public Iterable<Answer> answers(Call<Relation> probe) {
+		public Iterable<Answer<Relation>> answers(Call<Relation> probe) {
 			return captured.getValue().answers(probe);
 		}
 

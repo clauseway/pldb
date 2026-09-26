@@ -3,6 +3,7 @@ package org.clauseway.pldb.transaction;
 // ABOUTME: The Transaction over the in-memory simulated serialization: the shared
 // ABOUTME: cell is the one history, snapshots are values, the CAS is the commit lock.
 
+import org.clauseway.pldb.relations.Relation;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -15,7 +16,7 @@ import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.inmemory.SharedDatabase;
-import org.clauseway.pldb.relations.Answer;
+import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.relations.Question;
 import org.junit.Test;
@@ -162,7 +163,7 @@ public class TransactionMemoryTest {
 		Simulated tx = AbstractTransaction.over(store.open("compact"));
 		Unifiable<Integer> id = lvar();
 		Unifiable<String> copy = lvar();
-		List<Answer> cluster = new BreadthFirstScheduler<>(Question.select(
+		List<Answer<Relation>> cluster = new BreadthFirstScheduler<>(Question.select(
 				loanOf(tx, id, copy).and(returnedOf(tx, id)),
 				loanOf(null, id, copy), returnedOf(null, id))).get();
 		assertThat(cluster).hasSize(2);

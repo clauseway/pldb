@@ -23,7 +23,7 @@ import org.clauseway.logic.unification.terms.Any;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.inmemory.AnswerStore;
-import org.clauseway.pldb.relations.Answer;
+import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Answers;
 import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.relations.Relation;
@@ -79,8 +79,8 @@ public class GoalProducerTest {
 	}
 
 	/** Drive produce to completion, collecting the emissions. */
-	private static List<Answer> drain(AnswerProducer source, Call<Relation> probe) {
-		List<Answer> collected = new ArrayList<>();
+	private static List<Answer<Relation>> drain(AnswerProducer source, Call<Relation> probe) {
+		List<Answer<Relation>> collected = new ArrayList<>();
 		new BreadthFirstScheduler<>(source.produce(probe, answer -> {
 			collected.add(answer);
 			return Fiber.done(Nothing.nothing());
@@ -105,7 +105,7 @@ public class GoalProducerTest {
 		// answers it asked for, and the wrapped source is never re-hit
 		GoalProducer source = producer();
 		drain(source, probe(null, null));
-		List<Answer> narrow = drain(source, probe(2L, null));
+		List<Answer<Relation>> narrow = drain(source, probe(2L, null));
 		assertThat(hits.get()).isEqualTo(1);
 		assertThat(narrow).hasSize(1);
 	}
@@ -116,7 +116,7 @@ public class GoalProducerTest {
 		// inert fold — no log entry, no emission
 		// minted directly: the db's unindexed probe over-delivers by license,
 		// so iterator().next() was order-dependent debris
-		Answer row = Answers.answer(personRel(), Arrays.asList((Object) 2L, "Alan"));
+		Answer<Relation> row = Answers.answer(personRel(), Arrays.asList((Object) 2L, "Alan"));
 		AnswerSource stuttering = probe -> Arrays.asList(row, row, row);
 		Unifiable<Long> id = lvar();
 		Unifiable<String> name = lvar();

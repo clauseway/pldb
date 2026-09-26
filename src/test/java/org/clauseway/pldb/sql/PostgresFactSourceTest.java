@@ -3,6 +3,7 @@ package org.clauseway.pldb.sql;
 // ABOUTME: The north star's Phase 2 proof against real PostgreSQL (testcontainers):
 // ABOUTME: a nonrecursive and a recursive relation answer identically over memory and PG.
 
+import org.clauseway.pldb.relations.Answers;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.clauseway.logic.goals.Goal.defer;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -23,7 +24,7 @@ import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.inmemory.AnswerStore;
-import org.clauseway.pldb.relations.Answer;
+import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.relations.Property;
 import org.clauseway.pldb.relations.Relation;
@@ -119,27 +120,27 @@ public class PostgresFactSourceTest {
 	 * list feeds both worlds — the proof compares backings, not fixtures.
 	 */
 	private static void push(Connection connection, List<Literal> facts) throws SQLException {
-		Map<Relation, List<Answer>> byRelation = facts.stream()
+		Map<Relation, List<Answer<Relation>>> byRelation = facts.stream()
 				.map(Literal::fact)
 				.collect(Collectors.groupingBy(Answer::getRelation,
 						LinkedHashMap::new, Collectors.toList()));
 		try (Statement ddl = connection.createStatement()) {
-			for (Map.Entry<Relation, List<Answer>> table : byRelation.entrySet()) {
+			for (Map.Entry<Relation, List<Answer<Relation>>> table : byRelation.entrySet()) {
 				ddl.execute("DROP TABLE IF EXISTS " + table.getKey().getName());
 				ddl.execute(createTable(table.getKey(), table.getValue().get(0)));
 			}
 		}
-		for (Map.Entry<Relation, List<Answer>> table : byRelation.entrySet()) {
-			String placeholders = table.getValue().get(0).values().stream()
+		for (Map.Entry<Relation, List<Answer<Relation>>> table : byRelation.entrySet()) {
+			String placeholders = Answers.values(table.getValue().get(0).getReified()).stream()
 					.map(v -> "?")
 					.collect(Collectors.joining(", "));
 			try (
 					PreparedStatement insert = connection.prepareStatement(
 							"INSERT INTO " + table.getKey().getName() + " VALUES (" + placeholders + ")")
 			) {
-				for (Answer fact : table.getValue()) {
+				for (Answer<Relation> fact : table.getValue()) {
 					int column = 1;
-					for (Object value : fact.values()) {
+					for (Object value : Answers.values(fact.getReified())) {
 						insert.setObject(column++, value);
 					}
 					insert.addBatch();
@@ -149,14 +150,14 @@ public class PostgresFactSourceTest {
 		}
 	}
 
-	private static String createTable(Relation relation, Answer sample) {
+	private static String createTable(Relation relation, Answer<Relation> sample) {
 		Property<?>[] columns = relation.getArgs();
 		StringBuilder ddl = new StringBuilder("CREATE TABLE ")
 				.append(relation.getName()).append("(");
 		for (int i = 0; i < columns.length; i++) {
 			ddl.append(i == 0 ? "" : ", ")
 					.append(columns[i].getName())
-					.append(" ").append(sqlType(sample.values().get(i)))
+					.append(" ").append(sqlType(Answers.values(sample.getReified()).get(i)))
 					.append(" NOT NULL");
 		}
 		return ddl.append(")").toString();

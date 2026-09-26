@@ -1,7 +1,8 @@
 package org.clauseway.pldb.transaction;
 
+import org.clauseway.pldb.relations.Relation;
 import java.util.List;
-import org.clauseway.pldb.relations.Answer;
+import org.clauseway.logic.solving.Answer;
 
 /**
  * NATIVE serialization: the backend tracks every read it serves, so this
@@ -18,12 +19,12 @@ public class Native extends AbstractTransaction {
 	}
 
 	@Override
-	public Transaction asserting(List<Answer> rows) {
+	public Transaction asserting(List<Answer<Relation>> rows) {
 		return new Native(writeBuffer.asserting(rows), serialization);
 	}
 
 	@Override
-	public Transaction retracting(List<Answer> rows) {
+	public Transaction retracting(List<Answer<Relation>> rows) {
 		return new Native(writeBuffer.retracting(rows), serialization);
 	}
 

@@ -20,7 +20,7 @@ import lombok.AllArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.clauseway.logic.solving.Call;
-import org.clauseway.pldb.relations.Answer;
+import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Relation;
 import org.clauseway.pldb.transaction.Footprint;
 import org.clauseway.pldb.transaction.Pin;
@@ -98,7 +98,7 @@ public class Watermark implements JdbcSource, SimulatedSerialization {
 	 * never named.
 	 */
 	@Override
-	public Pinned<Iterable<Answer>> read(Call<Relation> probe) {
+	public Pinned<Iterable<Answer<Relation>>> read(Call<Relation> probe) {
 		Pin mark = markOf(probe.getRelation().getName());
 		return Pinned.of(source.answers(probe), mark);
 	}
@@ -130,7 +130,7 @@ public class Watermark implements JdbcSource, SimulatedSerialization {
 	}
 
 	@Override
-	public boolean commit(Footprint read, List<Answer> asserted, List<Answer> retracted) {
+	public boolean commit(Footprint read, List<Answer<Relation>> asserted, List<Answer<Relation>> retracted) {
 		try (Connection commit = commits.get()) {
 			commit.setAutoCommit(false);
 			try {
@@ -142,7 +142,7 @@ public class Watermark implements JdbcSource, SimulatedSerialization {
 				SqlFlush flush = SqlFlush.over(commit, source.getCodecs());
 				flush.flush(asserted);
 				flush.delete(retracted);
-				List<Answer> moved = new ArrayList<>(asserted);
+				List<Answer<Relation>> moved = new ArrayList<>(asserted);
 				moved.addAll(retracted);
 				advance(commit, moved);
 				commit.commit();
@@ -196,10 +196,10 @@ public class Watermark implements JdbcSource, SimulatedSerialization {
 		return true;
 	}
 
-	private void advance(Connection commit, List<Answer> flushed) throws SQLException {
+	private void advance(Connection commit, List<Answer<Relation>> flushed) throws SQLException {
 		Set<String> moved = new LinkedHashSet<>();
 		moved.add(LOCK_ROW);
-		for (Answer row : flushed) {
+		for (Answer<Relation> row : flushed) {
 			moved.add(row.getRelation().getName());
 		}
 		log.debug("{}: advance {}", id(), moved);
@@ -227,7 +227,7 @@ public class Watermark implements JdbcSource, SimulatedSerialization {
 	}
 
 	@Override
-	public Iterable<Answer> answers(Call<Relation> probe) {
+	public Iterable<Answer<Relation>> answers(Call<Relation> probe) {
 		return source.answers(probe);
 	}
 
