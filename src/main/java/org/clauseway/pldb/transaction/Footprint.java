@@ -7,7 +7,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
-import org.clauseway.logic.tabling.table.Call;
+import org.clauseway.logic.solving.Call;
 import org.clauseway.pldb.relations.Relation;
 
 /**

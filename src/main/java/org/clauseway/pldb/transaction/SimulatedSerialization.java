@@ -4,7 +4,7 @@ package org.clauseway.pldb.transaction;
 // ABOUTME: naming their world, and whose commit proves the footprint unmoved.
 
 import java.util.List;
-import org.clauseway.logic.tabling.table.Call;
+import org.clauseway.logic.solving.Call;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.relations.Answer;
 import org.clauseway.pldb.relations.Relation;

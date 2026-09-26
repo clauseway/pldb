@@ -7,7 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
 
 import java.util.Arrays;
-import org.clauseway.logic.tabling.table.Call;
+import org.clauseway.logic.solving.Call;
 import org.clauseway.logic.unification.terms.Any;
 import org.clauseway.pldb.inmemory.AnswerStore;
 import org.junit.Test;

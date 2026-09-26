@@ -8,7 +8,7 @@ import static org.clauseway.logic.unification.terms.LVal.lval;
 
 import java.util.Collections;
 import org.assertj.core.api.Assertions;
-import org.clauseway.logic.tabling.table.Call;
+import org.clauseway.logic.solving.Call;
 import org.clauseway.logic.unification.terms.Any;
 import org.clauseway.logic.unification.terms.LVar;
 import org.clauseway.logic.unification.terms.Term;

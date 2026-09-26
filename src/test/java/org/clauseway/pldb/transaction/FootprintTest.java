@@ -8,7 +8,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
 
 import lombok.Value;
-import org.clauseway.logic.tabling.table.Call;
+import org.clauseway.logic.solving.Call;
 import org.clauseway.logic.unification.terms.Any;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.pldb.relations.Answers;

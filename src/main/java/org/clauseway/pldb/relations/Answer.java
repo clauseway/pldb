@@ -8,7 +8,7 @@ import java.util.Optional;
 import lombok.Value;
 import org.clauseway.functional.tuples.Tuple;
 import org.clauseway.functional.tuples.Tuple2;
-import org.clauseway.logic.tabling.conditions.Condition;
+import org.clauseway.logic.solving.Condition;
 import org.clauseway.logic.unification.terms.Reified;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.vavr.control.Try;

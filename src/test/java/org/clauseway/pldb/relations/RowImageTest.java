@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 import org.clauseway.functional.tuples.Tuple;
 import org.clauseway.logic.constraints.Constraints;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.tabling.conditions.Residues;
+import org.clauseway.logic.solving.Residues;
 import org.clauseway.logic.unification.terms.Any;
 import org.clauseway.logic.unification.terms.Reified;
 import org.clauseway.logic.unification.terms.Term;

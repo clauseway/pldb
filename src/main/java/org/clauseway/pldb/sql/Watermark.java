@@ -19,7 +19,7 @@ import java.util.function.Supplier;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
-import org.clauseway.logic.tabling.table.Call;
+import org.clauseway.logic.solving.Call;
 import org.clauseway.pldb.relations.Answer;
 import org.clauseway.pldb.relations.Relation;
 import org.clauseway.pldb.transaction.Footprint;

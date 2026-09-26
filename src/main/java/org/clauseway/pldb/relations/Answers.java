@@ -14,7 +14,7 @@ import java.util.stream.IntStream;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.clauseway.functional.tuples.Tuple;
-import org.clauseway.logic.tabling.conditions.Condition;
+import org.clauseway.logic.solving.Condition;
 import org.clauseway.logic.unification.terms.Reified;
 import org.clauseway.logic.unification.terms.Term;
 

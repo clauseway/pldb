@@ -16,7 +16,7 @@ import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.lattice.Propagator;
 import org.clauseway.logic.lattice.Verdict;
-import org.clauseway.logic.tabling.table.Call;
+import org.clauseway.logic.solving.Call;
 import org.clauseway.logic.unification.MiniKanren;
 import org.clauseway.logic.unification.Substitutions;
 import org.clauseway.logic.unification.terms.Reified;

@@ -7,7 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BooleanSupplier;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import org.clauseway.logic.tabling.table.Call;
+import org.clauseway.logic.solving.Call;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.relations.Answer;
 import org.clauseway.pldb.relations.Relation;

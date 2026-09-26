@@ -3,7 +3,7 @@ package org.clauseway.pldb.transaction;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
-import org.clauseway.logic.tabling.table.Call;
+import org.clauseway.logic.solving.Call;
 import org.clauseway.pldb.relations.Answer;
 import org.clauseway.pldb.relations.Relation;
 

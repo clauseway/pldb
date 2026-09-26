@@ -25,7 +25,7 @@ import org.clauseway.functional.tuples.Tuple2;
 import org.clauseway.logic.constraints.Posting;
 import org.clauseway.logic.finitedomain.Longs;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.tabling.table.Call;
+import org.clauseway.logic.solving.Call;
 import org.clauseway.logic.unification.terms.Any;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;

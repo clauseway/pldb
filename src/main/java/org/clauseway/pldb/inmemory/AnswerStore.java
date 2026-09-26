@@ -11,7 +11,7 @@ import java.util.stream.IntStream;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import org.clauseway.logic.tabling.table.Call;
+import org.clauseway.logic.solving.Call;
 import org.clauseway.logic.unification.terms.Reified;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.Writer;

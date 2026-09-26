@@ -6,7 +6,7 @@ package org.clauseway.pldb;
 import org.clauseway.functional.Nothing;
 import org.clauseway.functional.fibers.Emitter;
 import org.clauseway.functional.fibers.Fiber;
-import org.clauseway.logic.tabling.table.Call;
+import org.clauseway.logic.solving.Call;
 import org.clauseway.pldb.relations.Answer;
 import org.clauseway.pldb.relations.Relation;
 

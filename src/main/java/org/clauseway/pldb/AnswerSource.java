@@ -3,8 +3,8 @@ package org.clauseway.pldb;
 // ABOUTME: The seam's sync kind: answers for a call key enumerated inline, the
 // ABOUTME: closed in-process tier — in-memory data, sealed cells, the GAC/trial lane.
 
-import org.clauseway.logic.tabling.conditions.Condition;
-import org.clauseway.logic.tabling.table.Call;
+import org.clauseway.logic.solving.Condition;
+import org.clauseway.logic.solving.Call;
 import org.clauseway.pldb.relations.Answer;
 import org.clauseway.pldb.relations.Relation;
 

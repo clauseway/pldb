@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 import org.clauseway.logic.goals.optimizer.CascadingOptimizer;
 import org.clauseway.logic.goals.optimizer.Optimizer;
 import org.clauseway.logic.goals.optimizer.OrderingOptimizer;
-import org.clauseway.logic.tabling.table.Call;
+import org.clauseway.logic.solving.Call;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.inmemory.AnswerStore;
 import org.clauseway.pldb.relations.Answer;

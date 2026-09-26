@@ -17,7 +17,7 @@ import org.clauseway.functional.Nothing;
 import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.tabling.table.Call;
+import org.clauseway.logic.solving.Call;
 import org.clauseway.logic.tabling.table.Table;
 import org.clauseway.logic.unification.terms.Any;
 import org.clauseway.logic.unification.terms.Term;

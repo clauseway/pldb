@@ -23,7 +23,7 @@ import org.clauseway.logic.constraints.store.Constraint;
 import org.clauseway.logic.constraints.store.Theory;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.Knowledge;
-import org.clauseway.logic.tabling.table.Call;
+import org.clauseway.logic.solving.Call;
 import org.clauseway.logic.tabling.table.Table;
 import org.clauseway.logic.unification.terms.Any;
 import org.clauseway.logic.unification.terms.Unifiable;
