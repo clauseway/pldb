@@ -17,7 +17,7 @@ import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.functional.tuples.Tuple;
 import org.clauseway.logic.constraints.store.Theory;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.lattice.Update;
 import org.clauseway.logic.lattice.Verdict;
 import org.clauseway.logic.tabling.JoinMap;
@@ -55,7 +55,7 @@ final class Extension {
 	 * memo. FD domains and nogoods on the args are the question's honest
 	 * context and stay.
 	 */
-	static Fiber<Call<Relation>> probe(Package pkg, Relation rel, Array<Term<?>> walked) {
+	static Fiber<Call<Relation>> probe(Knowledge pkg, Relation rel, Array<Term<?>> walked) {
 		return Residues.about(pkg, lval(Tuple.ofAll(walked.map(Term::getObjectTerm).toJavaArray())))
 				.map(key -> Call.of(rel, key._1,
 						Residues.of(key._2.getTheories().remove(TableConstraints.class))));

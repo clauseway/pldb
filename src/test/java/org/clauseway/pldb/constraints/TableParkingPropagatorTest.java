@@ -22,7 +22,7 @@ import org.clauseway.logic.constraints.Posting;
 import org.clauseway.logic.constraints.store.Constraint;
 import org.clauseway.logic.constraints.store.Theory;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.tabling.table.Call;
 import org.clauseway.logic.tabling.table.Table;
 import org.clauseway.logic.unification.terms.Any;
@@ -76,7 +76,7 @@ public class TableParkingPropagatorTest {
 	}
 
 	/** A goal that runs assertions against the live package and succeeds. */
-	private static Goal probe(Consumer<Package> check) {
+	private static Goal probe(Consumer<Knowledge> check) {
 		return p -> {
 			check.accept(p);
 			return Cont.just(p);

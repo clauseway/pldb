@@ -21,7 +21,7 @@ import org.clauseway.functional.tuples.Tuple;
 import org.clauseway.logic.constraints.Postable;
 import org.clauseway.logic.constraints.Posting;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.goals.optimizer.Bounded;
 import org.clauseway.logic.tabling.Tabling;
 import org.clauseway.logic.tabling.conditions.Residues;
@@ -295,13 +295,13 @@ public class Literal implements Goal, Bounded, Postable {
 	}
 
 	@Override
-	public Cont<Package, Nothing> apply(Package s) {
+	public Cont<Knowledge, Nothing> apply(Knowledge s) {
 		requireGroundColumns(s);
 		return reading.read(this).apply(s);
 	}
 
 	/** A ground-marked column is an input: free at application is a caller error. */
-	private void requireGroundColumns(Package s) {
+	private void requireGroundColumns(Knowledge s) {
 		Property<?>[] cols = rel.getArgs();
 		for (int i = 0; i < cols.length; i++) {
 			if (cols[i].isGround() && !((Term<?>) s.walk(args.get(i))).isVal()) {

@@ -13,7 +13,7 @@ import org.clauseway.logic.constraints.store.Constraint;
 import org.clauseway.logic.constraints.store.Theory;
 import org.clauseway.logic.goals.Conjunction;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.lattice.Propagator;
 import org.clauseway.logic.lattice.Verdict;
 import org.clauseway.logic.tabling.table.Call;
@@ -47,14 +47,14 @@ final class TablePropagator extends Propagator<TableConstraints> {
 	}
 
 	@Override
-	public Verdict propagate(Package pkg) {
+	public Verdict propagate(Knowledge pkg) {
 		Array<Term<?>> walked = watchedTerms().map(t -> (Term<?>) pkg.walk(t));
 		List<Extension.Row> live = Extension.live(walked,
 				Extension.fold(source.answers(Extension.probe(pkg, rel, walked).ground())), theory(pkg));
 		return Extension.verdict(walked, live, theory -> theory.without(this));
 	}
 
-	private static Theory<TableConstraints> theory(Package pkg) {
+	private static Theory<TableConstraints> theory(Knowledge pkg) {
 		return Constraint.in(pkg, TableConstraints.class).get().getTheory();
 	}
 
@@ -84,7 +84,7 @@ final class TablePropagator extends Propagator<TableConstraints> {
 	 * growth: bindings only sharpen the probe.
 	 */
 	@Override
-	public boolean doomed(Package p) {
+	public boolean doomed(Knowledge p) {
 		return estimate(watchedTerms().map(t -> (Term<?>) p.substitution().walk(t))) == 0;
 	}
 

@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
 import org.clauseway.functional.tuples.Tuple;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.tabling.table.Table;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
@@ -169,12 +169,12 @@ public class LiteralSolvingTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
 		List<String> first = x.unifies(1).and(counted(db, productions, x, y))
-				.solveFrom(Package.empty().withStore(retained), y, BreadthFirstScheduler::new)
+				.solveFrom(Knowledge.empty().withStore(retained), y, BreadthFirstScheduler::new)
 				.map(Object::toString).collect(Collectors.toList());
 		Unifiable<Integer> x2 = lvar();
 		Unifiable<Integer> y2 = lvar();
 		List<String> second = x2.unifies(1).and(counted(db, productions, x2, y2))
-				.solveFrom(Package.empty().withStore(retained), y2, BreadthFirstScheduler::new)
+				.solveFrom(Knowledge.empty().withStore(retained), y2, BreadthFirstScheduler::new)
 				.map(Object::toString).collect(Collectors.toList());
 		assertThat(second).isEqualTo(first).containsExactly("{2}");
 		assertThat(productions.get())

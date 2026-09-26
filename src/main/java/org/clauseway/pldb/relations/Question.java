@@ -21,7 +21,7 @@ import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.functional.tuples.Tuple;
 import org.clauseway.logic.goals.Exhaustion;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.tabling.conditions.Condition;
 import org.clauseway.logic.tabling.conditions.Residues;
 import org.clauseway.logic.tabling.table.Table;
@@ -64,7 +64,7 @@ public class Question {
 	 */
 	private static Cont<Answer, Nothing> rows(Goal question, Unifiable<?> anchor,
 			Array<Unifiable<?>> variables, Literal[] schemas) {
-		return Cont.suspend(k -> question.apply(Package.empty().withStore(Table.empty()))
+		return Cont.suspend(k -> question.apply(Knowledge.empty().withStore(Table.empty()))
 				.apply(answerPkg -> Residues.all(answerPkg, anchor)
 						.flatMap(answer -> facts(
 								bind(variables, Array.ofAll(Answers.positions(answer._1))),

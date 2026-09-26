@@ -17,7 +17,7 @@ import org.clauseway.logic.constraints.store.Constraint;
 import org.clauseway.logic.constraints.store.Theory;
 import org.clauseway.logic.goals.Conjunction;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.lattice.ParkingPropagator;
 import org.clauseway.logic.lattice.Verdict;
 import org.clauseway.logic.tabling.JoinMap;
@@ -65,14 +65,14 @@ import org.clauseway.vavr.collection.Array;
 public class TableParkingPropagator extends ParkingPropagator<TableConstraints> {
 	private final Relation rel;
 	private final String label;
-	private final Function<Package, AnswerProducer> producer;
+	private final Function<Knowledge, AnswerProducer> producer;
 
 	protected TableParkingPropagator(Relation rel, AnswerProducer producer, Array<? extends Term<?>> watchedTerms) {
 		this(rel, producer.id(), pkg -> producer, watchedTerms);
 	}
 
 	private TableParkingPropagator(Relation rel, String label,
-			Function<Package, AnswerProducer> producer, Array<? extends Term<?>> watchedTerms) {
+			Function<Knowledge, AnswerProducer> producer, Array<? extends Term<?>> watchedTerms) {
 		super(watchedTerms);
 		this.rel = rel;
 		this.label = label;
@@ -89,7 +89,7 @@ public class TableParkingPropagator extends ParkingPropagator<TableConstraints> 
 				pkg -> GoalProducer.of(rel, rule, heads.toJavaList(), tableOf(pkg, rel)), heads);
 	}
 
-	private static Table tableOf(Package pkg, Relation rel) {
+	private static Table tableOf(Knowledge pkg, Relation rel) {
 		return pkg.getStores().get(Table.class)
 				.map(Table.class::cast)
 				.getOrElseThrow(() -> new IllegalStateException(
@@ -97,7 +97,7 @@ public class TableParkingPropagator extends ParkingPropagator<TableConstraints> 
 	}
 
 	@Override
-	public Fiber<Verdict> propagate(Package pkg) {
+	public Fiber<Verdict> propagate(Knowledge pkg) {
 		Array<Term<?>> walked = watchedTerms().map(t -> (Term<?>) pkg.walk(t));
 		return Extension.probe(pkg, rel, walked)
 				.flatMap(probe -> extension(probe, pkg))
@@ -106,7 +106,7 @@ public class TableParkingPropagator extends ParkingPropagator<TableConstraints> 
 						theory -> theory.without(this)));
 	}
 
-	private static Theory<TableConstraints> theory(Package pkg) {
+	private static Theory<TableConstraints> theory(Knowledge pkg) {
 		return Constraint.in(pkg, TableConstraints.class).get().getTheory();
 	}
 
@@ -117,7 +117,7 @@ public class TableParkingPropagator extends ParkingPropagator<TableConstraints> 
 	 * the claiming scope, not produce's return, is what makes the drain
 	 * complete.
 	 */
-	private Fiber<JoinMap<Reified<?>, Condition>> extension(Call<Relation> probe, Package pkg) {
+	private Fiber<JoinMap<Reified<?>, Condition>> extension(Call<Relation> probe, Knowledge pkg) {
 		Scope sub = Scope.scope("TableParkingPropagatorProduction");
 		Queue<Answer> delivered = new ConcurrentLinkedQueue<>();
 		return Fiber.claim(sub, producer.apply(pkg).produce(probe, answer -> {
@@ -158,7 +158,7 @@ public class TableParkingPropagator extends ParkingPropagator<TableConstraints> 
 	 * knowledge where it prices, the optimizer barrier otherwise. Pricing
 	 * carries no region: the upper bound stays sound ignoring it.
 	 */
-	long estimate(Array<Term<?>> walked, Package pkg) {
+	long estimate(Array<Term<?>> walked, Knowledge pkg) {
 		return producer.apply(pkg).estimate(Call.of(rel, MiniKanren.reify(Substitutions.empty(),
 				lval(Tuple.ofAll(walked.map(Term::getObjectTerm).toJavaArray())).getObjectTerm()).ground()));
 	}
@@ -169,7 +169,7 @@ public class TableParkingPropagator extends ParkingPropagator<TableConstraints> 
 	 * is never doomed here.
 	 */
 	@Override
-	public boolean doomed(Package p) {
+	public boolean doomed(Knowledge p) {
 		return estimate(watchedTerms().map(t -> (Term<?>) p.substitution().walk(t)), p) == 0;
 	}
 

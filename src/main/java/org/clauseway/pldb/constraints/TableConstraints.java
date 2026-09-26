@@ -17,7 +17,7 @@ import org.clauseway.logic.constraints.Propagation;
 import org.clauseway.logic.constraints.store.Constraint;
 import org.clauseway.logic.constraints.store.Theory;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Package;
+import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.goals.optimizer.Bounded;
 import org.clauseway.logic.lattice.LatticeFactor;
 import org.clauseway.logic.lattice.ParkingPropagator;
@@ -106,7 +106,7 @@ public final class TableConstraints extends LatticeFactor<Support, TableConstrai
 				.orElseGet(Goal::success);
 	}
 
-	private static long labelOrder(Package p, Term<?> x) {
+	private static long labelOrder(Knowledge p, Term<?> x) {
 		Term<?> w = p.walk(x);
 		if (!w.asVar().isPresent()) {
 			return 1;
@@ -135,7 +135,7 @@ public final class TableConstraints extends LatticeFactor<Support, TableConstrai
 	}
 
 	/** Each live record priced at its bucket, its row enumerator as the goal. */
-	private static List<Tuple2<Long, Goal>> liveRecords(Package s) {
+	private static List<Tuple2<Long, Goal>> liveRecords(Knowledge s) {
 		Theory<TableConstraints> live = Constraint.in(s, TableConstraints.class)
 				.map(Constraint::getTheory)
 				.getOrNull();
@@ -191,7 +191,7 @@ public final class TableConstraints extends LatticeFactor<Support, TableConstrai
 	}
 
 	/** One candidate left: bind every free column — the FD-collapse move on tuples. */
-	static Update collapse(Package state, Theory<TableConstraints> theory, Array<Term<?>> walked, Array<Object> row) {
+	static Update collapse(Knowledge state, Theory<TableConstraints> theory, Array<Term<?>> walked, Array<Object> row) {
 		Update.Applied result = Update.applied(theory);
 		boolean bound = false;
 		for (int i = 0; i < walked.size(); i++) {
@@ -208,7 +208,7 @@ public final class TableConstraints extends LatticeFactor<Support, TableConstrai
 		return bound ? result : Update.unchanged();
 	}
 
-	private static Prefix bindingOf(Package state, Term<?> w, Object value) {
+	private static Prefix bindingOf(Knowledge state, Term<?> w, Object value) {
 		return Prefix.binding(state.substitution(), w.asVar().get(), lval(value))
 				.getOrNull();
 	}
@@ -219,7 +219,7 @@ public final class TableConstraints extends LatticeFactor<Support, TableConstrai
 	 * wake, not per post, because it arrives late (a later posting, or an
 	 * alias welding two columns).
 	 */
-	private static boolean shared(Theory<TableConstraints> theory, Package state, Term<?> w) {
+	private static boolean shared(Theory<TableConstraints> theory, Knowledge state, Term<?> w) {
 		if (EMPTY.getValue(theory, w).isDefined()) {
 			return true;
 		}
@@ -240,7 +240,7 @@ public final class TableConstraints extends LatticeFactor<Support, TableConstrai
 	 * shrinks, so a skipped column can only gain a support later, never owe
 	 * a retraction.
 	 */
-	static Update narrowPatterns(Package state, Theory<TableConstraints> theory,
+	static Update narrowPatterns(Knowledge state, Theory<TableConstraints> theory,
 			Array<Term<?>> walked, List<IndexedSeq<Term<Object>>> candidates) {
 		return narrow(state, theory, walked,
 				candidates.stream()
@@ -261,13 +261,13 @@ public final class TableConstraints extends LatticeFactor<Support, TableConstrai
 	 * support has no reader, so the shadow's cost is the join width, not
 	 * every posted column.
 	 */
-	static Update narrow(Package state, Theory<TableConstraints> theory,
+	static Update narrow(Knowledge state, Theory<TableConstraints> theory,
 			Array<Term<?>> walked, List<Array<Object>> candidates) {
 		return narrow(state, theory, walked, candidates, column -> false);
 	}
 
 	@SuppressWarnings("unchecked")
-	private static Update narrow(Package state, Theory<TableConstraints> theory,
+	private static Update narrow(Knowledge state, Theory<TableConstraints> theory,
 			Array<Term<?>> walked, List<Array<Object>> candidates,
 			IntPredicate topColumn) {
 		Theory<TableConstraints> current = theory;
