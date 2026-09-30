@@ -3,6 +3,7 @@ package org.clauseway.pldb.sql;
 // ABOUTME: Declared nullability: a nullable column carries SQL NULL as Java's own
 // ABOUTME: null inside lval — the typed surface intact, IS NULL at the probe.
 
+import org.clauseway.logic.solving.Query;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -57,7 +58,7 @@ public class NullableColumnTest {
 	public void aNullCellReadsAsABoundNull() throws Exception {
 		try (CachingSqlFetch source = CachingSqlFetch.pinned("h2", connection)) {
 			Unifiable<String> name = lvar();
-			List<String> names = person(source, lvar(), name).solve(name)
+			List<String> names = Query.of(person(source, lvar(), name)).solve(name)
 					.map(Object::toString)
 					.sorted()
 					.collect(Collectors.toList());
@@ -69,7 +70,7 @@ public class NullableColumnTest {
 	public void aBoundNullMatchesOnlyNullRows() throws Exception {
 		try (CachingSqlFetch source = CachingSqlFetch.pinned("h2", connection)) {
 			Unifiable<Integer> id = lvar();
-			List<String> ids = person(source, id, lval((String) null)).solve(id)
+			List<String> ids = Query.of(person(source, id, lval((String) null))).solve(id)
 					.map(Object::toString)
 					.collect(Collectors.toList());
 			assertThat(ids).containsExactly("{2}");
@@ -86,7 +87,7 @@ public class NullableColumnTest {
 		}
 		try (CachingSqlFetch source = CachingSqlFetch.pinned("h2", connection)) {
 			Unifiable<Integer> id = lvar();
-			assertThat(person(source, id, lval((String) null)).solve(id)
+			assertThat(Query.of(person(source, id, lval((String) null))).solve(id)
 					.map(Object::toString)
 					.sorted()
 					.collect(Collectors.toList())).containsExactly("{2}", "{3}");
@@ -101,9 +102,8 @@ public class NullableColumnTest {
 		try (CachingSqlFetch source = CachingSqlFetch.pinned("h2", connection)) {
 			Unifiable<Integer> id = lvar();
 			Unifiable<String> name = lvar();
-			List<String> ids = Exclusion.exclude(name.unifies("Ada"))
-					.and(person(source, id, name))
-					.solve(id)
+			List<String> ids = Query.of(Exclusion.exclude(name.unifies("Ada"))
+					.and(person(source, id, name))).solve(id)
 					.map(Object::toString)
 					.collect(Collectors.toList());
 			assertThat(ids).containsExactly("{2}");
@@ -118,10 +118,10 @@ public class NullableColumnTest {
 		// the null bucket
 		try (CachingSqlFetch source = CachingSqlFetch.pinned("h2", connection)) {
 			Unifiable<String> name = lvar();
-			assertThat(person(source, lvar(), name).solve(name).count()).isEqualTo(2);
+			assertThat(Query.of(person(source, lvar(), name)).solve(name).count()).isEqualTo(2);
 
 			Unifiable<Integer> id = lvar();
-			assertThat(person(source, id, lval((String) null)).solve(id)
+			assertThat(Query.of(person(source, id, lval((String) null))).solve(id)
 					.map(Object::toString)
 					.collect(Collectors.toList())).containsExactly("{2}");
 		}
@@ -139,7 +139,7 @@ public class NullableColumnTest {
 	public void anUndeclaredColumnStillRefusesNull() throws Exception {
 		try (CachingSqlFetch source = CachingSqlFetch.pinned("h2", connection)) {
 			Unifiable<String> name = lvar();
-			assertThatThrownBy(() -> strict(source, lvar(), name).solve(name)
+			assertThatThrownBy(() -> Query.of(strict(source, lvar(), name)).solve(name)
 					.collect(Collectors.toList()))
 					.isInstanceOf(IllegalStateException.class)
 					.hasMessageContaining("name");

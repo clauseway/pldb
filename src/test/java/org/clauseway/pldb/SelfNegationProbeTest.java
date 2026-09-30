@@ -1,5 +1,6 @@
 package org.clauseway.pldb;
 
+import org.clauseway.logic.solving.Query;
 import static org.clauseway.logic.goals.Goal.defer;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
@@ -22,7 +23,7 @@ public class SelfNegationProbeTest {
 	public void deferredSelfNegationObserved() {
 		Unifiable<Integer> x = lvar();
 		try {
-			Object result = x.unifies(1).and(selfNeg(x)).solve(x).collect(Collectors.toList());
+			Object result = Query.of(x.unifies(1).and(selfNeg(x))).solve(x).collect(Collectors.toList());
 			System.err.println("OUTCOME: completed with " + result);
 		} catch (Throwable e) {
 			System.err.println("OUTCOME CLASS: " + e.getClass().getName());

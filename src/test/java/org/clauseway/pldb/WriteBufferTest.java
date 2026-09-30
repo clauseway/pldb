@@ -3,6 +3,7 @@ package org.clauseway.pldb;
 // ABOUTME: The overlay value: a frozen base plus a private staged delta — reads
 // ABOUTME: union both, appends mint new values, ancestors and siblings stay true.
 
+import org.clauseway.logic.solving.Query;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -32,7 +33,7 @@ public class WriteBufferTest {
 
 	private static List<String> ids(AnswerSource db) {
 		Unifiable<Long> id = lvar();
-		return person(db, id, lvar()).solve(id)
+		return Query.of(person(db, id, lvar())).solve(id)
 				.map(Object::toString)
 				.sorted()
 				.collect(Collectors.toList());
@@ -91,13 +92,11 @@ public class WriteBufferTest {
 		WriteBuffer lib = WriteBuffer.over(base())
 				.asserting(Collections.singletonList(person(null, lval(3L), lval("Kurt")).fact()));
 		Unifiable<Long> free = lvar();
-		assertThat(free.unifies(3L)
-				.and(exclude(person(lib, free, lval("Kurt"))))
-				.solve(free)
+		assertThat(Query.of(free.unifies(3L)
+				.and(exclude(person(lib, free, lval("Kurt"))))).solve(free)
 				.collect(Collectors.toList())).isEmpty();
-		assertThat(free.unifies(3L)
-				.and(exclude(person(WriteBuffer.over(base()), free, lval("Kurt"))))
-				.solve(free)
+		assertThat(Query.of(free.unifies(3L)
+				.and(exclude(person(WriteBuffer.over(base()), free, lval("Kurt"))))).solve(free)
 				.map(Object::toString)
 				.collect(Collectors.toList())).containsExactly("{3}");
 	}

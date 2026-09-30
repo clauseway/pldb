@@ -3,6 +3,7 @@ package org.clauseway.pldb;
 // ABOUTME: Pins the AnswerSource seam: lookups and posted constraints constructed
 // ABOUTME: against the read face answer identically to the AnswerStore-typed path.
 
+import org.clauseway.logic.solving.Query;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
@@ -44,12 +45,10 @@ public class AnswerSourceTest {
 
 		Unifiable<String> viaSource = lvar();
 		Unifiable<String> viaDb = lvar();
-		assertThat(person(source, lvar(), viaSource)
-				.solve(viaSource)
+		assertThat(Query.of(person(source, lvar(), viaSource)).solve(viaSource)
 				.map(Object::toString)
 				.collect(Collectors.toList()))
-				.containsExactlyElementsOf(person(db, lvar(), viaDb)
-						.solve(viaDb)
+				.containsExactlyElementsOf(Query.of(person(db, lvar(), viaDb)).solve(viaDb)
 						.map(Object::toString)
 						.collect(Collectors.toList()));
 	}
@@ -60,12 +59,10 @@ public class AnswerSourceTest {
 
 		Unifiable<Integer> keyViaSource = lvar();
 		Unifiable<Integer> keyViaDb = lvar();
-		assertThat(person(source, keyViaSource, lvar()).posted()
-				.solve(keyViaSource)
+		assertThat(Query.of(person(source, keyViaSource, lvar()).posted()).solve(keyViaSource)
 				.map(Object::toString)
 				.collect(Collectors.toList()))
-				.containsExactlyElementsOf(person(db, keyViaDb, lvar()).posted()
-						.solve(keyViaDb)
+				.containsExactlyElementsOf(Query.of(person(db, keyViaDb, lvar()).posted()).solve(keyViaDb)
 						.map(Object::toString)
 						.collect(Collectors.toList()));
 	}

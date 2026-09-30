@@ -4,6 +4,7 @@ package org.clauseway.pldb.sql;
 // ABOUTME: constrained free makes occurrence and position diverge — pushed must
 // ABOUTME: still agree with the unpushed oracle, or the WHERE hit the wrong column.
 
+import org.clauseway.logic.solving.Query;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.clauseway.logic.finitedomain.FiniteDomain.dom;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -56,9 +57,8 @@ public class OccurrenceResolutionTest {
 	 */
 	private static List<Long> boundThenConstrained(AnswerSource db) {
 		Unifiable<Long> b = lvar();
-		return dom(b, Longs.range(10, 16))
-				.and(pair(db, lval(1L), b))
-				.solve(b)
+		return Query.of(dom(b, Longs.range(10, 16))
+				.and(pair(db, lval(1L), b))).solve(b)
 				.map(Term::get)
 				.sorted()
 				.collect(Collectors.toList());
@@ -76,9 +76,8 @@ public class OccurrenceResolutionTest {
 		}
 		try (CachingSqlFetch pushed = CachingSqlFetch.pinned("h2-coupled", connection)) {
 			Unifiable<Long> x = lvar();
-			List<Long> agreed = dom(x, Longs.range(2, 5))
-					.and(pair(pushed, x, x))
-					.solve(x)
+			List<Long> agreed = Query.of(dom(x, Longs.range(2, 5))
+					.and(pair(pushed, x, x))).solve(x)
 					.map(Term::get)
 					.sorted()
 					.collect(Collectors.toList());

@@ -3,6 +3,7 @@ package org.clauseway.pldb.relations;
 // ABOUTME: Receipts for the row image: tuple-backed construction and decode, and
 // ABOUTME: delivery through the engine's one restate — coupled anys mint once.
 
+import org.clauseway.logic.solving.Query;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -36,9 +37,9 @@ public class RowImageTest {
 
 		Goal g = Residues.restate(image, Residues.TRUE, anchor(x, y));
 
-		assertThat(g.solve(x).map(Term::get).collect(Collectors.toList()))
+		assertThat(Query.of(g).solve(x).map(Term::get).collect(Collectors.toList()))
 				.containsExactly("m1");
-		assertThat(g.solve(y).map(Term::get).collect(Collectors.toList()))
+		assertThat(Query.of(g).solve(y).map(Term::get).collect(Collectors.toList()))
 				.containsExactly("c3");
 	}
 
@@ -47,8 +48,7 @@ public class RowImageTest {
 		Unifiable<String> x = lvar();
 		Reified<?> image = Answers.image(lval("m1"), lval("c3"));
 
-		assertThat(Residues.restate(image, Residues.TRUE, anchor(x, lval("c9")))
-				.solve(x).count()).isZero();
+		assertThat(Query.of(Residues.restate(image, Residues.TRUE, anchor(x, lval("c9")))).solve(x).count()).isZero();
 	}
 
 	@Test
@@ -56,8 +56,7 @@ public class RowImageTest {
 		Unifiable<String> x = lvar();
 		Reified<?> image = Answers.image(lval("m1"));
 
-		assertThat(Residues.restate(image, Residues.TRUE, anchor(x, lvar()))
-				.solve(x).count()).isZero();
+		assertThat(Query.of(Residues.restate(image, Residues.TRUE, anchor(x, lvar()))).solve(x).count()).isZero();
 	}
 
 	@Test
@@ -69,7 +68,7 @@ public class RowImageTest {
 		Goal g = Residues.restate(image, Residues.TRUE, anchor(x, y))
 				.and(Constraints.unify(x, lval(5)));
 
-		assertThat(g.solve(y).map(Term::get).collect(Collectors.toList()))
+		assertThat(Query.of(g).solve(y).map(Term::get).collect(Collectors.toList()))
 				.containsExactly(5);
 	}
 
@@ -83,7 +82,7 @@ public class RowImageTest {
 				.and(Constraints.unify(x, lval(5)))
 				.and(Constraints.unify(y, lval(7)));
 
-		assertThat(g.solve(y).map(Term::get).collect(Collectors.toList()))
+		assertThat(Query.of(g).solve(y).map(Term::get).collect(Collectors.toList()))
 				.containsExactly(7);
 	}
 

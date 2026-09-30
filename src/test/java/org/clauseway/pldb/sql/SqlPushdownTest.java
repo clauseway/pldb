@@ -3,6 +3,7 @@ package org.clauseway.pldb.sql;
 // ABOUTME: Pins the pushdown core: the coverage trap (a pushed fetch must not serve
 // ABOUTME: a wider probe), answer identity vs the unpushed source, locality receipts.
 
+import org.clauseway.logic.solving.Query;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.clauseway.logic.finitedomain.FiniteDomain.dom;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
@@ -87,14 +88,12 @@ public class SqlPushdownTest {
 		// whole relation and silently lose Kurt
 		CachingSqlFetch source = pushing();
 		Unifiable<Long> narrow = lvar();
-		assertThat(dom(narrow, Longs.range(1, 3))
-				.and(person(source, narrow, lvar()))
-				.solve(narrow)
+		assertThat(Query.of(dom(narrow, Longs.range(1, 3))
+				.and(person(source, narrow, lvar()))).solve(narrow)
 				.count()).isEqualTo(2);
 
 		Unifiable<String> everyone = lvar();
-		assertThat(person(source, lvar(), everyone)
-				.solve(everyone)
+		assertThat(Query.of(person(source, lvar(), everyone)).solve(everyone)
 				.count()).isEqualTo(3);
 	}
 
@@ -118,16 +117,14 @@ public class SqlPushdownTest {
 	public void aNarrowerProbeAfterAPushedFetchStaysLocal() {
 		CachingSqlFetch source = pushing();
 		Unifiable<Long> wide = lvar();
-		assertThat(dom(wide, Longs.range(1, 4))
-				.and(person(source, wide, lvar()))
-				.solve(wide)
+		assertThat(Query.of(dom(wide, Longs.range(1, 4))
+				.and(person(source, wide, lvar()))).solve(wide)
 				.count()).isEqualTo(3);
 		int afterPushed = statements.get();
 
 		Unifiable<Long> narrower = lvar();
-		assertThat(dom(narrower, Longs.range(1, 3))
-				.and(person(source, narrower, lvar()))
-				.solve(narrower)
+		assertThat(Query.of(dom(narrower, Longs.range(1, 3))
+				.and(person(source, narrower, lvar()))).solve(narrower)
 				.count()).isEqualTo(2);
 		assertThat(statements.get())
 				.describedAs("a probe whose region is contained in a covered one must stay local")
@@ -180,10 +177,9 @@ public class SqlPushdownTest {
 	}
 
 	private static List<String> fusedProgram(AnswerSource source, Unifiable<Long> x) {
-		return exclude(x.unifies(2L))
+		return Query.of(exclude(x.unifies(2L))
 				.and(exclude(dom(x, Longs.range(1, 3))))
-				.and(person(source, x, lvar()))
-				.solve(x)
+				.and(person(source, x, lvar()))).solve(x)
 				.map(Object::toString)
 				.sorted()
 				.collect(Collectors.toList());
@@ -210,9 +206,8 @@ public class SqlPushdownTest {
 	}
 
 	private static List<String> doubleNegationProgram(AnswerSource source, Unifiable<Long> x) {
-		return exclude(exclude(x.unifies(3L)))
-				.and(person(source, x, lvar()))
-				.solve(x)
+		return Query.of(exclude(exclude(x.unifies(3L)))
+				.and(person(source, x, lvar()))).solve(x)
 				.map(Object::toString)
 				.sorted()
 				.collect(Collectors.toList());
@@ -235,9 +230,8 @@ public class SqlPushdownTest {
 	private static List<String> domProgram(AnswerSource source) {
 		Unifiable<Long> x = lvar();
 		Unifiable<String> out = lvar();
-		return dom(x, Longs.range(1, 3))
-				.and(person(source, x, out))
-				.solve(out)
+		return Query.of(dom(x, Longs.range(1, 3))
+				.and(person(source, x, out))).solve(out)
 				.map(Object::toString)
 				.sorted()
 				.collect(Collectors.toList());
@@ -246,18 +240,16 @@ public class SqlPushdownTest {
 	private static List<String> leqProgram(AnswerSource source) {
 		Unifiable<Long> x = lvar();
 		Unifiable<String> out = lvar();
-		return Longs.leq(x, lval(2L))
-				.and(person(source, x, out))
-				.solve(out)
+		return Query.of(Longs.leq(x, lval(2L))
+				.and(person(source, x, out))).solve(out)
 				.map(Object::toString)
 				.sorted()
 				.collect(Collectors.toList());
 	}
 
 	private static List<String> exclusionProgram(AnswerSource source, Unifiable<Long> x) {
-		return exclude(x.unifies(2L))
-				.and(person(source, x, lvar()))
-				.solve(x)
+		return Query.of(exclude(x.unifies(2L))
+				.and(person(source, x, lvar()))).solve(x)
 				.map(Object::toString)
 				.sorted()
 				.collect(Collectors.toList());

@@ -4,6 +4,7 @@ package org.clauseway.pldb.sql;
 // ABOUTME: the in-memory reference, refuses unserved relations, and lands fetches
 // ABOUTME: so subsumed probes never touch the backend again.
 
+import org.clauseway.logic.solving.Query;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -95,13 +96,11 @@ public class CachingSqlFetchTest {
 			Unifiable<Integer> viaSql = lvar();
 			Unifiable<Integer> viaDb = lvar();
 			// answer SETS agree; enumeration order is the carrier's own
-			assertThat(person(source, viaSql, lvar()).posted()
-					.solve(viaSql)
+			assertThat(Query.of(person(source, viaSql, lvar()).posted()).solve(viaSql)
 					.map(Object::toString)
 					.sorted()
 					.collect(Collectors.toList()))
-					.isEqualTo(person(reference, viaDb, lvar()).posted()
-							.solve(viaDb)
+					.isEqualTo(Query.of(person(reference, viaDb, lvar()).posted()).solve(viaDb)
 							.map(Object::toString)
 							.sorted()
 							.collect(Collectors.toList()));
@@ -115,7 +114,7 @@ public class CachingSqlFetchTest {
 		// the SQL it tried
 		RelationN orphan = RelationN.of("orphan", id);
 		try (CachingSqlFetch source = source()) {
-			assertThatThrownBy(() -> orphan.apply(source, lvar()).solve(lvar()).count())
+			assertThatThrownBy(() -> Query.of(orphan.apply(source, lvar())).solve(lvar()).count())
 					.isInstanceOf(IllegalStateException.class)
 					.hasMessageContaining("orphan");
 		}
@@ -129,8 +128,7 @@ public class CachingSqlFetchTest {
 		// existence checks
 		try (CachingSqlFetch source = source()) {
 			Unifiable<String> out = lvar();
-			assertThat(person(source, lvar(), out).posted()
-					.solve(out)
+			assertThat(Query.of(person(source, lvar(), out).posted()).solve(out)
 					.map(Object::toString)
 					.sorted()
 					.collect(Collectors.toList()))
@@ -148,8 +146,7 @@ public class CachingSqlFetchTest {
 			int afterWide = statements.get();
 
 			Unifiable<String> narrow = lvar();
-			List<String> viaLanded = person(source, lval(2), narrow)
-					.solve(narrow)
+			List<String> viaLanded = Query.of(person(source, lval(2), narrow)).solve(narrow)
 					.map(Object::toString)
 					.collect(Collectors.toList());
 
@@ -168,8 +165,7 @@ public class CachingSqlFetchTest {
 		// answer by it
 		try (CachingSqlFetch source = source()) {
 			Unifiable<String> out = lvar();
-			List<String> answers = person(source, lval(2), out)
-					.solve(out)
+			List<String> answers = Query.of(person(source, lval(2), out)).solve(out)
 					.map(Object::toString)
 					.collect(Collectors.toList());
 			assertThat(answers).hasSize(1);
@@ -182,23 +178,20 @@ public class CachingSqlFetchTest {
 		// every position bound: the projection degenerates — no unbound
 		// columns to select — and must still compile to legal SQL
 		try (CachingSqlFetch source = source()) {
-			assertThat(person(source,
+			assertThat(Query.of(person(source,
 					lval(3),
-					lval("Kurt"))
-					.solve(lvar())
+					lval("Kurt"))).solve(lvar())
 					.count()).isEqualTo(1);
-			assertThat(person(source,
+			assertThat(Query.of(person(source,
 					lval(3),
-					lval("Ada"))
-					.solve(lvar())
+					lval("Ada"))).solve(lvar())
 					.count()).isZero();
 		}
 	}
 
 	private static List<String> solvedNames(AnswerSource source) {
 		Unifiable<String> out = lvar();
-		return person(source, lvar(), out)
-				.solve(out)
+		return Query.of(person(source, lvar(), out)).solve(out)
 				.map(Object::toString)
 				.sorted()
 				.collect(Collectors.toList());

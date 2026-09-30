@@ -3,6 +3,8 @@ package org.clauseway.pldb.sql;
 // ABOUTME: Region-grain receipts: disjoint regions of ONE relation commit across
 // ABOUTME: each other, an insert into a pinned region bounces, no column refuses.
 
+import org.clauseway.functional.fibers.schedulers.ForkJoinScheduler;
+import org.clauseway.logic.solving.Query;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.clauseway.logic.finitedomain.FiniteDomain.dom;
@@ -95,7 +97,7 @@ public class VersionedWatermarkTest {
 
 	private static List<String> loansOf(AnswerSource db, String member) {
 		Unifiable<String> copy = lvar();
-		return loan(db, lval(member), copy).solve(copy)
+		return Query.of(loan(db, lval(member), copy)).solve(copy)
 				.map(Object::toString)
 				.sorted()
 				.collect(Collectors.toList());
@@ -227,9 +229,8 @@ public class VersionedWatermarkTest {
 		try (Transaction reader = transaction("fj-reader")) {
 			Unifiable<String> member = lvar();
 			Unifiable<String> copy = lvar();
-			List<String> read = loan(reader, member, copy)
-					.or(loan(reader, lval("m1"), copy))
-					.solve(copy, org.clauseway.functional.fibers.schedulers.ForkJoinScheduler::new)
+			List<String> read = Query.of(loan(reader, member, copy)
+					.or(loan(reader, lval("m1"), copy))).on(org.clauseway.functional.fibers.schedulers.ForkJoinScheduler::new).solve(copy)
 					.map(Object::toString)
 					.sorted()
 					.collect(Collectors.toList());
@@ -247,9 +248,8 @@ public class VersionedWatermarkTest {
 	/** Reads the FD-constrained region day ∈ [1,10]; the domain rides the probe. */
 	private static List<Long> earlyInvoices(AnswerSource db) {
 		Unifiable<Long> day = lvar();
-		return dom(day, Longs.range(1, 10))
-				.and(invoice(db, lvar(), day))
-				.solve(day)
+		return Query.of(dom(day, Longs.range(1, 10))
+				.and(invoice(db, lvar(), day))).solve(day)
 				.map(Term::get)
 				.sorted()
 				.collect(Collectors.toList());
@@ -298,7 +298,7 @@ public class VersionedWatermarkTest {
 	public void aTableWithoutTheVersionColumnRefusesLoudly() {
 		Transaction transaction = transaction("books");
 		Unifiable<String> title = lvar();
-		assertThatThrownBy(() -> book(transaction, lval("978-0"), title).solve(title)
+		assertThatThrownBy(() -> Query.of(book(transaction, lval("978-0"), title)).solve(title)
 				.collect(Collectors.toList()))
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("book")

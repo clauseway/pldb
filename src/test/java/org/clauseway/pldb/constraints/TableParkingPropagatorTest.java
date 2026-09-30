@@ -3,6 +3,7 @@ package org.clauseway.pldb.constraints;
 // ABOUTME: The parking posted table's receipts: ground rows match the sync oracle,
 // ABOUTME: conditional rows impose at commit, Any rows admit everything and skip supports.
 
+import org.clauseway.logic.solving.Query;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -69,7 +70,7 @@ public class TableParkingPropagatorTest {
 
 	/** The exact answers for {@code out}, rendered and sorted (order is the scheduler's). */
 	private static List<String> answers(Goal goal, Unifiable<?> out) {
-		return goal.solve(out)
+		return Query.of(goal).solve(out)
 				.map(Object::toString)
 				.sorted()
 				.collect(Collectors.toList());

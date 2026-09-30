@@ -3,6 +3,7 @@ package org.clauseway.pldb.sql;
 // ABOUTME: The live lane's receipts: the world moves between reads, the cache
 // ABOUTME: keeps a solve's view still, and a torn transaction meets the Conflict.
 
+import org.clauseway.logic.solving.Query;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -123,7 +124,7 @@ public class LiveSourceTest {
 	public void theCachingLedgerKeepsASolveViewStill() throws Exception {
 		try (CachingSqlFetch source = CachingSqlFetch.live("cached-live", connection())) {
 			Unifiable<String> name = lvar();
-			assertThat(person(source, lvar(), name).solve(name)
+			assertThat(Query.of(person(source, lvar(), name)).solve(name)
 					.map(Object::toString)
 					.collect(Collectors.toList())).isEmpty();
 
@@ -133,7 +134,7 @@ public class LiveSourceTest {
 
 			// the world moved, the covered probe did not: repeats serve from
 			// the ledger — read stability is the CACHE's job on this lane
-			assertThat(person(source, lvar(), name).solve(name)
+			assertThat(Query.of(person(source, lvar(), name)).solve(name)
 					.map(Object::toString)
 					.collect(Collectors.toList())).isEmpty();
 		}

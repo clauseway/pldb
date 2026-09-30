@@ -3,6 +3,7 @@ package org.clauseway.pldb.inmemory;
 // ABOUTME: In-memory null cells through the answers(Call) face: free probes
 // ABOUTME: deliver {null}, bound-null probes select, indexed null cells key.
 
+import org.clauseway.logic.solving.Query;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
@@ -43,7 +44,7 @@ public class NullCellTest {
 	@Test
 	public void aFreeProbeDeliversTheNullCell() {
 		Unifiable<String> name = lvar();
-		List<String> names = person(db(), lvar(), name).solve(name)
+		List<String> names = Query.of(person(db(), lvar(), name)).solve(name)
 				.map(Object::toString)
 				.sorted()
 				.collect(Collectors.toList());
@@ -53,7 +54,7 @@ public class NullCellTest {
 	@Test
 	public void aBoundNullProbeSelectsOnlyNullRows() {
 		Unifiable<Integer> id = lvar();
-		assertThat(person(db(), id, lval((String) null)).solve(id)
+		assertThat(Query.of(person(db(), id, lval((String) null))).solve(id)
 				.map(Object::toString)
 				.collect(Collectors.toList())).containsExactly("{2}");
 	}
@@ -61,7 +62,7 @@ public class NullCellTest {
 	@Test
 	public void aBoundNullProbeOnAnIndexedColumnSelects() {
 		Unifiable<Integer> id = lvar();
-		assertThat(tagged(db(), id, lval((String) null)).solve(id)
+		assertThat(Query.of(tagged(db(), id, lval((String) null))).solve(id)
 				.map(Object::toString)
 				.collect(Collectors.toList())).containsExactly("{2}");
 	}

@@ -3,6 +3,7 @@ package org.clauseway.pldb.sql;
 // ABOUTME: The null catcher: a NULL cell in a column the schema did not declare
 // ABOUTME: nullable refuses loudly by relation and column, never a silent broken fact.
 
+import org.clauseway.logic.solving.Query;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
 
@@ -47,7 +48,7 @@ public class NullColumnTest {
 	public void aNullCellInAnUndeclaredColumnRefusesByName() throws Exception {
 		try (CachingSqlFetch source = CachingSqlFetch.pinned("h2", connection)) {
 			Unifiable<String> name = lvar();
-			assertThatThrownBy(() -> person(source, lvar(), name).solve(name)
+			assertThatThrownBy(() -> Query.of(person(source, lvar(), name)).solve(name)
 					.collect(Collectors.toList()))
 					.isInstanceOf(IllegalStateException.class)
 					.hasMessageContaining("person")

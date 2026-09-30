@@ -3,6 +3,7 @@ package org.clauseway.pldb;
 // ABOUTME: posted() over rule literals: the propagator reads the solve's shared
 // ABOUTME: table — negation shapes, both dual-driver orders, recursive closure.
 
+import org.clauseway.logic.solving.Query;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.clauseway.logic.goals.Goal.defer;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
@@ -31,7 +32,7 @@ public class RuleNegationTest {
 	}
 
 	private static List<String> answers(Goal g, Unifiable<?> out) {
-		return g.solve(out).map(Object::toString).sorted().collect(Collectors.toList());
+		return Query.of(g).solve(out).map(Object::toString).sorted().collect(Collectors.toList());
 	}
 
 	@Test(timeout = 5000)
@@ -102,9 +103,8 @@ public class RuleNegationTest {
 		Unifiable<String> y = lvar();
 		Unifiable<Integer> a = lvar();
 		Unifiable<String> b = lvar();
-		List<String> both = p(x, y).posted().and(x.unifies(1))
-				.and(p(a, b)).and(a.unifies(2))
-				.solve(lval(Tuple.of(y, b)))
+		List<String> both = Query.of(p(x, y).posted().and(x.unifies(1))
+				.and(p(a, b)).and(a.unifies(2))).solve(lval(Tuple.of(y, b)))
 				.map(Term::get)
 				.map(t -> t._1.get() + "," + t._2.get())
 				.collect(Collectors.toList());
@@ -118,9 +118,8 @@ public class RuleNegationTest {
 		Unifiable<String> y = lvar();
 		Unifiable<Integer> a = lvar();
 		Unifiable<String> b = lvar();
-		List<String> both = x.unifies(1).and(p(x, y))
-				.and(p(a, b).posted()).and(a.unifies(2))
-				.solve(lval(Tuple.of(y, b)))
+		List<String> both = Query.of(x.unifies(1).and(p(x, y))
+				.and(p(a, b).posted()).and(a.unifies(2))).solve(lval(Tuple.of(y, b)))
 				.map(Term::get)
 				.map(t -> t._1.get() + "," + t._2.get())
 				.collect(Collectors.toList());

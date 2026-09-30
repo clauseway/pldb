@@ -3,6 +3,7 @@ package org.clauseway.pldb.sql;
 // ABOUTME: The north star's Phase 2 proof against real PostgreSQL (testcontainers):
 // ABOUTME: a nonrecursive and a recursive relation answer identically over memory and PG.
 
+import org.clauseway.logic.solving.Query;
 import org.clauseway.pldb.relations.Answers;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.clauseway.logic.goals.Goal.defer;
@@ -186,7 +187,7 @@ public class PostgresFactSourceTest {
 
 	/** The exact answers for {@code out}, rendered and sorted. */
 	private static List<String> answers(Goal goal, Unifiable<?> out) {
-		return goal.solve(out)
+		return Query.of(goal).solve(out)
 				.map(Object::toString)
 				.sorted()
 				.collect(Collectors.toList());

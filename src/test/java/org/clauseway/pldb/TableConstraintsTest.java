@@ -3,6 +3,7 @@ package org.clauseway.pldb;
 // ABOUTME: The table constraint (docs/design/table-constraints.md): posted lookups
 // ABOUTME: narrow as domains — joins prune, singletons collapse, branch only at labelling.
 
+import org.clauseway.logic.solving.Query;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
@@ -116,13 +117,11 @@ public class TableConstraintsTest {
 		};
 		Unifiable<String> viaBarrier = lvar();
 		Unifiable<String> viaDb = lvar();
-		List<String> barrierAnswers = r(barrier, lvar(), viaBarrier).posted()
-				.solve(viaBarrier)
+		List<String> barrierAnswers = Query.of(r(barrier, lvar(), viaBarrier).posted()).solve(viaBarrier)
 				.map(Object::toString)
 				.sorted()
 				.collect(Collectors.toList());
-		List<String> dbAnswers = r(db, lvar(), viaDb).posted()
-				.solve(viaDb)
+		List<String> dbAnswers = Query.of(r(db, lvar(), viaDb).posted()).solve(viaDb)
 				.map(Object::toString)
 				.sorted()
 				.collect(Collectors.toList());
@@ -136,7 +135,7 @@ public class TableConstraintsTest {
 		Unifiable<String> y = lvar();
 		Unifiable<Integer> z = lvar();
 
-		List<String> answers = r(db, x, y).posted()
+		List<String> answers = Query.of(r(db, x, y).posted()
 				.and(s(db, y, z).posted())
 				.and(probe(p -> {
 					Theory<TableConstraints> store = Constraint.in(p, TableConstraints.class).get().getTheory();
@@ -148,8 +147,7 @@ public class TableConstraintsTest {
 					// nobody reads them, nothing is stored
 					assertThat(TableConstraints.empty().getValue(store, p.walk(x)).isDefined()).isFalse();
 					assertThat(TableConstraints.empty().getValue(store, p.walk(z)).isDefined()).isFalse();
-				}))
-				.solve(lval(Tuple.of(x, y, z)))
+				}))).solve(lval(Tuple.of(x, y, z)))
 				.map(Term::get)
 				.map(t -> t._1.get() + "," + t._2.get() + "," + t._3.get())
 				.collect(Collectors.toList());
@@ -161,9 +159,8 @@ public class TableConstraintsTest {
 	public void aSingletonCandidateSetCollapsesToBindingsWithoutBranching() {
 		Unifiable<String> y = lvar();
 
-		long count = r(db, lval(2), y).posted()
-				.and(probe(p -> assertThat(p.walk(y).get()).isEqualTo("b")))
-				.solve(y)
+		long count = Query.of(r(db, lval(2), y).posted()
+				.and(probe(p -> assertThat(p.walk(y).get()).isEqualTo("b")))).solve(y)
 				.count();
 		assertThat(count).isEqualTo(1);
 	}
@@ -173,10 +170,9 @@ public class TableConstraintsTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<String> y = lvar();
 
-		long count = r(db, x, y).posted()
+		long count = Query.of(r(db, x, y).posted()
 				.and(x.unifies(3))
-				.and(probe(p -> assertThat(p.walk(y).get()).isEqualTo("c")))
-				.solve(y)
+				.and(probe(p -> assertThat(p.walk(y).get()).isEqualTo("c")))).solve(y)
 				.count();
 		assertThat(count).isEqualTo(1);
 	}
@@ -184,15 +180,15 @@ public class TableConstraintsTest {
 	@Test
 	public void anEmptyCandidateSetFails() {
 		Unifiable<String> y = lvar();
-		assertThat(r(db, lval(99), y).posted().solve(y).count()).isZero();
+		assertThat(Query.of(r(db, lval(99), y).posted()).solve(y).count()).isZero();
 	}
 
 	@Test
 	public void aGroundPostIsAMembershipCheck() {
 		Unifiable<String> out = lvar();
-		assertThat(r(db, lval(1), lval("a")).posted().and(out.unifies("yes")).solve(out).count())
+		assertThat(Query.of(r(db, lval(1), lval("a")).posted().and(out.unifies("yes"))).solve(out).count())
 				.isEqualTo(1);
-		assertThat(r(db, lval(1), lval("b")).posted().and(out.unifies("yes")).solve(out).count())
+		assertThat(Query.of(r(db, lval(1), lval("b")).posted().and(out.unifies("yes"))).solve(out).count())
 				.isZero();
 	}
 
@@ -202,10 +198,9 @@ public class TableConstraintsTest {
 		Unifiable<String> y = lvar();
 
 		// labelling the SHARED column: each y branch collapses both records
-		List<Integer> items = r(db, x, y).posted()
+		List<Integer> items = Query.of(r(db, x, y).posted()
 				.and(s(db, y, lvar()).posted())
-				.and(TableConstraints.labelo(y))
-				.solve(x)
+				.and(TableConstraints.labelo(y))).solve(x)
 				.map(Term::get)
 				.collect(Collectors.toList());
 		assertThat(items).containsExactlyInAnyOrder(1, 2);
@@ -216,15 +211,14 @@ public class TableConstraintsTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<String> y = lvar();
 
-		long count = r(db, x, y).posted()
+		long count = Query.of(r(db, x, y).posted()
 				.and(probe(p -> {
 					Theory<TableConstraints> store = Constraint.in(p, TableConstraints.class).get().getTheory();
 					assertThat(TableConstraints.empty().getValue(store, p.walk(x)).isDefined()).isFalse();
 					assertThat(TableConstraints.empty().getValue(store, p.walk(y)).isDefined()).isFalse();
 				}))
 				.and(x.unifies(1))
-				.and(y.unifies("a"))
-				.solve(y)
+				.and(y.unifies("a"))).solve(y)
 				.count();
 		assertThat(count).isEqualTo(1);
 	}
@@ -237,8 +231,7 @@ public class TableConstraintsTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<String> y = lvar();
 
-		List<String> rows = r(db, x, y).posted()
-				.solve(lval(Tuple.of(x, y)))
+		List<String> rows = Query.of(r(db, x, y).posted()).solve(lval(Tuple.of(x, y)))
 				.map(Term::get)
 				.map(p -> p._1.get() + "," + p._2.get())
 				.collect(Collectors.toList());
@@ -252,14 +245,13 @@ public class TableConstraintsTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<String> y = lvar();
 
-		long count = t(db, x, y).posted()
+		long count = Query.of(t(db, x, y).posted()
 				.and(probe(p -> {
 					assertThat(p.walk(x).get()).isEqualTo(7);
 					Theory<TableConstraints> store = Constraint.in(p, TableConstraints.class).get().getTheory();
 					assertThat(TableConstraints.empty().getValue(store, p.walk(y)).isDefined()).isFalse();
 				}))
-				.and(y.unifies("u"))
-				.solve(y)
+				.and(y.unifies("u"))).solve(y)
 				.count();
 		assertThat(count).isEqualTo(1);
 	}
@@ -289,10 +281,9 @@ public class TableConstraintsTest {
 		Unifiable<Integer> z = lvar();
 		Knowledge[] captured = new Knowledge[1];
 
-		long answers = r(db, x, y).posted()
+		long answers = Query.of(r(db, x, y).posted()
 				.and(s(db, y, z).posted())
-				.and(probe(p -> captured[0] = p))
-				.solve(lval(Tuple.of(x, y, z)))
+				.and(probe(p -> captured[0] = p))).solve(lval(Tuple.of(x, y, z)))
 				.count();
 		assertThat(answers).isEqualTo(2);
 
@@ -313,9 +304,8 @@ public class TableConstraintsTest {
 		Unifiable<Integer> x2 = lvar();
 		Unifiable<String> y2 = lvar();
 
-		long count = r(db, x1, y1).posted()
-				.and(t(db, x2, y2).posted())
-				.solve(lval(Tuple.of(x1, y1, x2, y2)))
+		long count = Query.of(r(db, x1, y1).posted()
+				.and(t(db, x2, y2).posted())).solve(lval(Tuple.of(x1, y1, x2, y2)))
 				.count();
 		assertThat(count).isEqualTo(6);
 	}
@@ -329,7 +319,7 @@ public class TableConstraintsTest {
 
 		// posted apart: no sharing, nothing stored; the alias welds y~l and
 		// both records materialize the column and meet
-		long count = r(db, x, y).posted()
+		long count = Query.of(r(db, x, y).posted()
 				.and(s(db, l, z).posted())
 				.and(probe(p -> {
 					Theory<TableConstraints> store = Constraint.in(p, TableConstraints.class).get().getTheory();
@@ -341,8 +331,7 @@ public class TableConstraintsTest {
 					Theory<TableConstraints> store = Constraint.in(p, TableConstraints.class).get().getTheory();
 					assertThat(TableConstraints.empty().getValue(store, p.walk(y)).get())
 							.isEqualTo(Support.of("a", "b"));
-				}))
-				.solve(lval(Tuple.of(x, y, z)))
+				}))).solve(lval(Tuple.of(x, y, z)))
 				.count();
 		assertThat(count).isEqualTo(2);
 	}
@@ -352,9 +341,8 @@ public class TableConstraintsTest {
 		Unifiable<Integer> x1 = lvar();
 		Unifiable<String> y1 = lvar();
 		Unifiable<Integer> z1 = lvar();
-		List<String> viaExists = r(db, x1, y1)
-				.and(s(db, y1, z1))
-				.solve(lval(Tuple.of(x1, y1, z1)))
+		List<String> viaExists = Query.of(r(db, x1, y1)
+				.and(s(db, y1, z1))).solve(lval(Tuple.of(x1, y1, z1)))
 				.map(Object::toString)
 				.sorted()
 				.collect(Collectors.toList());
@@ -362,9 +350,8 @@ public class TableConstraintsTest {
 		Unifiable<Integer> x2 = lvar();
 		Unifiable<String> y2 = lvar();
 		Unifiable<Integer> z2 = lvar();
-		List<String> viaPosted = r(db, x2, y2).posted()
-				.and(s(db, y2, z2).posted())
-				.solve(lval(Tuple.of(x2, y2, z2)))
+		List<String> viaPosted = Query.of(r(db, x2, y2).posted()
+				.and(s(db, y2, z2).posted())).solve(lval(Tuple.of(x2, y2, z2)))
 				.map(Object::toString)
 				.sorted()
 				.collect(Collectors.toList());

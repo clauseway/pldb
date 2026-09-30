@@ -3,6 +3,7 @@ package org.clauseway.pldb;
 // ABOUTME: Unstratified negation is a cyclic wait the substrate refuses loudly,
 // ABOUTME: naming the relation's channel — because posted rules share the solve's table.
 
+import org.clauseway.logic.solving.Query;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.clauseway.logic.goals.Goal.defer;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
@@ -29,7 +30,7 @@ public class UnstratifiedNegationTest {
 		// instead of spinning (the fresh-world regress this design replaced)
 		Unifiable<Integer> x = lvar();
 		assertThatThrownBy(() ->
-				x.unifies(1).and(selfNeg(x)).solve(x).collect(Collectors.toList()))
+				Query.of(x.unifies(1).and(selfNeg(x))).solve(x).collect(Collectors.toList()))
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("blocked at unsealed")
 				.hasMessageContaining("selfNeg");

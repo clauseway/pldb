@@ -3,6 +3,7 @@ package org.clauseway.pldb.sql;
 // ABOUTME: The end-to-end theory battery: each constraint theory solved three ways
 // ABOUTME: — pushed SQL, unpushed SQL, in-memory reference — and all must agree.
 
+import org.clauseway.logic.solving.Query;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.clauseway.logic.finitedomain.FiniteDomain.dom;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
@@ -253,8 +254,7 @@ public class SqlTheoryBatteryTest {
 
 	private static <T> List<String> answers(AnswerSource source, BiFunction<AnswerSource, Unifiable<T>, Goal> program) {
 		Unifiable<T> out = lvar();
-		return program.apply(source, out)
-				.solve(out)
+		return Query.of(program.apply(source, out)).solve(out)
 				.map(Object::toString)
 				.sorted()
 				.collect(Collectors.toList());

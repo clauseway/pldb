@@ -3,6 +3,7 @@ package org.clauseway.pldb.transaction;
 // ABOUTME: The Transaction over the rented certify tier on real PostgreSQL: staged
 // ABOUTME: facts land at commit, abandonment leaves no trace, SSI maps skew to Conflict.
 
+import org.clauseway.logic.solving.Query;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -72,7 +73,7 @@ public class TransactionPostgresTest {
 
 	private static List<String> names(AnswerSource db) {
 		Unifiable<String> name = lvar();
-		return person(db, lvar(), name).solve(name)
+		return Query.of(person(db, lvar(), name)).solve(name)
 				.map(Object::toString)
 				.sorted()
 				.collect(Collectors.toList());

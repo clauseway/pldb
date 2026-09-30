@@ -3,6 +3,7 @@ package org.clauseway.pldb.transaction;
 // ABOUTME: The transaction ledger: a region's FIRST touch reads through the
 // ABOUTME: source, repeats serve from the ledger, commit carries that one pin.
 
+import org.clauseway.logic.solving.Query;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
 
@@ -83,7 +84,7 @@ public class PinAtFirstTouchTest {
 
 	private static void solve(Transaction transaction) {
 		Unifiable<String> name = lvar();
-		assertThat(person(transaction, lvar(), name).solve(name)
+		assertThat(Query.of(person(transaction, lvar(), name)).solve(name)
 				.collect(Collectors.toList())).isEmpty();
 	}
 }

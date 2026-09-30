@@ -3,6 +3,7 @@ package org.clauseway.pldb.transaction;
 // ABOUTME: The premise: a client's earlier pinned reads carried into a later commit —
 // ABOUTME: certified beside the transaction's own ledger, refusing if that world moved.
 
+import org.clauseway.logic.solving.Query;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -34,12 +35,12 @@ public class PremiseTest {
 
 	private static void solveNames(AnswerSource db) {
 		Unifiable<String> name = lvar();
-		person(db, lvar(), name).solve(name).collect(Collectors.toList());
+		Query.of(person(db, lvar(), name)).solve(name).collect(Collectors.toList());
 	}
 
 	private static void solveTitles(AnswerSource db) {
 		Unifiable<String> title = lvar();
-		book(db, lvar(), title).solve(title).collect(Collectors.toList());
+		Query.of(book(db, lvar(), title)).solve(title).collect(Collectors.toList());
 	}
 
 	@Test

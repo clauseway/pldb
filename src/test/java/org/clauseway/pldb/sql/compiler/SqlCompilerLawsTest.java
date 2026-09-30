@@ -3,6 +3,7 @@ package org.clauseway.pldb.sql.compiler;
 // ABOUTME: The compiler law harness: admission judged engine-true per row, selection
 // ABOUTME: judged by H2 — superset always, equality when exact, complement when negated.
 
+import org.clauseway.logic.solving.Query;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.clauseway.logic.finitedomain.FiniteDomain.dom;
@@ -178,9 +179,8 @@ public class SqlCompilerLawsTest {
 		Set<Long> admitted = new TreeSet<>();
 		for (long v = LO; v <= HI; v++) {
 			Unifiable<Long> row = lvar();
-			long answers = shape.apply(row)
-					.and(row.unifies(v))
-					.solve(lvar())
+			long answers = Query.of(shape.apply(row)
+					.and(row.unifies(v))).solve(lvar())
 					.count();
 			if (answers > 0) {
 				admitted.add(v);

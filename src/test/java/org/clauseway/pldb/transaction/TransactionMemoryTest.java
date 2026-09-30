@@ -3,6 +3,7 @@ package org.clauseway.pldb.transaction;
 // ABOUTME: The Transaction over the in-memory simulated serialization: the shared
 // ABOUTME: cell is the one history, snapshots are values, the CAS is the commit lock.
 
+import org.clauseway.logic.solving.Query;
 import org.clauseway.pldb.relations.Relation;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -39,7 +40,7 @@ public class TransactionMemoryTest {
 
 	private static List<String> names(AnswerSource db) {
 		Unifiable<String> name = lvar();
-		return person(db, lvar(), name).solve(name)
+		return Query.of(person(db, lvar(), name)).solve(name)
 				.map(Object::toString)
 				.sorted()
 				.collect(Collectors.toList());
@@ -47,7 +48,7 @@ public class TransactionMemoryTest {
 
 	private static List<String> titles(AnswerSource db) {
 		Unifiable<String> title = lvar();
-		return book(db, lvar(), title).solve(title)
+		return Query.of(book(db, lvar(), title)).solve(title)
 				.map(Object::toString)
 				.sorted()
 				.collect(Collectors.toList());
@@ -172,9 +173,9 @@ public class TransactionMemoryTest {
 
 		try (Transaction reader = AbstractTransaction.over(store.open("after"))) {
 			Unifiable<String> c = lvar();
-			assertThat(loanOf(reader, lvar(), c).solve(c).count()).isZero();
+			assertThat(Query.of(loanOf(reader, lvar(), c)).solve(c).count()).isZero();
 			Unifiable<Integer> r = lvar();
-			assertThat(returnedOf(reader, r).solve(r).count()).isZero();
+			assertThat(Query.of(returnedOf(reader, r)).solve(r).count()).isZero();
 		}
 	}
 

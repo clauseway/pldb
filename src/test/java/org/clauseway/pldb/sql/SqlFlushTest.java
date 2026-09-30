@@ -3,6 +3,7 @@ package org.clauseway.pldb.sql;
 // ABOUTME: The write face: facts land as INSERTs by the schema convention, and a
 // ABOUTME: structural column value refuses by relation and column before any row lands.
 
+import org.clauseway.logic.solving.Query;
 import org.clauseway.pldb.relations.Relation;
 import org.clauseway.logic.solving.Answer;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -55,7 +56,7 @@ public class SqlFlushTest {
 	private List<String> namesReadBack() throws Exception {
 		try (CachingSqlFetch source = CachingSqlFetch.pinned("h2", connection)) {
 			Unifiable<String> name = lvar();
-			return person(source, lvar(), name).solve(name)
+			return Query.of(person(source, lvar(), name)).solve(name)
 					.map(Object::toString)
 					.sorted()
 					.collect(Collectors.toList());

@@ -120,8 +120,8 @@ public final class Answers {
 	public static <T> Optional<T> get(Answer<Relation> answer, Property<T> property) {
 		return answer.getRelation().indexOf(property)
 				.map(i -> positions(answer.getReified()).get(i))
-				.filter(cell -> cell.isVal())
-				.flatMap(cell -> Try.of(() -> (T) ((Term<Object>) cell).get())
+				.filter(Term::isVal)
+				.flatMap(cell -> Try.of(() -> (T) cell.get())
 						.toJavaOptional());
 	}
 

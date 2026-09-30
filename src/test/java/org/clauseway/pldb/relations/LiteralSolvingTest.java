@@ -3,6 +3,7 @@ package org.clauseway.pldb.relations;
 // ABOUTME: Rule-backed literals: solving routes through the solve-scoped table,
 // ABOUTME: value-equal mints share entries, method recursion seals, no self handle.
 
+import org.clauseway.logic.solving.Query;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.clauseway.logic.goals.Goal.defer;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -52,7 +53,7 @@ public class LiteralSolvingTest {
 	}
 
 	private static List<String> answers(Goal g, Unifiable<?> out) {
-		return g.solve(out).map(Object::toString).sorted().collect(Collectors.toList());
+		return Query.of(g).solve(out).map(Object::toString).sorted().collect(Collectors.toList());
 	}
 
 	@Test(timeout = 5000)
@@ -77,8 +78,7 @@ public class LiteralSolvingTest {
 		// two mints of one definition: distinct Literal values, value-equal relations
 		Goal first = counted(db, productions, one, a);
 		Goal second = counted(db, productions, one, b);
-		List<String> pairs = one.unifies(1).and(first).and(second)
-				.solve(lval(Tuple.of(a, b)))
+		List<String> pairs = Query.of(one.unifies(1).and(first).and(second)).solve(lval(Tuple.of(a, b)))
 				.map(Term::get)
 				.map(t -> t._1.get() + "," + t._2.get())
 				.sorted()
@@ -132,9 +132,8 @@ public class LiteralSolvingTest {
 		Unifiable<Integer> y = lvar();
 		Literal hoisted = reach(db, x, y);
 		// one mint, two branches, different key bindings per branch
-		List<String> both = x.unifies(1).and(hoisted).and(y.unifies(2))
-				.or(x.unifies(2).and(hoisted).and(y.unifies(3)))
-				.solve(lval(Tuple.of(x, y)))
+		List<String> both = Query.of(x.unifies(1).and(hoisted).and(y.unifies(2))
+				.or(x.unifies(2).and(hoisted).and(y.unifies(3)))).solve(lval(Tuple.of(x, y)))
 				.map(Term::get)
 				.map(t -> t._1.get() + "," + t._2.get())
 				.sorted().collect(Collectors.toList());
@@ -168,13 +167,11 @@ public class LiteralSolvingTest {
 		Table retained = Table.empty();
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
-		List<String> first = x.unifies(1).and(counted(db, productions, x, y))
-				.solveFrom(Knowledge.empty().withStore(retained), y, BreadthFirstScheduler::new)
+		List<String> first = Query.of(x.unifies(1).and(counted(db, productions, x, y))).from(Knowledge.empty().withStore(retained)).on(BreadthFirstScheduler::new).solve(y)
 				.map(Object::toString).collect(Collectors.toList());
 		Unifiable<Integer> x2 = lvar();
 		Unifiable<Integer> y2 = lvar();
-		List<String> second = x2.unifies(1).and(counted(db, productions, x2, y2))
-				.solveFrom(Knowledge.empty().withStore(retained), y2, BreadthFirstScheduler::new)
+		List<String> second = Query.of(x2.unifies(1).and(counted(db, productions, x2, y2))).from(Knowledge.empty().withStore(retained)).on(BreadthFirstScheduler::new).solve(y2)
 				.map(Object::toString).collect(Collectors.toList());
 		assertThat(second).isEqualTo(first).containsExactly("{2}");
 		assertThat(productions.get())

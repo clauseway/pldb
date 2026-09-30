@@ -3,6 +3,7 @@ package org.clauseway.pldb;
 // ABOUTME: Acceptance for the ordered planner: answers identical planned vs
 // ABOUTME: unplanned, and a mis-ordered query enumerates an order of magnitude fewer facts.
 
+import org.clauseway.logic.solving.Query;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
@@ -86,13 +87,13 @@ public class PlannerTest {
 	public void plannedAnswersAreIdenticalAndEnumerateFarFewerFacts() {
 		AtomicLong plain = new AtomicLong();
 		Unifiable<Integer> gp1 = lvar();
-		List<String> unplanned = misOrdered(chain(plain), gp1).solve(gp1)
+		List<String> unplanned = Query.of(misOrdered(chain(plain), gp1)).solve(gp1)
 				.map(Object::toString).collect(Collectors.toList());
 
 		AtomicLong planned = new AtomicLong();
 		Unifiable<Integer> gp2 = lvar();
 		Optimizer pipeline = Optimizer.pipeline(new CascadingOptimizer(), new OrderingOptimizer());
-		List<String> plannedAnswers = misOrdered(chain(planned), gp2).solve(gp2, pipeline)
+		List<String> plannedAnswers = Query.of(misOrdered(chain(planned), gp2)).optimized(pipeline).solve(gp2)
 				.map(Object::toString).collect(Collectors.toList());
 
 		assertThat(plannedAnswers).isEqualTo(unplanned);

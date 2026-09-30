@@ -3,6 +3,7 @@ package org.clauseway.pldb;
 // ABOUTME: The produce bridge: probes memoize through the injected table, wide
 // ABOUTME: sealed entries serve narrow probes, conditional cells deliver converged.
 
+import org.clauseway.logic.solving.Query;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -127,7 +128,7 @@ public class GoalProducerTest {
 	}
 
 	private static List<String> answers(Goal goal, Unifiable<?> out) {
-		return goal.solve(out)
+		return Query.of(goal).solve(out)
 				.map(Object::toString)
 				.sorted()
 				.collect(Collectors.toList());

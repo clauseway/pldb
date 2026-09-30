@@ -4,6 +4,7 @@ package org.clauseway.pldb.relations;
 // ABOUTME: literal together, bare = exists, exclude converts, fact() terminal,
 // ABOUTME: arity unbounded past the tuple cap.
 
+import org.clauseway.logic.solving.Query;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
@@ -37,7 +38,7 @@ public class LiteralTest {
 					person(null, lval(2), lval("Alan"))));
 
 	private static List<String> answers(Goal g, Unifiable<?> out) {
-		return g.solve(out).map(Object::toString).sorted().collect(Collectors.toList());
+		return Query.of(g).solve(out).map(Object::toString).sorted().collect(Collectors.toList());
 	}
 
 	@Test
@@ -143,7 +144,7 @@ public class LiteralTest {
 		Literal lit = Literal.relation(LiteralTest.class, "strict")
 				.arg("k", lvar()).ground()
 				.from(db);
-		assertThatThrownBy(() -> lit.solve(lvar()).collect(Collectors.toList()))
+		assertThatThrownBy(() -> Query.of(lit).solve(lvar()).collect(Collectors.toList()))
 				.hasMessageContaining("strict")
 				.hasMessageContaining("k");
 	}

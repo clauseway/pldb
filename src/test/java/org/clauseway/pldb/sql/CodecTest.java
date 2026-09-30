@@ -3,6 +3,7 @@ package org.clauseway.pldb.sql;
 // ABOUTME: The codec map: builtins pass through, column codecs register through a
 // ABOUTME: template literal on the SOURCE — serialization is the backend's concern.
 
+import org.clauseway.logic.solving.Query;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -81,7 +82,7 @@ public class CodecTest {
 						.withCodec(loan(null, lvar(), AS_DATE.arg()))
 		) {
 			Unifiable<LocalDate> due = lvar();
-			List<LocalDate> dues = loan(source, lvar(), due).solve(due)
+			List<LocalDate> dues = Query.of(loan(source, lvar(), due)).solve(due)
 					.map(Term::get)
 					.sorted()
 					.collect(Collectors.toList());
@@ -105,7 +106,7 @@ public class CodecTest {
 						.withCodec(event(null, AS_DATE.arg(), AS_TEXT.arg()))
 		) {
 			Unifiable<LocalDate> logged = lvar();
-			assertThat(event(source, lvar(), logged).solve(logged)
+			assertThat(Query.of(event(source, lvar(), logged)).solve(logged)
 					.map(Term::get)
 					.collect(Collectors.toList())).containsExactly(LocalDate.of(2026, 9, 12));
 		}
@@ -123,7 +124,7 @@ public class CodecTest {
 						.withCodec(loan(null, lvar(), AS_DATE.arg()))
 		) {
 			Unifiable<Integer> id = lvar();
-			assertThat(loan(source, id, lval(LocalDate.of(2026, 12, 24))).solve(id)
+			assertThat(Query.of(loan(source, id, lval(LocalDate.of(2026, 12, 24)))).solve(id)
 					.map(Object::toString)
 					.collect(Collectors.toList())).containsExactly("{2}");
 		}
@@ -158,8 +159,7 @@ public class CodecTest {
 		}
 		try (CachingSqlFetch source = CachingSqlFetch.pinned("h2", connection)) {
 			Unifiable<String> name = lvar();
-			Literal.relation(CodecTest.class, "person").arg("id", lvar()).indexed().arg("name", name).from(source)
-					.solve(name).collect(Collectors.toList());
+			Query.of(Literal.relation(CodecTest.class, "person").arg("id", lvar()).indexed().arg("name", name).from(source)).solve(name).collect(Collectors.toList());
 			assertThatThrownBy(() -> source.withCodec(loan(null, lvar(), AS_DATE.arg())))
 					.isInstanceOf(IllegalStateException.class)
 					.hasMessageContaining("before first use");

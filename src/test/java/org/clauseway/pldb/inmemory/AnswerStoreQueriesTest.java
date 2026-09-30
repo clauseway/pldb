@@ -3,6 +3,7 @@ package org.clauseway.pldb.inmemory;
 // ABOUTME: The store as a genealogy database: joins, recursion through condu and
 // ABOUTME: matche, and optimizer-driven queries all read through the Call probe.
 
+import org.clauseway.logic.solving.Query;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.clauseway.logic.goals.Goal.condu;
 import static org.clauseway.logic.goals.Goal.defer;
@@ -107,12 +108,11 @@ public class AnswerStoreQueriesTest {
 		Unifiable<String> gpSurname = lvar();
 
 		List<String> result =
-				Logic.<Integer, Integer, Integer> exist((gpId, parentId, childId) ->
+				Query.of(Logic.<Integer, Integer, Integer> exist((gpId, parentId, childId) ->
 								person(db, childId, lval("Tomek"), lvar(), lvar())
 										.and(parent(db, parentId, childId))
 										.and(parent(db, gpId, parentId))
-										.and(person(db, gpId, gpName, gpSurname, lvar())))
-						.solve(lval(Tuple.of(gpName, gpSurname)))
+										.and(person(db, gpId, gpName, gpSurname, lvar())))).solve(lval(Tuple.of(gpName, gpSurname)))
 						.map(Term::get)
 						.map(AnswerStoreQueriesTest::concatNameAndSurname)
 						.distinct()
@@ -131,13 +131,12 @@ public class AnswerStoreQueriesTest {
 		Unifiable<String> spouseSurname = lvar();
 
 		assertThat(
-				Logic.<Integer, Integer, Integer> exist(
+				Query.of(Logic.<Integer, Integer, Integer> exist(
 								(fatherId, childId, motherId) ->
 										person(db, fatherId, lval("Wiesław"), lvar(), lval(Gender.MALE))
 												.and(parent(db, fatherId, childId),
 														parent(db, motherId, childId),
-														person(db, motherId, spouseName, spouseSurname, lval(Gender.FEMALE))))
-						.solve(lval(Tuple.of(spouseName, spouseSurname)))
+														person(db, motherId, spouseName, spouseSurname, lval(Gender.FEMALE))))).solve(lval(Tuple.of(spouseName, spouseSurname)))
 						.distinct()
 						.map(Term::get)
 						.map(AnswerStoreQueriesTest::concatNameAndSurname))
@@ -164,11 +163,10 @@ public class AnswerStoreQueriesTest {
 	public void shouldFindAncestors() {
 		Unifiable<LList<Tuple2<Unifiable<String>, Unifiable<String>>>> ancestorNames = lvar();
 
-		List<List<String>> result = Logic.<Integer, LList<Integer>> exist((descendantId, l) ->
+		List<List<String>> result = Query.of(Logic.<Integer, LList<Integer>> exist((descendantId, l) ->
 						person(db, descendantId, lval("Tomek"), lvar(), lvar())
 								.and(ancestors(descendantId, l))
-								.and(LList.map(l, ancestorNames, personWithIdNameAndSurname(db))))
-				.solve(ancestorNames)
+								.and(LList.map(l, ancestorNames, personWithIdNameAndSurname(db))))).solve(ancestorNames)
 				.map(AnswerStoreQueriesTest::unwrap)
 				.map(AnswerStoreQueriesTest::concatNameAndSurname)
 				.collect(Collectors.toList());
@@ -193,13 +191,12 @@ public class AnswerStoreQueriesTest {
 	@Test
 	public void shouldFindLine2() {
 		Unifiable<LList<Tuple2<Unifiable<String>, Unifiable<String>>>> line = lvar();
-		List<List<String>> result = Logic.<LList<Integer>, Integer, Integer> exist(
+		List<List<String>> result = Query.of(Logic.<LList<Integer>, Integer, Integer> exist(
 						(l, descendantId, ancestorId) ->
 								person(db, ancestorId, lval("Aniela"), lvar(), lvar())
 										.and(person(db, descendantId, lval("Tomek"), lvar(), lvar()),
 												line(ancestorId, l, descendantId),
-												LList.map(l, line, personWithIdNameAndSurname(db))))
-				.solve(line)
+												LList.map(l, line, personWithIdNameAndSurname(db))))).solve(line)
 				.map(AnswerStoreQueriesTest::unwrap)
 				.map(AnswerStoreQueriesTest::concatNameAndSurname)
 				.collect(Collectors.toList());
@@ -229,7 +226,7 @@ public class AnswerStoreQueriesTest {
 	@Test
 	public void shouldFindRelatives() {
 		Unifiable<LList<Tuple2<Unifiable<String>, Unifiable<String>>>> line = lvar();
-		List<List<String>> result = Logic.<LList<Integer>, Integer, Integer> exist(
+		List<List<String>> result = Query.of(Logic.<LList<Integer>, Integer, Integer> exist(
 						(l, lhsId, rhsId) ->
 								exclude(lhsId.unifies(rhsId))
 										.and(person(db, rhsId, lval("Tomek"), lvar(), lvar()))
@@ -240,8 +237,7 @@ public class AnswerStoreQueriesTest {
 																		LList.of(lhsId),
 																		res)
 																.and(LList.map(res, line, personWithIdNameAndSurname(db)))))
-										.accept(new CascadingOptimizer()).ground())
-				.solve(line)
+										.accept(new CascadingOptimizer()).ground())).solve(line)
 				.map(AnswerStoreQueriesTest::unwrap)
 				.map(AnswerStoreQueriesTest::concatNameAndSurname)
 				.collect(Collectors.toList());

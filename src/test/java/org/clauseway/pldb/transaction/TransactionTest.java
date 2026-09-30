@@ -3,6 +3,7 @@ package org.clauseway.pldb.transaction;
 // ABOUTME: The Transaction over the owned certify tier: watermark receipts on H2 —
 // ABOUTME: refusal without a capability, write skew refused, disjoint relations pass.
 
+import org.clauseway.logic.solving.Query;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -72,7 +73,7 @@ public class TransactionTest {
 
 	private static List<String> names(AnswerSource db) {
 		Unifiable<String> name = lvar();
-		return person(db, lvar(), name).solve(name)
+		return Query.of(person(db, lvar(), name)).solve(name)
 				.map(Object::toString)
 				.sorted()
 				.collect(Collectors.toList());
@@ -80,7 +81,7 @@ public class TransactionTest {
 
 	private static List<String> titles(AnswerSource db) {
 		Unifiable<String> title = lvar();
-		return book(db, lvar(), title).solve(title)
+		return Query.of(book(db, lvar(), title)).solve(title)
 				.map(Object::toString)
 				.sorted()
 				.collect(Collectors.toList());

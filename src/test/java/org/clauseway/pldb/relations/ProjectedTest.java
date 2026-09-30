@@ -3,6 +3,7 @@ package org.clauseway.pldb.relations;
 // ABOUTME: The projected() marker: inline ∃-projection — set semantics over the
 // ABOUTME: kept columns, honest ¬∃ under exclude, a real join var inside bodies.
 
+import org.clauseway.logic.solving.Query;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
@@ -48,7 +49,7 @@ public class ProjectedTest {
 		// two ids share the name Ada: the projection onto name folds them —
 		// bag semantics would deliver Ada twice
 		Unifiable<String> name = lvar();
-		List<String> names = person(db(), projected(), name).solve(name)
+		List<String> names = Query.of(person(db(), projected(), name)).solve(name)
 				.map(Object::toString)
 				.sorted()
 				.collect(Collectors.toList());
@@ -60,15 +61,13 @@ public class ProjectedTest {
 		// the entry-1 semantics inline: ¬∃name.person(x, name) — a free lvar
 		// here would hit the collapse pothole and the branch would survive
 		Unifiable<Integer> x = lvar();
-		assertThat(x.unifies(1)
-				.and(exclude(person(db(), x, projected())))
-				.solve(x)
+		assertThat(Query.of(x.unifies(1)
+				.and(exclude(person(db(), x, projected())))).solve(x)
 				.collect(Collectors.toList())).isEmpty();
 
 		Unifiable<Integer> y = lvar();
-		assertThat(y.unifies(9)
-				.and(exclude(person(db(), y, projected())))
-				.solve(y)
+		assertThat(Query.of(y.unifies(9)
+				.and(exclude(person(db(), y, projected())))).solve(y)
 				.map(Object::toString)
 				.collect(Collectors.toList())).containsExactly("{9}");
 	}
@@ -78,9 +77,8 @@ public class ProjectedTest {
 		// hasEdge(src) := edge(src, ∃dst) — two out-edges fold to one answer,
 		// and the projection composes in a conjunction
 		Unifiable<Integer> src = lvar();
-		List<String> sources = edge(db(), src, projected())
-				.and(person(db(), src, lvar()))
-				.solve(src)
+		List<String> sources = Query.of(edge(db(), src, projected())
+				.and(person(db(), src, lvar()))).solve(src)
 				.map(Object::toString)
 				.sorted()
 				.collect(Collectors.toList());
@@ -92,15 +90,13 @@ public class ProjectedTest {
 		// the library's availableCopy shape: ¬∃via.linked(x, via) where
 		// linked is itself a solving literal
 		Unifiable<Integer> x = lvar();
-		assertThat(x.unifies(1)
-				.and(exclude(linked(db(), x, projected())))
-				.solve(x)
+		assertThat(Query.of(x.unifies(1)
+				.and(exclude(linked(db(), x, projected())))).solve(x)
 				.collect(Collectors.toList())).isEmpty();
 
 		Unifiable<Integer> y = lvar();
-		assertThat(y.unifies(9)
-				.and(exclude(linked(db(), y, projected())))
-				.solve(y)
+		assertThat(Query.of(y.unifies(9)
+				.and(exclude(linked(db(), y, projected())))).solve(y)
 				.map(Object::toString)
 				.collect(Collectors.toList())).containsExactly("{9}");
 	}
@@ -128,7 +124,7 @@ public class ProjectedTest {
 		// no reciprocal pair exists, but node 2 has both an in-edge and an
 		// out-edge — a severed join would deliver it.
 		Unifiable<Integer> node = lvar();
-		assertThat(reciprocal(db(), node, projected()).solve(node)
+		assertThat(Query.of(reciprocal(db(), node, projected())).solve(node)
 				.collect(Collectors.toList())).isEmpty();
 	}
 
