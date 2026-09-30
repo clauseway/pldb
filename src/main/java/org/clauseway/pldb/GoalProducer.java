@@ -15,9 +15,8 @@ import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.functional.tuples.Tuple;
 import org.clauseway.logic.goals.Conjunction;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.tabling.Tabling;
-import org.clauseway.logic.solving.Condition;
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.solving.Residues;
 import org.clauseway.logic.solving.Call;
 import org.clauseway.logic.tabling.table.Table;
@@ -55,9 +54,8 @@ public final class GoalProducer implements AnswerProducer {
 		Goal seeded = Conjunction.of(
 				Residues.restate(probe.getArguments(), probe.getResidues(), anchor),
 				Tabling.call(rel, Tuple.ofAll(heads.map(Unifiable::getObjectUnifiable).toJavaArray()), () -> rule));
-		return seeded.apply(Knowledge.empty().withStore(table)).apply(answerPkg ->
-				Residues.all(answerPkg, anchor).flatMap(answer ->
-						emit.emit(Answer.of(rel, answer._1, Condition.of(answer._2)))));
+		return Query.of(seeded).tabled(table).run().apply(answerPkg ->
+				Answer.capture(rel, answerPkg, anchor).flatMap(emit::emit));
 	}
 
 	@Override

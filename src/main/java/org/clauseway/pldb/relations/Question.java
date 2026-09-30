@@ -14,21 +14,19 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import org.clauseway.functional.Nothing;
 import org.clauseway.functional.fibers.Cont;
 import org.clauseway.functional.fibers.Fiber;
 import org.clauseway.functional.tuples.Tuple;
 import org.clauseway.logic.goals.Exhaustion;
 import org.clauseway.logic.goals.Goal;
-import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.solving.Condition;
-import org.clauseway.logic.solving.Residues;
-import org.clauseway.logic.tabling.table.Table;
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.vavr.collection.Array;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Question {
@@ -65,11 +63,11 @@ public class Question {
 	 */
 	private static Cont<Answer<Relation>, Nothing> rows(Goal question, Unifiable<?> anchor,
 			Array<Unifiable<?>> variables, Literal[] schemas) {
-		return Cont.suspend(k -> question.apply(Knowledge.empty().withStore(Table.empty()))
-				.apply(answerPkg -> Residues.all(answerPkg, anchor)
+		return Cont.suspend(k -> Query.of(question).run()
+				.apply(answerPkg -> Answer.capture(anchor, answerPkg, anchor)
 						.flatMap(answer -> facts(
-								bind(variables, Array.ofAll(Answers.positions(answer._1))),
-								Condition.of(answer._2), schemas)
+								bind(variables, Array.ofAll(Answers.positions(answer.getReified()))),
+								answer.getCondition(), schemas)
 								.map(k)
 								.reduce(Fiber.done(Nothing.nothing()),
 										(delivered, next) -> delivered.flatMap(nothing -> next)))));
