@@ -18,12 +18,12 @@ jobs:
           cache: maven
       - name: Build functional (matching branch, else its default)
         run: |
-          git clone https://github.com/tomasz-gac/functional.git "$HOME/functional"
+          git clone https://github.com/clauseway/functional.git "$HOME/functional"
           git -C "$HOME/functional" checkout "$GITHUB_REF_NAME" || true
           mvn -B -ntp install -DskipTests -f "$HOME/functional/pom.xml"
       - name: Build logic and clauseway-vavr (matching branch, else its default)
         run: |
-          git clone https://github.com/tomasz-gac/logic.git "$HOME/logic"
+          git clone https://github.com/clauseway/logic.git "$HOME/logic"
           git -C "$HOME/logic" checkout "$GITHUB_REF_NAME" || true
           mvn -B -ntp install -f "$HOME/logic/vavr/pom.xml"
           mvn -B -ntp install -DskipTests -f "$HOME/logic/pom.xml"
