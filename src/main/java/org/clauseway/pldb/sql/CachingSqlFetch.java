@@ -13,23 +13,26 @@ import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.relations.Relation;
 
 /**
- * A relation backend over one pinned JDBC connection, by CONVENTION: the
+ * A relation backend over one JDBC connection, by CONVENTION: the
  * database schema matches the pldb schema, so the relation's name is the
  * table and its property names are the columns — no mapping layer, and
- * values must be JDBC-representable; columns backing relation properties
- * are NON-NULL (SQL's three-valued logic would silently drop NULL rows
- * from pushed comparisons — under-delivery — while the engine has no null
- * vocabulary at all). The backend is the schema authority: a relation
- * without a table fails loudly at its first fetch.
+ * values must be JDBC-representable; a column holds SQL NULL only when its
+ * property is declared {@code nullable()} (a null cell in any other column
+ * refuses by relation and column, and a compiler pushing a comparison over
+ * a nullable column must account for NULL rows itself, because SQL's
+ * three-valued logic would silently drop them — under-delivery). The
+ * backend is the schema authority: a
+ * relation without a table fails loudly at its first fetch.
  *
  * <p>This class is a constructor and a wrapper: {@link CachingAnswerSource}
- * over the pinned {@link SqlFetch}. The fetch owns the backend — the
+ * over a {@link SqlFetch}. The fetch owns the backend — the
  * connection, the per-family compiler registry, probe+region compiled to
  * SELECT..WHERE, every get a round trip. The cache owns reuse — landing,
  * the coverage ledger, containment proof. What remains here is the
- * lifecycle the composition needs: pinning at construction, compiler
- * registration before first use, and {@link #close()} rolling the
- * transaction back. Estimates are exact over covered probes and the
+ * lifecycle the composition needs: the connection {@link #pinned} or
+ * {@link #live} at construction, compiler
+ * registration before first use, and {@link #close()} rolling a pinned
+ * transaction back and closing the connection. Estimates are exact over covered probes and the
  * optimizer barrier otherwise — never a remote round trip.
  *
  * <p>The connection is shared and the composed get synchronized: parallel

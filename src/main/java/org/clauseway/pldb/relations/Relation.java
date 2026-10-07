@@ -7,6 +7,15 @@ import org.clauseway.functional.tuples.Tuple;
 import org.clauseway.functional.tuples.Tuple2;
 import org.clauseway.vavr.collection.Stream;
 
+/**
+ * A named relation with a declared column list: {@link #getName()} is the
+ * physical name a backend spells (the table, the endpoint), and
+ * {@link #getArgs()} the {@link Property} columns in positional order.
+ * {@link #getId()} renders the name with its column names, and
+ * {@link #indexOf} locates a column by name. {@link RelationN} is the value
+ * implementation; a relation is the token every {@code Answer<Relation>}
+ * and {@code Call<Relation>} in pldb carries.
+ */
 public interface Relation {
 	String getName();
 

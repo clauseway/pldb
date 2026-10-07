@@ -31,7 +31,7 @@ import org.clauseway.pldb.transaction.SimulatedSerialization;
  * {@code (MAX(version), COUNT(*))} over the rows matching the probe —
  * {@code (null, 0)} for an empty region. The certify re-evaluates the
  * same pair under the commit lock through the SAME rendering the fetch
- * reads with ({@link RegionSql}): reading narrowly and proving narrowly
+ * reads with ({@code RegionSql}): reading narrowly and proving narrowly
  * are one spelling. Stamps come from the {@code watermark} lock row
  * ({@link Watermark#schema}), bumped per commit, so versions are
  * monotone across the whole source. The pair is why every write shape

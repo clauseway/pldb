@@ -11,9 +11,9 @@ import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.relations.MagicVar;
 
 /**
- * How a column's values cross the JDBC boundary: {@link #encode} flattens
+ * How a column's values cross the JDBC boundary: the encoder flattens
  * a value to its wire form on write and into bound probe parameters;
- * {@link #decode} re-forms it from the cells the driver returns. A codec
+ * the decoder re-forms it from the cells the driver returns. A codec
  * binds to a COLUMN, not to a type — the same Java type may encode
  * differently in different columns — and the binding is stated through
  * {@link #arg()}: pass the marker through the relation's defining method

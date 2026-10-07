@@ -39,10 +39,12 @@ import org.clauseway.vavr.collection.Array;
 import org.clauseway.vavr.collection.IndexedSeq;
 
 /**
- * Talks to the backend, nothing else: pins the connection at construction
- * (auto-commit off, {@code REPEATABLE READ} where the driver's metadata
- * admits it, the granted level recorded, the snapshot anchored by a first
- * read), compiles a probe's region through the registered per-family
+ * Talks to the backend, nothing else: {@link #pinned} pins the connection at
+ * construction (auto-commit off, {@code REPEATABLE READ} where the driver's
+ * metadata admits it, the granted level recorded, the snapshot anchored by a
+ * first read) while {@link #live} leaves it in auto-commit, reading the
+ * current committed world per statement; either compiles a probe's region
+ * through the registered per-family
  * compilers into the WHERE, and executes the SELECT. Holds no pool and no
  * ledger; every get is a round trip, and the estimate is the optimizer
  * barrier. Two compositions sit above it: plain solves take

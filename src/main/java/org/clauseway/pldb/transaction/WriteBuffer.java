@@ -31,7 +31,7 @@ import org.clauseway.vavr.collection.Array;
  * and every write mints a new value — ancestors keep answering as
  * before, siblings fork legally. The two staged lists (order preserved)
  * are what a commit face lands; until then the base never learns of
- * either. A fact staged both ways refuses as {@link Transaction.Conflict}:
+ * either. A fact staged both ways refuses with {@link IllegalStateException}:
  * the transaction has not decided what it believes. The DOMAIN's
  * no-delete doctrine lives above this type, at the facades that choose
  * not to expose the retracting door.

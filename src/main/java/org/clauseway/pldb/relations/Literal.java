@@ -154,17 +154,6 @@ public class Literal implements Goal, Bounded, Postable {
 	}
 
 	/**
-	 * The function-shaped front door: columns first, backend last. One
-	 * {@link Builder#arg} per column — names stated once, arity unbounded,
-	 * the defining method's signature the only typed surface — with
-	 * {@link Builder#indexed()}/{@link Builder#ground()} as TAIL modifiers
-	 * on the last column, freely composed. The terminal picks the reading:
-	 * {@link Builder#from} enumerates a source, {@link Builder#produced}
-	 * streams a producer, {@link Builder#solving} tables a rule in the
-	 * solve — and a half-built literal is not a goal, so applying one is
-	 * unrepresentable.
-	 */
-	/**
 	 * The one door, namespaced: the class joins the relation's IDENTITY —
 	 * two authors' vocabularies cannot collide in tabling, knowledge
 	 * identity, or the store — while the physical name stays the bare
@@ -175,6 +164,17 @@ public class Literal implements Goal, Bounded, Postable {
 		return new Builder(namespace.getName(), name);
 	}
 
+	/**
+	 * The function-shaped front door: columns first, backend last. One
+	 * {@link Builder#arg} per column — names stated once, arity unbounded,
+	 * the defining method's signature the only typed surface — with
+	 * {@link Builder#indexed()}/{@link Builder#ground()} as TAIL modifiers
+	 * on the last column, freely composed. The terminal picks the reading:
+	 * {@link Builder#from} enumerates a source, {@link Builder#produced}
+	 * streams a producer, {@link Builder#solving} tables a rule in the
+	 * solve — and a half-built literal is not a goal, so applying one is
+	 * unrepresentable.
+	 */
 	@Value
 	public static class Builder {
 		String namespace;

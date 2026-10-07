@@ -27,9 +27,9 @@ import org.clauseway.pldb.sql.SqlCompiler;
  * dropping a disjunct strengthens — while the atom's conjunct level may
  * drop freely (weaker), marked {@code weakened} when it does.
  *
- * <p>The registry reference is the live compiler map — the special case
- * Tom ruled for: nogoods are engine-core, so cross-family delegation is
- * wired at construction rather than widening the compiler signature.
+ * <p>The registry reference is the live compiler map: nogoods are
+ * engine-core, so cross-family delegation is wired at construction rather
+ * than widening the compiler signature.
  */
 public final class NogoodSqlCompiler implements SqlCompiler {
 

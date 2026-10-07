@@ -158,7 +158,7 @@ final class Extension {
 	/**
 	 * An ENTAILED row discharges the constraint whole: its disjunct is 1
 	 * under the current state and 1 ⊕ a = 1 — absorption, the disjunctive
-	 * store's discharge doctrine in its new home.
+	 * store's discharge doctrine.
 	 */
 	private static boolean entailed(Row row, Array<Term<?>> walked) {
 		return isUnconditional(row)

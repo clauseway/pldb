@@ -24,10 +24,11 @@ import org.clauseway.vavr.collection.Array;
  * rendering. (Union domains and multi-literal nogoods, the original
  * triggers, are served by the flat or.)
  *
- * <p>CONVENTION: columns backing relation properties are NON-NULL. SQL's
- * three-valued logic makes every comparison silently drop NULL rows —
- * under-delivery, the one sin — while the engine has no null vocabulary
- * at all; the schema-matching convention therefore excludes them.
+ * <p>NULL: SQL's three-valued logic makes every comparison silently drop
+ * NULL rows — under-delivery, the one sin. A column holds NULL only when
+ * its property is declared {@code nullable()}, which a compiler reads
+ * through {@code ColumnResolver#nullable}: a comparison over such a column
+ * must either stay local or carry {@link #isNull} as a disjunct.
  */
 @Value
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
