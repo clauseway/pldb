@@ -40,7 +40,7 @@ public class Question {
 	 * template into one {@link Answer} per schema — the whole cluster
 	 * from one derivation, every row carrying the derivation's
 	 * {@link Condition} — and the rows serve every consumer alike: a
-	 * caller reads them as typed rows ({@link Answer#get}), a persist
+	 * caller reads them as typed rows ({@link Answers#get}), a persist
 	 * stages them, a retract stages their removal. Zero answers stream
 	 * nothing. A template cell the answer leaves free rides as a WIDE
 	 * cell — the write doors, not the select, refuse it. The result is a

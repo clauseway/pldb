@@ -10,7 +10,7 @@ import org.clauseway.pldb.Writer;
  * One transaction over one serialized source: an {@link AnswerSource}
  * read face, a write face staging facts, and a {@link #commit()} proven
  * through the source's own serialization door. The serialization kind decides
- * the SUBTYPE at {@link #over}: an {@link Simulated} transaction records
+ * the SUBTYPE at {@link AbstractTransaction#over}: an {@link Simulated} transaction records
  * every probe and certifies the whole log at commit (an
  * over-approximation — retries, never unsoundness); a {@link Native}
  * transaction records nothing, because its backend tracks the reads

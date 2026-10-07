@@ -41,7 +41,7 @@ import org.clauseway.vavr.collection.Array;
 /**
  * A relation applied to arguments. ONE user-facing type: how the relation
  * answers — an enumerating source, a streaming producer, or a rule tabled
- * in the solve — is a {@link Reading} chosen by the builder's terminal and
+ * in the solve — is a {@code Reading} chosen by the builder's terminal and
  * never visible above it. Bare in a conjunction the literal reads its
  * relation; under {@code exclude} (or {@link #posted()}) it imposes; the
  * probe IS the call key, minted at the one reification site

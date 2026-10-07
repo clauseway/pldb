@@ -23,7 +23,7 @@ import org.clauseway.vavr.control.Try;
 
 /**
  * The seam's value codec, written once. An answer is the cell's entry
- * shape — (reified row, {@link Condition}) — and a {@link Fact} is the
+ * shape — (reified row, {@link Condition}) — and an {@link Answer#unconditional() unconditional answer} is the
  * ground corner: its row reified whole, conditioned {@link Condition#ONE}.
  * Decoding reads POSITIONALLY through the tuple's structural contract,
  * never through rendering: a reified term's toString decorates, the
