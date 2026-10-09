@@ -5,7 +5,7 @@ package org.clauseway.pldb.inmemory;
 
 import org.clauseway.logic.solving.Query;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.clauseway.logic.goals.Goal.condu;
+import static org.clauseway.logic.goals.Goal.conda;
 import static org.clauseway.logic.goals.Goal.defer;
 import static org.clauseway.logic.goals.Logic.distincto;
 import static org.clauseway.logic.goals.Matche.llist;
@@ -147,7 +147,7 @@ public class AnswerStoreQueriesTest {
 		return Logic.<Integer, LList<Integer>> exist((parentId, rest) ->
 				parent(db, parentId, descendant)
 						.and(ancestors.unifies(LList.of(parentId, rest)))
-						.and(condu(defer(() -> ancestors(parentId, rest)),
+						.and(conda(defer(() -> ancestors(parentId, rest)),
 								rest.unifies(LList.empty()))));
 	}
 
