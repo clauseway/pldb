@@ -237,7 +237,7 @@ public class AnswerStoreQueriesTest {
 																		LList.of(lhsId),
 																		res)
 																.and(LList.map(res, line, personWithIdNameAndSurname(db)))))
-										.accept(new CascadingOptimizer()).ground())).solve(line)
+										.accept(new CascadingOptimizer()))).solve(line)
 				.map(AnswerStoreQueriesTest::unwrap)
 				.map(AnswerStoreQueriesTest::concatNameAndSurname)
 				.collect(Collectors.toList());
