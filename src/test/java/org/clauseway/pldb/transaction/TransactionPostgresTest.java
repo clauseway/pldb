@@ -80,7 +80,7 @@ public class TransactionPostgresTest {
 	}
 
 	private static Transaction transaction(String id, Connection connection) {
-		return AbstractTransaction.over(SerializableSource.postgres(id, connection));
+		return Transaction.over(SerializableSource.postgres(id, connection));
 	}
 
 	@Test

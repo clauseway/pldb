@@ -45,13 +45,13 @@ public class TransactionPredicateTest {
 
 	@Test
 	public void aRecognizedCommitFailureMapsToConflict() {
-		Throwable refused = commitFailure(AbstractTransaction.over(SerializableSource.pinned("h2", connection, e -> true)));
+		Throwable refused = commitFailure(Transaction.over(SerializableSource.pinned("h2", connection, e -> true)));
 		assertThat(refused).isInstanceOf(Transaction.Conflict.class);
 	}
 
 	@Test
 	public void anUnrecognizedFailureSurfacesAsItself() {
-		Throwable refused = commitFailure(AbstractTransaction.over(SerializableSource.pinned("h2", connection, e -> false)));
+		Throwable refused = commitFailure(Transaction.over(SerializableSource.pinned("h2", connection, e -> false)));
 		assertThat(refused).isNotNull().isNotInstanceOf(Transaction.Conflict.class);
 	}
 }

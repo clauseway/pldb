@@ -24,7 +24,6 @@ import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.relations.Literal;
-import org.clauseway.pldb.transaction.AbstractTransaction;
 import org.clauseway.pldb.transaction.Transaction;
 import org.junit.After;
 import org.junit.Before;
@@ -77,7 +76,7 @@ public class VersionedWatermarkTest {
 	}
 
 	private Transaction transaction(String id) {
-		return AbstractTransaction.over(
+		return Transaction.over(
 				VersionedWatermark.over(SqlFetch.live(id, connection()), this::connection));
 	}
 

@@ -27,7 +27,6 @@ import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Answers;
 import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.relations.Relation;
-import org.clauseway.pldb.transaction.AbstractTransaction;
 import org.clauseway.pldb.transaction.Transaction;
 import org.junit.After;
 import org.junit.Before;
@@ -191,7 +190,7 @@ public class LiveSourceTest {
 		// would be the capture contract violated (data the pin never named)
 		Watermark shared = Watermark.over(
 				SqlFetch.live("shared", connection()), this::connection);
-		Transaction first = AbstractTransaction.over(shared);
+		Transaction first = Transaction.over(shared);
 		assertThat(names(first.answers(probe(person(null, lvar(), lvar()))))).isEmpty();
 
 		try (
@@ -201,7 +200,7 @@ public class LiveSourceTest {
 			mover.commit();
 		}
 
-		Transaction second = AbstractTransaction.over(shared);
+		Transaction second = Transaction.over(shared);
 		assertThat(names(second.answers(probe(person(null, lvar(), lvar())))))
 				.describedAs("the second transaction's first touch must read the CURRENT world,"
 						+ " not the first transaction's cached one")
@@ -209,7 +208,7 @@ public class LiveSourceTest {
 	}
 
 	private Transaction transaction(String id) {
-		return AbstractTransaction.over(
+		return Transaction.over(
 				Watermark.over(SqlFetch.live(id, connection()), this::connection));
 	}
 }

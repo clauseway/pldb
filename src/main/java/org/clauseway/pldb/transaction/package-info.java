@@ -7,7 +7,7 @@
  * {@code AnswerSource} read side, a {@code Writer} staging assertions and retractions in
  * a {@link org.clauseway.pldb.transaction.WriteBuffer}, and
  * {@link org.clauseway.pldb.transaction.Transaction#commit()} proven through the source.
- * {@link org.clauseway.pldb.transaction.AbstractTransaction#over} chooses the subtype by the
+ * {@link org.clauseway.pldb.transaction.Transaction#over} chooses the subtype by the
  * source's contract: {@link org.clauseway.pldb.transaction.Simulated} over a
  * {@link org.clauseway.pldb.transaction.SimulatedSerialization} source records every read as a
  * {@link org.clauseway.pldb.transaction.Pinned} value and proves its

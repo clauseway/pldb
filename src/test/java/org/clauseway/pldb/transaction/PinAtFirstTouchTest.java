@@ -71,7 +71,7 @@ public class PinAtFirstTouchTest {
 	@Test
 	public void aRegionReadsOnceAndItsPinIsTheFootprint() throws Exception {
 		Recording recording = new Recording();
-		try (Transaction transaction = AbstractTransaction.over(recording)) {
+		try (Transaction transaction = Transaction.over(recording)) {
 			solve(transaction);
 			solve(transaction);
 			transaction.commit();
