@@ -78,7 +78,7 @@ public final class TableConstraints extends LatticeFactor<Support, TableConstrai
 	 * Conditional and Any-bearing answers are consumed natively.
 	 */
 	public static Posting posted(AnswerProducer producer, Relation rel, List<Unifiable<?>> args) {
-		return Propagation.activate(new TableParkingPropagator(rel, producer, Array.ofAll(args)));
+		return Propagation.activate(TableParkingPropagator.produced(rel, producer, Array.ofAll(args)));
 	}
 
 	/**

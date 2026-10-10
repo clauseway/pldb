@@ -62,14 +62,10 @@ import org.clauseway.vavr.collection.Array;
  * shrinks) — and folded per row by ⊕ in a {@link JoinMap}, so duplicate
  * derivations of one row factor into a single entry by distributivity.
  */
-public class TableParkingPropagator extends ParkingPropagator<TableConstraints> {
+final class TableParkingPropagator extends ParkingPropagator<TableConstraints> {
 	private final Relation rel;
 	private final String label;
 	private final Function<Knowledge, AnswerProducer> producer;
-
-	protected TableParkingPropagator(Relation rel, AnswerProducer producer, Array<? extends Term<?>> watchedTerms) {
-		this(rel, producer.id(), pkg -> producer, watchedTerms);
-	}
 
 	private TableParkingPropagator(Relation rel, String label,
 			Function<Knowledge, AnswerProducer> producer, Array<? extends Term<?>> watchedTerms) {
@@ -77,6 +73,11 @@ public class TableParkingPropagator extends ParkingPropagator<TableConstraints> 
 		this.rel = rel;
 		this.label = label;
 		this.producer = producer;
+	}
+
+	/** The producer kind: one producer, whatever package the examination arrives in. */
+	static TableParkingPropagator produced(Relation rel, AnswerProducer producer, Array<? extends Term<?>> watchedTerms) {
+		return new TableParkingPropagator(rel, producer.id(), pkg -> producer, watchedTerms);
 	}
 
 	/**
