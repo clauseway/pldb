@@ -45,7 +45,7 @@ public class TransactionTest {
 
 	private static Transaction transaction(String id) throws Exception {
 		Connection connection = DriverManager.getConnection(URL);
-		return Transaction.over(Watermark.over(SqlFetch.pinned(id, connection),
+		return Transaction.recording(Watermark.over(SqlFetch.pinned(id, connection),
 				TransactionTest::commitConnection));
 	}
 

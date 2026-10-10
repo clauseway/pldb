@@ -190,7 +190,7 @@ public class LiveSourceTest {
 		// would be the capture contract violated (data the pin never named)
 		Watermark shared = Watermark.over(
 				SqlFetch.live("shared", connection()), this::connection);
-		Transaction first = Transaction.over(shared);
+		Transaction first = Transaction.recording(shared);
 		assertThat(names(first.answers(probe(person(null, lvar(), lvar()))))).isEmpty();
 
 		try (
@@ -200,7 +200,7 @@ public class LiveSourceTest {
 			mover.commit();
 		}
 
-		Transaction second = Transaction.over(shared);
+		Transaction second = Transaction.recording(shared);
 		assertThat(names(second.answers(probe(person(null, lvar(), lvar())))))
 				.describedAs("the second transaction's first touch must read the CURRENT world,"
 						+ " not the first transaction's cached one")
@@ -208,7 +208,7 @@ public class LiveSourceTest {
 	}
 
 	private Transaction transaction(String id) {
-		return Transaction.over(
+		return Transaction.recording(
 				Watermark.over(SqlFetch.live(id, connection()), this::connection));
 	}
 }

@@ -76,7 +76,7 @@ public class VersionedWatermarkTest {
 	}
 
 	private Transaction transaction(String id) {
-		return Transaction.over(
+		return Transaction.recording(
 				VersionedWatermark.over(SqlFetch.live(id, connection()), this::connection));
 	}
 

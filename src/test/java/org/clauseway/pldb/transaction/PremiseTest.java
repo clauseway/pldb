@@ -46,11 +46,11 @@ public class PremiseTest {
 	@Test
 	public void theFootprintExposesEveryReadIncludingTheEmptyOne() throws Exception {
 		SharedDatabase store = SharedDatabase.empty();
-		Transaction.over(store.open("seed"))
+		Transaction.recording(store.open("seed"))
 				.asserting(Collections.singletonList(person(null, lval(1), lval("Ada"))))
 				.commit();
 
-		try (Simulated get = Transaction.over(store.open("get"))) {
+		try (RecordingTransaction get = Transaction.recording(store.open("get"))) {
 			solveNames(get);
 			solveTitles(get);
 			assertThat(get.footprint().pins().keySet().stream()
@@ -65,14 +65,14 @@ public class PremiseTest {
 	public void aFreshPremiseLandsThroughACommitThatNeverReadIt() throws Exception {
 		SharedDatabase store = SharedDatabase.empty();
 		Footprint premise;
-		try (Simulated get = Transaction.over(store.open("get"))) {
+		try (RecordingTransaction get = Transaction.recording(store.open("get"))) {
 			solveNames(get);
 			premise = get.footprint();
 		}
 
 		// the pure-premise posture: the committing transaction reads NOTHING —
 		// person is certified only because the client's premise carried it
-		Transaction.over(store.open("post"))
+		Transaction.recording(store.open("post"))
 				.requiring(premise)
 				.asserting(Collections.singletonList(book(null, lval("i1"), lval("Tar Pit"))))
 				.commit();
@@ -85,12 +85,12 @@ public class PremiseTest {
 		// region and the commit lands
 		SharedDatabase store = SharedDatabase.empty();
 		Footprint premise;
-		try (Simulated get = Transaction.over(store.open("get"))) {
+		try (RecordingTransaction get = Transaction.recording(store.open("get"))) {
 			solveNames(get);
 			premise = get.footprint();
 		}
 
-		Simulated post = Transaction.over(store.open("post")).requiring(premise);
+		RecordingTransaction post = Transaction.recording(store.open("post")).requiring(premise);
 		solveNames(post);
 		post
 				.asserting(Collections.singletonList(book(null, lval("i1"), lval("Tar Pit"))))
@@ -104,16 +104,16 @@ public class PremiseTest {
 		// pins on one region and refuses at composition, before certify
 		SharedDatabase store = SharedDatabase.empty();
 		Footprint premise;
-		try (Simulated get = Transaction.over(store.open("get"))) {
+		try (RecordingTransaction get = Transaction.recording(store.open("get"))) {
 			solveNames(get);
 			premise = get.footprint();
 		}
 
-		Transaction.over(store.open("mover"))
+		Transaction.recording(store.open("mover"))
 				.asserting(Collections.singletonList(person(null, lval(2), lval("Alan"))))
 				.commit();
 
-		Simulated post = Transaction.over(store.open("post")).requiring(premise);
+		RecordingTransaction post = Transaction.recording(store.open("post")).requiring(premise);
 		solveNames(post);
 		assertThatThrownBy(() -> post
 				.asserting(Collections.singletonList(book(null, lval("i1"), lval("Tar Pit"))))
@@ -126,16 +126,16 @@ public class PremiseTest {
 	public void aStalePremiseRefusesTheCommitEvenThoughItsOwnReadsHold() throws Exception {
 		SharedDatabase store = SharedDatabase.empty();
 		Footprint premise;
-		try (Simulated get = Transaction.over(store.open("get"))) {
+		try (RecordingTransaction get = Transaction.recording(store.open("get"))) {
 			solveNames(get);
 			premise = get.footprint();
 		}
 
-		Transaction.over(store.open("mover"))
+		Transaction.recording(store.open("mover"))
 				.asserting(Collections.singletonList(person(null, lval(2), lval("Alan"))))
 				.commit();
 
-		assertThatThrownBy(() -> Transaction.over(store.open("post"))
+		assertThatThrownBy(() -> Transaction.recording(store.open("post"))
 				.requiring(premise)
 				.asserting(Collections.singletonList(book(null, lval("i1"), lval("Tar Pit"))))
 				.commit())

@@ -7,15 +7,17 @@
  * {@code AnswerSource} read side, a {@code Writer} staging assertions and retractions in
  * a {@link org.clauseway.pldb.transaction.WriteBuffer}, and
  * {@link org.clauseway.pldb.transaction.Transaction#commit()} proven through the source.
- * {@link org.clauseway.pldb.transaction.Transaction#over} chooses the subtype by the
- * source's contract: {@link org.clauseway.pldb.transaction.Simulated} over a
- * {@link org.clauseway.pldb.transaction.SimulatedSerialization} source records every read as a
+ * Where the proof of the reads lives is the client's choice, bounded by the source's
+ * contracts: {@link org.clauseway.pldb.transaction.Transaction#over} over a
+ * {@link org.clauseway.pldb.transaction.NativeSerialization} source records nothing because
+ * the backend validates its own reads;
+ * {@link org.clauseway.pldb.transaction.Transaction#recording} over a
+ * {@link org.clauseway.pldb.transaction.SimulatedSerialization} source yields a
+ * {@link org.clauseway.pldb.transaction.RecordingTransaction} that records every read as a
  * {@link org.clauseway.pldb.transaction.Pinned} value and proves its
  * {@link org.clauseway.pldb.transaction.Footprint} of {@link org.clauseway.pldb.transaction.Pin}s
- * unmoved at commit; {@link org.clauseway.pldb.transaction.Native} over a
- * {@link org.clauseway.pldb.transaction.NativeSerialization} source records nothing because
- * the backend validates its own reads. The inmemory package's {@code SharedDatabase} and the
- * sql package's {@code Watermark}, {@code VersionedWatermark} and {@code SerializableSource}
- * implement these contracts.
+ * unmoved at commit — a proof that outlives the transaction and travels as a premise.
+ * The inmemory package's {@code SharedDatabase} and the sql package's {@code Watermark},
+ * {@code VersionedWatermark} and {@code SerializableSource} implement these contracts.
  */
 package org.clauseway.pldb.transaction;

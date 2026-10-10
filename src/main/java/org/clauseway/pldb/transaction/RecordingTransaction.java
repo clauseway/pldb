@@ -1,5 +1,8 @@
 package org.clauseway.pldb.transaction;
 
+// ABOUTME: The transaction that holds the proof of its own reads: every region pinned
+// ABOUTME: at first touch, the footprint (and any premise) proven unmoved at commit.
+
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
@@ -8,11 +11,11 @@ import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Relation;
 
 /**
- * SIMULATED serialization: this transaction's ledger is the read cache
- * AND the recorder in one — a region's FIRST touch reads through the
- * source (pin and rows minted from one world) and every repeat serves
- * the same {@link Pinned} back, so the transaction is its own snapshot
- * at region grain: read stability by construction, no source consulted
+ * This transaction's ledger is the read cache AND the recorder in one
+ * — a region's FIRST touch reads through the source (pin and rows
+ * minted from one world) and every repeat serves the same
+ * {@link Pinned} back, so the transaction is its own snapshot at
+ * region grain: read stability by construction, no source consulted
  * twice for one region. Commit proves the {@link #footprint()} of its
  * own reads UNIONED with the {@link #requiring(Footprint) premise} —
  * regions a client read in an EARLIER request, whose decision this
@@ -20,15 +23,16 @@ import org.clauseway.pldb.relations.Relation;
  * having moved refuses it. The union's own refusal guards overlapping
  * regions read at different worlds.
  */
-public class Simulated extends AbstractTransaction {
+public final class RecordingTransaction implements Transaction {
 
+	private final WriteBuffer writeBuffer;
 	private final SimulatedSerialization serialization;
 	private final ConcurrentMap<Call<Relation>, Pinned<Iterable<Answer<Relation>>>> reads;
 	private final Footprint premise;
 
-	Simulated(WriteBuffer writeBuffer, SimulatedSerialization serialization,
+	RecordingTransaction(WriteBuffer writeBuffer, SimulatedSerialization serialization,
 			ConcurrentMap<Call<Relation>, Pinned<Iterable<Answer<Relation>>>> reads, Footprint premise) {
-		super(writeBuffer);
+		this.writeBuffer = writeBuffer;
 		this.serialization = serialization;
 		this.reads = reads;
 		this.premise = premise;
@@ -41,13 +45,23 @@ public class Simulated extends AbstractTransaction {
 	}
 
 	@Override
+	public long estimate(Call<Relation> probe) {
+		return writeBuffer.estimate(probe);
+	}
+
+	@Override
+	public String id() {
+		return writeBuffer.id();
+	}
+
+	@Override
 	public Transaction asserting(List<Answer<Relation>> rows) {
-		return new Simulated(writeBuffer.asserting(rows), serialization, reads, premise);
+		return new RecordingTransaction(writeBuffer.asserting(rows), serialization, reads, premise);
 	}
 
 	@Override
 	public Transaction retracting(List<Answer<Relation>> rows) {
-		return new Simulated(writeBuffer.retracting(rows), serialization, reads, premise);
+		return new RecordingTransaction(writeBuffer.retracting(rows), serialization, reads, premise);
 	}
 
 	/** The ledger folded: every region this transaction read, at its pin. */
@@ -65,16 +79,16 @@ public class Simulated extends AbstractTransaction {
 	 * the decision behind the write stood on them, whether or not this
 	 * transaction reads them itself. Premises accumulate by union.
 	 */
-	public Simulated requiring(Footprint required) throws Transaction.Conflict {
-		return new Simulated(writeBuffer, serialization, reads, premise.union(required));
+	public RecordingTransaction requiring(Footprint required) throws Transaction.Conflict {
+		return new RecordingTransaction(writeBuffer, serialization, reads, premise.union(required));
 	}
 
 	@Override
 	public void commit() throws Conflict {
 		Footprint certified = footprint().union(premise);
-		through(() -> serialization.commit(certified,
-				writeBuffer.stagedAssertions(),
-				writeBuffer.stagedRetractions()));
+		if (!serialization.commit(certified, writeBuffer.stagedAssertions(), writeBuffer.stagedRetractions())) {
+			throw Conflict.moved(id());
+		}
 	}
 
 	/** Ends the snapshot (the source's close rolls its read transaction back). */
