@@ -1,4 +1,4 @@
-package org.clauseway.pldb;
+package org.clauseway.pldb.transaction;
 
 // ABOUTME: The overlay value: a frozen base plus a private staged delta — reads
 // ABOUTME: union both, appends mint new values, ancestors and siblings stay true.
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.inmemory.AnswerStore;
 import org.clauseway.pldb.relations.Literal;
-import org.clauseway.pldb.transaction.WriteBuffer;
+import org.clauseway.pldb.AnswerSource;
 import org.junit.Test;
 
 public class WriteBufferTest {

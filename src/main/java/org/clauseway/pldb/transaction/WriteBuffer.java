@@ -38,7 +38,7 @@ import org.clauseway.vavr.collection.Array;
  */
 @Value
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public class WriteBuffer implements AnswerSource {
+class WriteBuffer implements AnswerSource {
 	AnswerSource base;
 	AnswerStore insertions;
 	AnswerStore removals;

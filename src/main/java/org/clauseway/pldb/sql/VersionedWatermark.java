@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -51,7 +52,7 @@ import org.clauseway.pldb.transaction.SimulatedSerialization;
  */
 @Slf4j
 @Value
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class VersionedWatermark implements JdbcSource, SimulatedSerialization {
 	private static final String LOCK_ROW = "*";
 	private static final String VERSION_COLUMN = "version";

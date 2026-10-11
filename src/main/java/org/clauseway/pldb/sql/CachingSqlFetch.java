@@ -107,7 +107,7 @@ public class CachingSqlFetch implements JdbcSource {
 	}
 
 	/** The isolation level the backend actually granted — the pin's declared capability. */
-	public int isolation() {
+	int isolation() {
 		return fetch.isolation();
 	}
 

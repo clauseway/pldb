@@ -31,7 +31,7 @@ public class RelationN implements Relation {
 		return new RelationN(namespace, name, args);
 	}
 
-	public static void validateProperties(Property<?>... args) {
+	private static void validateProperties(Property<?>... args) {
 		List<String> duplicates = Arrays.stream(args)
 				.collect(Collectors.groupingBy(Property::getName))
 				.entrySet()

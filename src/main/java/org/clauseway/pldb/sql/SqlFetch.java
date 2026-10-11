@@ -126,8 +126,9 @@ public final class SqlFetch implements JdbcSource {
 	}
 
 	/** Registers the family's WHERE compiler; may OVERRIDE a built-in. */
-	public void compiling(Class<?> family, SqlCompiler compiler) {
+	public SqlFetch compiling(Class<?> family, SqlCompiler compiler) {
 		compilers.put(family, compiler);
+		return this;
 	}
 
 	/** Binds column codecs through a template literal. */
