@@ -10,8 +10,10 @@ Java 8, vavr, lombok. Auto-loaded every session — read before changing code.
   Postgres tests run under Testcontainers — Docker must be up; H2 covers the rest.
 - Branch per task; `git add` explicit paths (never `-A`); ff-merge to master; push only
   when asked.
-- Dependencies build in order: `functional` → `logic` → `pldb` (each `mvn install`), then
-  `apps/library`. If logic changed, reinstall it first.
+- `logic` resolves from Central at the released version in the POM. To build against a
+  local logic change, point the dependency at logic's `-SNAPSHOT`, `mvn install` logic
+  (and `functional` beneath it if it moved), and restore the released version before
+  merging. `apps/library` consumes pldb the same way.
 
 ## Architecture by package
 

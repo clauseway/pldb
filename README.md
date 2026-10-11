@@ -41,6 +41,20 @@ in-memory values in tests and PostgreSQL in anger, and cannot tell the
 difference. [`apps/library`](../apps/library) is that claim as a test
 suite.
 
+## Getting it
+
+Java 8, on Maven Central. `logic` — and under it `functional` and the
+relocated vavr — comes transitively; `slf4j-api` is the only other runtime
+dependency, and the JDBC driver is the application's own:
+
+```xml
+<dependency>
+    <groupId>org.clauseway</groupId>
+    <artifactId>pldb</artifactId>
+    <version>0.1.0</version>
+</dependency>
+```
+
 ## The surface
 
 Declare once:
@@ -250,9 +264,10 @@ and an append-only system quietly lends one book twice. Certifying
 
 No ORM, no migrations, no connection pooling, no entity lifecycle —
 facts are values, answers are facts, and the transaction is the only
-session there is. A research project like its siblings: no release,
-APIs move freely, and honesty over polish — the interesting failure
-modes are receipted as tests, not documented around.
+session there is. Pre-1.0 like its siblings: 0.1.0 is on Maven Central,
+the shape is settled, the API carries no compatibility guarantee yet —
+and honesty over polish: the interesting failure modes are receipted as
+tests, not documented around.
 
 ## Where knowledge lives
 
