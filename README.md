@@ -153,7 +153,7 @@ stages facts, and a `commit()` that proves the recorded reads unmoved
 before anything lands.
 
 ```java
-try (Transaction tx = AbstractTransaction.over(
+try (Transaction tx = Transaction.over(
         Watermark.over(CachingSqlFetch.pinned("app", connection), pool::get))) {
 
     // validate against the snapshot — every probe is recorded
@@ -212,10 +212,12 @@ decides (`unconditional()` is the explicit strengthening). Feeding a
 selection to `retracting` is the whole DELETE..SELECT story with the
 engine as the SELECT.
 
-The proof is a capability the source declares **by type** — a source
-with neither kind has no `Transaction.over` overload, so "committing
-against an uncertified source" is not a runtime error but a
-compile-time absence:
+The proof is a capability the source declares **by type**, and which
+proof a transaction stands on is the client's call: `Transaction.over`
+leans on the backend's own, `Transaction.recording` pins every read and
+carries the footprint. A source offering both opens either way; a
+source with neither kind has no door to call, so "committing against an
+uncertified source" is not a runtime error but a compile-time absence:
 
 - **Native serialization** — the backend validates read sets itself
   (an *honest* SERIALIZABLE: PostgreSQL's SSI, two-phase-locking
@@ -233,8 +235,8 @@ compile-time absence:
 
 ```java
 SharedDatabase store = SharedDatabase.empty();          // one history, in memory
-Transaction a = AbstractTransaction.over(store.open("a"));
-Transaction b = AbstractTransaction.over(store.open("b"));
+Transaction a = Transaction.recording(store.open("a"));
+Transaction b = Transaction.recording(store.open("b"));
 // both validate, both stage, first commit wins, second meets Conflict —
 // the whole concurrency story, testable in milliseconds, no container
 ```

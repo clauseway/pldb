@@ -1,66 +1,66 @@
 # Working on `pldb`
 
-A Prolog-style fact database on top of the `logic` miniKanren engine. Java 8, vavr, lombok.
-Auto-loaded every session — read before changing code.
+Relations over external data for the `logic` miniKanren engine: a relation lookup is a
+constraint, answers are facts, and the transaction is the only session there is.
+Java 8, vavr, lombok. Auto-loaded every session — read before changing code.
 
 ## Workflow rules (same as the logic repo)
 
-- TDD; `mvn test` must end `BUILD SUCCESS` (18 tests today) before any commit/merge.
-- Branch per task; `git add` explicit paths (never `-A`); ff-merge to master; push.
+- TDD; `mvn test` must end `BUILD SUCCESS` (265 tests) before any commit/merge. The
+  Postgres tests run under Testcontainers — Docker must be up; H2 covers the rest.
+- Branch per task; `git add` explicit paths (never `-A`); ff-merge to master; push only
+  when asked.
 - Dependencies build in order: `functional` → `logic` → `pldb` (each `mvn install`), then
-  consumers (cuisine, arbitrage, trading). If logic changed, reinstall it first.
+  `apps/library`. If logic changed, reinstall it first.
 
-## Architecture in five lines
+## Architecture by package
 
-- `Relations._0.._8` — typed relation definitions (hand-maintained since codegen removal;
-  arity >8 uses variadic `RelationN` — see cuisine's `FLAVOR_PROCESSING`). `Property<T>` =
-  a typed, optionally `indexed()` column. `Fact` = relation + untyped value array.
-- `ImmutableDatabase extends AbstractIndexedDatabase` — persistent trie index
-  (`ImmutableIndex`) over **every ordered subset of indexed columns** (2^k paths per fact).
-- Queries: `relation.exists(db, args...)` produces a `Goal` that probes the index with the
-  bound args and unifies candidates.
-- Triggers run as post-conditions on `withFacts`/`withoutFacts`, returning `Try<Database>`
-  (failure = the update is discarded). `Constraint.unique`/`foreignKey` build on them.
+- `org.clauseway.pldb` — the contracts. `AnswerSource` answers a `Call<Relation>` probe
+  inline; `AnswerProducer` is the async kind (rows as a `Fiber`, `AnswerProducer.of` lifts a
+  source); `GoalProducer` runs a rule through the solve's table; `Writer` asserts/retracts.
+- `relations` — the schema and the question. `Literal.relation(ns, name).arg(col, x)…`
+  then `.from(source)` / `.produced(producer)` / `.solving(goal)`; `Property<T>` is a typed
+  column (`indexed()`, `ground()`, `nullable()`); `RelationN` the relation value;
+  `Question.select(goal, templates…)` lands answers as rows; `Answers` the row algebra;
+  `MagicVar`/`Projected` are marker variables one consumer recognises.
+- `constraints` — the lookup AS a constraint. `TableConstraints.posted` parks a
+  `TablePropagator` (sync) or `TableParkingPropagator` (async/rule); `Support` is the finite
+  domain a free column narrows to; `labelo` enumerates.
+- `inmemory` — `AnswerStore` (an immutable, indexed fact value) and `SharedDatabase` (one
+  history of store values; `open(id)` is a `SimulatedSerialization` snapshot).
+- `sql` — by CONVENTION: table = relation name, columns = property names. `SqlFetch`
+  (`pinned`/`live`) compiles probe + constraints to `SELECT … WHERE` (`FiniteDomainSqlCompiler`,
+  `NogoodSqlCompiler`); `CachingSqlFetch` adds the coverage ledger; `SqlFlush` lands rows;
+  `Codecs` map values to the wire. Serializations: `SerializableSource` (native, honest
+  SERIALIZABLE), `Watermark` (per-relation marks, `schema(admin)` is the DDL),
+  `VersionedWatermark` (region grain, needs a `version` column).
+- `transaction` — `Transaction.over(NativeSerialization)` leans on the backend's proof;
+  `Transaction.recording(SimulatedSerialization)` yields a `RecordingTransaction` whose
+  `footprint()` of `Pin`s outlives it and returns as a `requiring(premise)`. `WriteBuffer`
+  stages the delta; `Conflict` is the only refusal.
 
 ## Landmines
 
-- **Property/Relation identity is NAME-based.** Two `Property.of("water")` are the same
-  property. cuisine's `CALORIES = Property.of("water")` is a live copy-paste bug silently
-  reading the water column. See `docs/design/database-ergonomics.md` §2 before touching
-  identity or `Fact.get` (which also silently swallows type mismatches).
-- **`Constraint.unique`/`foreignKey` full-scan the relation on every insert** — O(n²)
-  loads. Known; fix is in ergonomics doc §3.
-- **Do NOT add `Relations._9`** — arity >8 is what `RelationN` is for (vavr caps at 8).
-- All-subsets indexing is a deliberate trade — don't "optimise" it without profiling.
+- **Property and Relation identity is VALUE-based (name + flags).** Two
+  `Property.of("water")` are the same column; a copy-pasted constant silently reads the
+  wrong one. See `docs/design/database-ergonomics.md` before touching identity.
+- **The proof kind is chosen by door, checked by type.** `over` wants a
+  `NativeSerialization`, `recording` a `SimulatedSerialization`; a source with neither has
+  no door — that absence is deliberate, do not add a fallback.
+- **SQL NULL only where declared.** A null cell in a column that is not `nullable()`
+  refuses by relation and column; a compiler pushing a comparison over a nullable column
+  must handle NULL rows itself (three-valued logic under-delivers silently).
+- **Register compilers and codecs before first use** on `CachingSqlFetch` — the ledger's
+  containment proof assumes a fixed registry.
+- `Watermark.schema(admin)` must run before the first transaction opens; a
+  `VersionedWatermark` table without its `version` column refuses at first read.
 
-## Design docs (`docs/design/`)
+## Where knowledge lives
 
-- `database-ergonomics.md` — agreed fixes: db riding the Package (Table/DebugStore
-  pattern) instead of hand-threading, identity hardening, index-based constraints, API
-  sweep. **Start here.**
-- `query-planning.md` — goal reordering by index selectivity (the `Goal.optimize()` seam).
-  Self-contained; build before deferred lookups.
-- `deferred-lookups.md` — suspend unbound lookups as constraints, wake on binding,
-  then ENUMERATE (defer-then-branch). The WEAKER cousin of `table-constraints.md`;
-  its blocker (logic's constraint-propagation redesign) is now cleared.
-- `table-constraints.md` — pldb answers as a NARROWING constraint store (GAC / table
-  constraint): candidates are a domain, singleton→collapse, joins prune, branch
-  only at `labelo`. The stronger "minimize branching" answer; supersedes
-  deferred-lookups as the target. Start here for the constraint-store direction.
-- `external-relations.md` — the backend contract that unifies the above: the read
-  side is TWO operations (enumerate + count) over a bound pattern, in-memory as
-  one implementation; SQL/REST/user backends as others; pull-vs-materialize,
-  the per-query consistency model, and REST endpoint GENERATION (no new protocol —
-  the outbound dual of the same mode signature). deferred-lookups and
-  table-constraints are two phases of this one contract. The SUBSTRATE — read for
-  the whole external-data picture.
-- `relational-structs.md` — the AUTHORING layer. TWO separable problems: query
-  ergonomics (a `query().bind(Property, val)` builder — no codegen) and schema
-  declaration (`@Relational` on a domain `@Value` makes the struct the SINGLE
-  SOURCE — fields+annotations generate the Property constants, Row, constraints,
-  indexes, AND the Relation, so there's no separate relation declaration). Base =
-  schema annotations, derived = a `rule` body; both generate a uniform Relation
-  the server can't tell apart. Codegen is justified as schema-as-a-type, NOT as
-  arg-naming (the builder does that). Read for how relations are written.
-- `further-directions.md` — weighted facts (semiring tie-in), materialized views,
-  subscriptions, time-travel. Captured, not designed.
+- `docs/design/domain-layer.md` — the north star: the engine at the data boundary.
+  **Start here.** Then `external-relations.md` (the backend contract), `table-constraints.md`
+  (lookups as a narrowing store), `database-ergonomics.md`, `query-planning.md`,
+  `deferred-lookups.md`, `relational-structs.md`, `further-directions.md`.
+- `docs/notes/` — AS-BUILT receipts: `transaction.md` (a write is a claim about the reads
+  that justified it), `table-as-the-source.md`, `wire-face.md`, `persist.md`,
+  `pins-stay-off-engine.md`, `namespaced-relations.md`. `TEMPLATE.md` for new ones.
