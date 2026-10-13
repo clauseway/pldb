@@ -1,0 +1,70 @@
+# Releases this repo at the POM's version (minus -SNAPSHOT) on every merge to
+# master: deploy stages a signed bundle in the Central Portal — the Publish
+# button stays manual (autoPublish=false in the POM) — then the release is
+# committed, tagged, and master is opened at the next patch snapshot.
+# The button runs the same job; with dry_run it signs and bundles without
+# uploading, tagging or committing.
+name: Release
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Build and sign the bundle; upload, tag and commit nothing
+        type: boolean
+        default: false
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.RELEASE_TOKEN || github.token }}
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 8
+          cache: maven
+          server-id: central
+          server-username: CENTRAL_USERNAME
+          server-password: CENTRAL_TOKEN
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+      - name: The release version is the POM's without -SNAPSHOT
+        id: version
+        run: |
+          snapshot=$(mvn -q -ntp org.apache.maven.plugins:maven-help-plugin:3.4.0:evaluate -Dexpression=project.version -DforceStdout)
+          version=${snapshot%-SNAPSHOT}
+          IFS=. read -r major minor patch <<< "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "next=$major.$minor.$((patch + 1))-SNAPSHOT" >> "$GITHUB_OUTPUT"
+      - name: Set the release version
+        run: mvn -B -ntp org.codehaus.mojo:versions-maven-plugin:2.16.2:set -DnewVersion=${{ steps.version.outputs.version }} -DgenerateBackupPoms=false
+      - name: Deploy (stages a bundle; nothing publishes without the Portal button)
+        run: mvn -B -ntp clean deploy -P release ${{ inputs.dry_run && '-DskipPublishing=true' || '' }}
+        env:
+          CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+          CENTRAL_TOKEN: ${{ secrets.CENTRAL_TOKEN }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+      - name: Commit the release, tag it, open the next snapshot
+        if: ${{ !inputs.dry_run }}
+        run: |
+          version=${{ steps.version.outputs.version }}
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "Release $version"
+          git tag "v$version"
+          mvn -B -ntp org.codehaus.mojo:versions-maven-plugin:2.16.2:set -DnewVersion=${{ steps.version.outputs.next }} -DgenerateBackupPoms=false
+          git commit -am "Open ${{ steps.version.outputs.next }} [skip ci]"
+          git push origin HEAD:master "v$version"
