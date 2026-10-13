@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.clauseway.logic.solving.Condition;
 import org.clauseway.logic.solving.Call;
+import org.clauseway.logic.unification.MiniKanren;
 import org.clauseway.logic.unification.terms.Reified;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.solving.Answer;
@@ -115,7 +116,8 @@ class AnswerIndex {
 						&& !Objects.equals(probe.get(i).get(), cells.get(i).get()));
 	}
 
+	/** Bound, and no hole inside a structure — a some() with a free value is a pattern, not a key. */
 	private static boolean isGround(Term<?> v) {
-		return v.isVal();
+		return v.isVal() && !MiniKanren.namesIn(v).findAny().isPresent();
 	}
 }

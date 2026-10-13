@@ -7,12 +7,15 @@ import org.clauseway.logic.solving.Query;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
+import static org.clauseway.logic.unification.structures.LOption.none;
+import static org.clauseway.logic.unification.structures.LOption.some;
 import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
 import static org.clauseway.pldb.relations.Projected.projected;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.clauseway.logic.unification.structures.LOption;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.inmemory.AnswerStore;
@@ -32,6 +35,30 @@ public class ProjectedTest {
 				.arg("src", src).indexed()
 				.arg("dst", dst)
 				.from(db);
+	}
+
+	private static Literal tagged(AnswerSource db, Unifiable<Integer> id, Unifiable<LOption<String>> tag) {
+		return Literal.relation(ProjectedTest.class, "tagged")
+				.arg("id", id).indexed()
+				.arg("tag", tag)
+				.from(db);
+	}
+
+	/** some(projected()) is "present, don't care": the marker one level inside the option is claimed. */
+	@Test
+	public void aMarkerInsideSomeIsClaimedAndNegatesHonestly() {
+		AnswerStore db = AnswerStore.empty().asserting(
+				tagged(null, lval(1), some(lval("core"))),
+				tagged(null, lval(2), none()));
+		Unifiable<Integer> present = lvar();
+		assertThat(Query.of(present.unifies(1)
+				.and(exclude(tagged(db, present, some(projected()))))).solve(present)
+				.collect(Collectors.toList())).isEmpty();
+		Unifiable<Integer> absent = lvar();
+		assertThat(Query.of(absent.unifies(2)
+				.and(exclude(tagged(db, absent, some(projected()))))).solve(absent)
+				.map(Object::toString)
+				.collect(Collectors.toList())).containsExactly("{2}");
 	}
 
 	private static AnswerStore db() {

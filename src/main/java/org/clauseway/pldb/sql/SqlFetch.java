@@ -24,6 +24,8 @@ import org.clauseway.logic.finitedomain.FiniteDomainConstraints;
 import org.clauseway.logic.nogoods.NogoodConstraints;
 import org.clauseway.logic.solving.Residues;
 import org.clauseway.logic.solving.Call;
+import org.clauseway.logic.unification.MiniKanren;
+import org.clauseway.logic.unification.structures.LOption;
 import org.clauseway.logic.unification.terms.Any;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.solving.Answer;
@@ -196,7 +198,7 @@ public final class SqlFetch implements JdbcSource {
 	 * invalid and die at the local restate, as the unpushed coupling
 	 * itself already does).
 	 */
-	private static SqlCompiler.ColumnResolver columnResolver(Relation relation, IndexedSeq<Term<Object>> args) {
+	private SqlCompiler.ColumnResolver columnResolver(Relation relation, IndexedSeq<Term<Object>> args) {
 		return new SqlCompiler.ColumnResolver() {
 			@Override
 			public Optional<String> columnOf(Term<?> term) {
@@ -215,10 +217,10 @@ public final class SqlFetch implements JdbcSource {
 			}
 
 			@Override
-			public boolean nullable(String column) {
+			public boolean optional(String column) {
 				for (Property<?> property : relation.getArgs()) {
 					if (property.getName().equals(column)) {
-						return property.isNullable();
+						return codecs.optional(relation, property);
 					}
 				}
 				return false;
@@ -238,14 +240,20 @@ public final class SqlFetch implements JdbcSource {
 		List<String> conditions = new ArrayList<>();
 		List<Object> parameters = new ArrayList<>();
 		for (int i = 0; i < args.size(); i++) {
-			if (args.get(i).isVal()) {
-				if (args.get(i).get() == null) {
-					requireNullable(relation, columns[i]);
-					conditions.add(columns[i].getName() + " IS NULL");
-				} else {
-					conditions.add(columns[i].getName() + " = ?");
-					parameters.add(codecs.encode(relation, columns[i], args.get(i).get()));
-				}
+			Term<Object> arg = args.get(i);
+			if (!arg.isVal()) {
+				continue;
+			}
+			// an option probes by shape: none() is IS NULL, some(v) is the
+			// equality over v, a some() with a hole is IS NOT NULL
+			Optional<LOption<Object>> option = MiniKanren.asLOption(arg.get());
+			if (option.isPresent() && option.get().isNone()) {
+				conditions.add(columns[i].getName() + " IS NULL");
+			} else if (option.isPresent() && !option.get().getValue().isVal()) {
+				conditions.add(columns[i].getName() + " IS NOT NULL");
+			} else if (isGround(arg)) {
+				conditions.add(columns[i].getName() + " = ?");
+				parameters.add(codecs.encode(relation, columns[i], arg.get()));
 			}
 		}
 		for (SqlPredicate predicate : predicates) {
@@ -260,7 +268,7 @@ public final class SqlFetch implements JdbcSource {
 		List<String> unboundColumns = new ArrayList<>();
 		List<Property<?>> unboundProperties = new ArrayList<>();
 		for (int i = 0; i < args.size(); i++) {
-			if (!args.get(i).isVal()) {
+			if (!isGround(args.get(i))) {
 				unboundColumns.add(columns[i].getName());
 				unboundProperties.add(columns[i]);
 			}
@@ -283,15 +291,8 @@ public final class SqlFetch implements JdbcSource {
 				while (rows.next()) {
 					Object[] values = new Object[unboundColumns.size()];
 					for (int i = 0; i < values.length; i++) {
-						values[i] = rows.getObject(unboundColumns.get(i));
-						if (values[i] != null) {
-							values[i] = codecs.decode(relation, unboundProperties.get(i), values[i]);
-						}
-						if (values[i] == null && !unboundProperties.get(i).isNullable()) {
-							throw new IllegalStateException(relation.getName() + ": column '"
-									+ unboundColumns.get(i) + "' holds null and is not"
-									+ " declared nullable()");
-						}
+						values[i] = codecs.decode(relation, unboundProperties.get(i),
+								rows.getObject(unboundColumns.get(i)));
 					}
 					Array<Object> vals = mergeValuesWithSupplied(args, values);
 					facts.add(Answers.answer(relation, vals.toJavaList()));
@@ -307,7 +308,7 @@ public final class SqlFetch implements JdbcSource {
 		int i = 0, j = 0;
 		Array<Object> result = Array.empty();
 		while (i + j < args.length()) {
-			if (args.get(i + j).isVal()) {
+			if (isGround(args.get(i + j))) {
 				result = result.append(args.get(i + j).get());
 				++i;
 			} else {
@@ -318,11 +319,9 @@ public final class SqlFetch implements JdbcSource {
 		return result;
 	}
 
-	private static void requireNullable(Relation relation, Property<?> column) {
-		if (!column.isNullable()) {
-			throw new IllegalStateException(relation.getName() + ": column '"
-					+ column.getName() + "' is not nullable — null cannot probe it");
-		}
+	/** A position the probe decides whole: bound, and no hole inside a structure. */
+	private static boolean isGround(Term<?> arg) {
+		return arg.isVal() && !MiniKanren.namesIn(arg).findAny().isPresent();
 	}
 
 }

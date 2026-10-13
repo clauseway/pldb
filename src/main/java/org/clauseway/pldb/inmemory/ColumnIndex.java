@@ -14,8 +14,6 @@ import org.clauseway.vavr.collection.Set;
 @Value
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 class ColumnIndex {
-	/** Null is a legitimate bucket key; vavr maps want a witness for it. */
-	private static final Object NULL_KEY = new Object();
 
 	Map<Object, Set<Reified<?>>> buckets;
 	Set<Reified<?>> wide;
@@ -45,9 +43,8 @@ class ColumnIndex {
 
 	/** The value's bucket plus every row free at this column, as mutable scratch. */
 	HashSet<Reified<?>> matching(Object value) {
-		Object key = value == null ? NULL_KEY : value;
 		HashSet<Reified<?>> matched = new HashSet<>();
-		buckets.get(key).forEach(bucket -> bucket.forEach(matched::add));
+		buckets.get(value).forEach(bucket -> bucket.forEach(matched::add));
 		wide.forEach(matched::add);
 		return matched;
 	}
@@ -57,6 +54,6 @@ class ColumnIndex {
 	}
 
 	private static Object getKey(Term<Object> cell) {
-		return cell.get() == null ? NULL_KEY : cell.get();
+		return cell.get();
 	}
 }

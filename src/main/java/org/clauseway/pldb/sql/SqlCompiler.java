@@ -47,8 +47,8 @@ public interface SqlCompiler {
 					.orElse(Collections.emptyList());
 		}
 
-		/** Whether the named column is declared nullable; false when unknown. */
-		default boolean nullable(String column) {
+		/** Whether the named column's cells are options (it may hold NULL); false when unknown. */
+		default boolean optional(String column) {
 			return false;
 		}
 	}
