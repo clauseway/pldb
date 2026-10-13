@@ -8,6 +8,7 @@ import static org.clauseway.logic.unification.terms.LVal.lval;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
@@ -31,6 +32,7 @@ import org.clauseway.logic.unification.MiniKanren;
 import org.clauseway.logic.unification.Substitutions;
 import org.clauseway.logic.unification.terms.Reified;
 import org.clauseway.logic.unification.terms.Term;
+import org.clauseway.logic.unification.structures.LOption;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerProducer;
 import org.clauseway.pldb.AnswerSource;
@@ -191,8 +193,21 @@ public class Literal implements Goal, Bounded, Postable {
 		public Builder arg(String column, Unifiable<?> value) {
 			columns.add(Property.of(column));
 			values.add(value);
-			projectedHere.add(value instanceof Projected && ((Projected<?>) value).claim());
+			projectedHere.add(marker(value).map(Projected::claim).orElse(false));
 			return this;
+		}
+
+		/** The projection marker at the arg, or one level inside a some(): present, don't care. */
+		private static Optional<Projected<?>> marker(Unifiable<?> value) {
+			if (value instanceof Projected) {
+				return Optional.of((Projected<?>) value);
+			}
+			return value.asVal()
+					.flatMap(MiniKanren::asLOption)
+					.filter(option -> !option.isNone())
+					.map(LOption::getValue)
+					.filter(Projected.class::isInstance)
+					.map(inner -> (Projected<?>) inner);
 		}
 
 		/** Marks the LAST declared column; refuses before any column. */
@@ -207,11 +222,6 @@ public class Literal implements Goal, Bounded, Postable {
 		 */
 		public Builder ground() {
 			return modify(Property::ground);
-		}
-
-		/** Marks the LAST declared column nullable. */
-		public Builder nullable() {
-			return modify(Property::nullable);
 		}
 
 		private Builder modify(UnaryOperator<Property<?>> flag) {

@@ -199,24 +199,15 @@ public class SqlFlush {
 
 	/**
 	 * Every cell through the registry BEFORE any insert — the whole batch
-	 * validates or none of it lands. A null cell rides the nullable
-	 * declaration; everything else must have a codec.
+	 * validates or none of it lands. A none() rides its column's optional
+	 * codec to NULL; everything must have a codec.
 	 */
 	private Row encoded(Answer<Relation> fact) {
 		Property<?>[] columns = fact.getRelation().getArgs();
 		List<Object> values = Answers.values(fact.getReified());
 		Object[] cells = new Object[columns.length];
 		for (int i = 0; i < columns.length; i++) {
-			Object value = values.get(i);
-			if (value == null) {
-				if (!columns[i].isNullable()) {
-					throw new IllegalStateException("flush of " + fact.getRelation().getName()
-							+ ": column '" + columns[i].getName() + "' is not nullable —"
-							+ " null cannot land in it");
-				}
-				continue;
-			}
-			cells[i] = codecs.encode(fact.getRelation(), columns[i], value);
+			cells[i] = codecs.encode(fact.getRelation(), columns[i], values.get(i));
 		}
 		return new Row(fact.getRelation(), Array.of(cells));
 	}

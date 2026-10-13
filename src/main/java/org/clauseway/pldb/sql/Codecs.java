@@ -104,10 +104,24 @@ public final class Codecs {
 				+ " and no codec is registered for it");
 	}
 
-	/** The read side: lenient — a column without a codec passes its cells through. */
+	/**
+	 * The read side: lenient — a column without a codec passes its cells
+	 * through — except for NULL, which only an optional codec may read:
+	 * anywhere else it refuses by relation and column.
+	 */
 	Object decode(Relation relation, Property<?> column, Object cell) {
 		Codec<?> codec = columnCodec(relation, column);
+		if (cell == null && (codec == null || !codec.isAcceptsNull())) {
+			throw new IllegalStateException(relation.getName() + ": column '" + column.getName()
+					+ "' holds null and has no optional codec — declare one with Codec.optional(...)");
+		}
 		return codec == null ? cell : codec.decode(cell);
+	}
+
+	/** Whether the column's cells are options — it carries an optional codec. */
+	boolean optional(Relation relation, Property<?> column) {
+		Codec<?> codec = columnCodec(relation, column);
+		return codec != null && codec.isAcceptsNull();
 	}
 
 	private Codec<?> columnCodec(Relation relation, Property<?> column) {

@@ -26,9 +26,10 @@ import org.clauseway.vavr.collection.Array;
  *
  * <p>NULL: SQL's three-valued logic makes every comparison silently drop
  * NULL rows — under-delivery, the one sin. A column holds NULL only when
- * its property is declared {@code nullable()}, which a compiler reads
- * through {@code ColumnResolver#nullable}: a comparison over such a column
- * must either stay local or carry {@link #isNull} as a disjunct.
+ * it carries an optional codec (its values are {@code LOption}s), which a
+ * compiler reads through {@code ColumnResolver#optional}: a comparison
+ * over such a column must either stay local or carry {@link #isNull} as
+ * a disjunct.
  */
 @Value
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
@@ -63,6 +64,10 @@ public class SqlPredicate {
 
 	public static SqlPredicate isNull(String column) {
 		return new SqlPredicate(column + " IS NULL", Array.empty(), true);
+	}
+
+	public static SqlPredicate isNotNull(String column) {
+		return new SqlPredicate(column + " IS NOT NULL", Array.empty(), true);
 	}
 
 	public static <T> SqlPredicate leq(String column, T value) {

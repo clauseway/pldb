@@ -16,11 +16,12 @@ import org.clauseway.pldb.relations.Relation;
  * A relation backend over one JDBC connection, by CONVENTION: the
  * database schema matches the pldb schema, so the relation's name is the
  * table and its property names are the columns — no mapping layer, and
- * values must be JDBC-representable; a column holds SQL NULL only when its
- * property is declared {@code nullable()} (a null cell in any other column
- * refuses by relation and column, and a compiler pushing a comparison over
- * a nullable column must account for NULL rows itself, because SQL's
- * three-valued logic would silently drop them — under-delivery). The
+ * values must be JDBC-representable; a column holds SQL NULL only when it
+ * carries an optional codec — its values are {@code LOption}s, NULL reads
+ * as {@code none()} — and a null cell in any other column refuses by
+ * relation and column; a compiler pushing a comparison over an optional
+ * column must account for NULL rows itself, because SQL's three-valued
+ * logic would silently drop them — under-delivery. The
  * backend is the schema authority: a
  * relation without a table fails loudly at its first fetch.
  *

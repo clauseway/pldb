@@ -1,6 +1,6 @@
 package org.clauseway.pldb.inmemory;
 
-// ABOUTME: The Call-native store's receipts: buckets serve ground probes, null and
+// ABOUTME: The Call-native store's receipts: buckets serve ground probes, None and
 // ABOUTME: wide rows key honestly, duplicate images ⊕-fold, values fork persistent.
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,6 +22,7 @@ import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
 import org.clauseway.logic.solving.Condition;
 import org.clauseway.logic.solving.Call;
 import org.clauseway.logic.tabling.table.Table;
+import org.clauseway.logic.unification.structures.LOption;
 import org.clauseway.logic.unification.terms.Any;
 import org.clauseway.logic.unification.terms.Reified;
 import org.clauseway.logic.unification.terms.Term;
@@ -140,13 +141,13 @@ public class AnswerStoreTest {
 	}
 
 	@Test
-	public void nullIsAnHonestBucketKey() {
+	public void noneIsAnHonestBucketKey() {
 		AnswerStore store = AnswerStore.empty()
-				.with(LOAN, row(null, "c1"))
+				.with(LOAN, row(LOption.none().get(), "c1"))
 				.with(LOAN, row("m1", "c2"));
 
-		assertThat(images(store.answers(probe(lval(null), Any.of(1)))))
-				.containsExactly("{({null}, {c1})}");
+		assertThat(images(store.answers(probe(LOption.none(), Any.of(1)))))
+				.containsExactly("{({None}, {c1})}");
 	}
 
 	@Test

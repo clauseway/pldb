@@ -22,7 +22,7 @@ Java 8, vavr, lombok. Auto-loaded every session — read before changing code.
   source); `GoalProducer` runs a rule through the solve's table; `Writer` asserts/retracts.
 - `relations` — the schema and the question. `Literal.relation(ns, name).arg(col, x)…`
   then `.from(source)` / `.produced(producer)` / `.solving(goal)`; `Property<T>` is a typed
-  column (`indexed()`, `ground()`, `nullable()`); `RelationN` the relation value;
+  column (`indexed()`, `ground()`); `RelationN` the relation value;
   `Question.select(goal, templates…)` lands answers as rows; `Answers` the row algebra;
   `MagicVar`/`Projected` are marker variables one consumer recognises.
 - `constraints` — the lookup AS a constraint. `TableConstraints.posted` parks a
@@ -49,9 +49,12 @@ Java 8, vavr, lombok. Auto-loaded every session — read before changing code.
 - **The proof kind is chosen by door, checked by type.** `over` wants a
   `NativeSerialization`, `recording` a `SimulatedSerialization`; a source with neither has
   no door — that absence is deliberate, do not add a fallback.
-- **SQL NULL only where declared.** A null cell in a column that is not `nullable()`
-  refuses by relation and column; a compiler pushing a comparison over a nullable column
-  must handle NULL rows itself (three-valued logic under-delivers silently).
+- **SQL NULL only through an optional codec.** An absent cell is `LOption.none()`, never
+  a null; a column that may be NULL is `Unifiable<LOption<T>>` with `Codec.optional(inner)`
+  registered via `withCodec`, and a NULL in a column with no optional codec refuses by
+  relation and column. The region compiler reads the probe's shape (`none()` → IS NULL,
+  `some(v)` → `= ?`, `some(free)` → IS NOT NULL); a comparison on the inner value stays
+  engine-side, so three-valued logic never meets a NULL row.
 - **Register compilers and codecs before first use** on `CachingSqlFetch` — the ledger's
   containment proof assumes a fixed registry.
 - `Watermark.schema(admin)` must run before the first transaction opens; a

@@ -13,6 +13,7 @@ import org.clauseway.logic.constraints.Posting;
 import org.clauseway.logic.constraints.Unification;
 import org.clauseway.logic.constraints.store.Atom;
 import org.clauseway.logic.nogoods.Nogood;
+import org.clauseway.logic.unification.structures.LOption;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.pldb.sql.SqlCompiler;
 
@@ -84,12 +85,27 @@ public final class NogoodSqlCompiler implements SqlCompiler {
 				SqlPredicate.or(negations));
 	}
 
-	/** The sentinel satisfies {@code != v}; SQL's NULL does not — push the disjunct. */
-	private static SqlPredicate nullAwareNeq(String column, Object value, ColumnResolver columns) {
+	/**
+	 * Engine-side {@code None ≠ some(v)} holds; SQL's NULL {@code <> v} does
+	 * not — an optional column pushes the disjunct. An option value is
+	 * negated by shape: {@code ≠ none()} is {@code IS NOT NULL}, {@code ≠
+	 * some(v)} is the disjunct over the inner value, and a some() with a
+	 * hole stays local.
+	 */
+	private static Optional<SqlPredicate> nullAwareNeq(String column, Object value, ColumnResolver columns) {
+		if (value instanceof LOption) {
+			LOption<?> option = (LOption<?>) value;
+			if (option.isNone()) {
+				return Optional.of(SqlPredicate.isNotNull(column));
+			}
+			return option.getValue().isVal() ?
+					nullAwareNeq(column, option.getValue().get(), columns) :
+					Optional.empty();
+		}
 		SqlPredicate neq = SqlPredicate.neq(column, value);
-		return columns.nullable(column) ?
+		return Optional.of(columns.optional(column) ?
 				SqlPredicate.or(Arrays.asList(neq, SqlPredicate.isNull(column))) :
-				neq;
+				neq);
 	}
 
 	private Optional<SqlPredicate> negatedLiteral(Posting literal, ColumnResolver columns) {
@@ -102,17 +118,17 @@ public final class NogoodSqlCompiler implements SqlCompiler {
 				Optional<Object> leftValue = value(unification.getU());
 				Optional<Object> rightValue = value(unification.getV());
 				if (leftColumn.isPresent() && rightColumn.isPresent()) {
-					// engine-side the sentinel decides half-null rows; SQL's
-					// UNKNOWN drops them — a nullable operand stays local
-					return columns.nullable(leftColumn.get()) || columns.nullable(rightColumn.get()) ?
+					// engine-side None = None and None ≠ some(v) decide half-null
+					// rows; SQL's UNKNOWN drops them — an optional operand stays local
+					return columns.optional(leftColumn.get()) || columns.optional(rightColumn.get()) ?
 							Optional.<SqlPredicate> empty() :
 							Optional.of(SqlPredicate.neqColumns(leftColumn.get(), rightColumn.get()));
 				}
 				if (leftColumn.isPresent() && rightValue.isPresent()) {
-					return Optional.of(nullAwareNeq(leftColumn.get(), rightValue.get(), columns));
+					return nullAwareNeq(leftColumn.get(), rightValue.get(), columns);
 				}
 				if (leftValue.isPresent() && rightColumn.isPresent()) {
-					return Optional.of(nullAwareNeq(rightColumn.get(), leftValue.get(), columns));
+					return nullAwareNeq(rightColumn.get(), leftValue.get(), columns);
 				}
 				return Optional.empty();
 			}

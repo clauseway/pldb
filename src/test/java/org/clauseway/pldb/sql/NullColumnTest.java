@@ -1,7 +1,7 @@
 package org.clauseway.pldb.sql;
 
-// ABOUTME: The null catcher: a NULL cell in a column the schema did not declare
-// ABOUTME: nullable refuses loudly by relation and column, never a silent broken fact.
+// ABOUTME: The null catcher: a NULL cell in a column with no optional codec
+// ABOUTME: refuses loudly by relation and column, never a silent broken fact.
 
 import org.clauseway.logic.solving.Query;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

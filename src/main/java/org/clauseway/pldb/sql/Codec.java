@@ -7,6 +7,8 @@ import java.util.function.Function;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.clauseway.logic.unification.structures.LOption;
+import org.clauseway.logic.unification.terms.LVal;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.relations.MagicVar;
 
@@ -28,12 +30,35 @@ public final class Codec<T> {
 	private final Class<?> jdbcType;
 	private final Function<T, Object> encoder;
 	private final Function<Object, T> decoder;
+	/** Whether a NULL cell is this codec's to decode — true only for an optional codec. */
+	private final boolean acceptsNull;
 
 	public static <T, J> Codec<T> of(Class<T> valueType, Class<J> jdbcType,
 			Function<T, J> encoder, Function<J, T> decoder) {
 		return new Codec<>(valueType, jdbcType,
 				encoder::apply,
-				cell -> decoder.apply(jdbcType.cast(cell)));
+				cell -> decoder.apply(jdbcType.cast(cell)),
+				false);
+	}
+
+	/**
+	 * The column may be NULL: its values are {@code LOption<T>}, a NULL
+	 * cell reads as {@code none()}, a {@code some(v)} writes as this
+	 * codec writes {@code v}.
+	 */
+	@SuppressWarnings("unchecked")
+	public Codec<LOption<T>> optional() {
+		return new Codec<>((Class<LOption<T>>) (Class<?>) LOption.class, jdbcType,
+				option -> option.isNone() ? null : encoder.apply(option.getValue().get()),
+				cell -> cell == null ?
+						LOption.<T> none().get() :
+						LOption.some(LVal.lval(decoder.apply(cell))).get(),
+				true);
+	}
+
+	/** An optional column over a JDBC-representable type. */
+	public static <J> Codec<LOption<J>> optional(Class<J> jdbcType) {
+		return of(jdbcType, jdbcType, Function.identity(), Function.identity()).optional();
 	}
 
 	/**
