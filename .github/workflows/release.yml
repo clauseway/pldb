@@ -1,9 +1,10 @@
-# Releases this repo at the POM's version (minus -SNAPSHOT) on every merge to
-# master: deploy stages a signed bundle in the Central Portal — the Publish
-# button stays manual (autoPublish=false in the POM) — then the release is
-# committed, tagged, and master is opened at the next patch snapshot.
-# The button runs the same job; with dry_run it signs and bundles without
-# uploading, tagging or committing.
+# Releases this repo at the POM's version (minus -SNAPSHOT) on a merge to
+# master, once: the version ships when no vX.Y.Z tag exists for it. Deploy
+# stages a signed bundle in the Central Portal — the Publish button stays
+# manual (autoPublish=false in the POM) — then the tag is pushed. The POM on
+# master is never written here: a release is the version bump in the pull
+# request that makes it. The button runs the same job; with dry_run it signs
+# and bundles without uploading or tagging, tagged version or not.
 name: Release
 
 on:
@@ -12,7 +13,7 @@ on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: Build and sign the bundle; upload, tag and commit nothing
+        description: Build and sign the bundle; upload and tag nothing
         type: boolean
         default: false
 
@@ -29,8 +30,6 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.RELEASE_TOKEN || github.token }}
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -41,30 +40,30 @@ jobs:
           server-password: CENTRAL_TOKEN
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
-      - name: The release version is the POM's without -SNAPSHOT
+      - name: The release version is the POM's without -SNAPSHOT, unless it is tagged already
         id: version
         run: |
           snapshot=$(mvn -q -ntp org.apache.maven.plugins:maven-help-plugin:3.4.0:evaluate -Dexpression=project.version -DforceStdout)
           version=${snapshot%-SNAPSHOT}
-          IFS=. read -r major minor patch <<< "$version"
           echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "next=$major.$minor.$((patch + 1))-SNAPSHOT" >> "$GITHUB_OUTPUT"
+          if git ls-remote --exit-code --tags origin "refs/tags/v$version" > /dev/null; then
+            echo "$version is already released (tag v$version exists); nothing to deploy"
+            echo "release=${{ inputs.dry_run && 'true' || 'false' }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "release=true" >> "$GITHUB_OUTPUT"
+          fi
       - name: Set the release version
+        if: steps.version.outputs.release == 'true'
         run: mvn -B -ntp org.codehaus.mojo:versions-maven-plugin:2.16.2:set -DnewVersion=${{ steps.version.outputs.version }} -DgenerateBackupPoms=false
       - name: Deploy (stages a bundle; nothing publishes without the Portal button)
+        if: steps.version.outputs.release == 'true'
         run: mvn -B -ntp clean deploy -P release ${{ inputs.dry_run && '-DskipPublishing=true' || '' }}
         env:
           CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
           CENTRAL_TOKEN: ${{ secrets.CENTRAL_TOKEN }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-      - name: Commit the release, tag it, open the next snapshot
-        if: ${{ !inputs.dry_run }}
+      - name: Tag the release
+        if: steps.version.outputs.release == 'true' && !inputs.dry_run
         run: |
-          version=${{ steps.version.outputs.version }}
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -am "Release $version"
-          git tag "v$version"
-          mvn -B -ntp org.codehaus.mojo:versions-maven-plugin:2.16.2:set -DnewVersion=${{ steps.version.outputs.next }} -DgenerateBackupPoms=false
-          git commit -am "Open ${{ steps.version.outputs.next }} [skip ci]"
-          git push origin HEAD:master "v$version"
+          git tag "v${{ steps.version.outputs.version }}"
+          git push origin "v${{ steps.version.outputs.version }}"
