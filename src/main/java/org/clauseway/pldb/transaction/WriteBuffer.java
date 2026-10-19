@@ -4,7 +4,6 @@ package org.clauseway.pldb.transaction;
 // ABOUTME: retractions — read as one source with the value semantics of a store.
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -80,13 +79,10 @@ class WriteBuffer implements AnswerSource {
 	 * part of membership.
 	 */
 	private static Map<Relation, Set<Reified<?>>> staged(AnswerStore opposite, List<Answer<Relation>> rows) {
-		Map<Relation, Set<Reified<?>>> keys = new HashMap<>();
-		for (Answer<Relation> row : rows) {
-			if (opposite.answers(Call.of(row.getRelation(), row.getReified())).iterator().hasNext()) {
-				keys.computeIfAbsent(row.getRelation(), relation -> new HashSet<>()).add(row.getReified());
-			}
-		}
-		return keys;
+		return rows.stream()
+				.filter(row -> opposite.answers(Call.of(row.getRelation(), row.getReified())).iterator().hasNext())
+				.collect(Collectors.groupingBy(Answer::getRelation,
+						Collectors.mapping(Answer::getReified, Collectors.toSet())));
 	}
 
 	private static boolean among(Answer<Relation> row, Map<Relation, Set<Reified<?>>> keys) {
