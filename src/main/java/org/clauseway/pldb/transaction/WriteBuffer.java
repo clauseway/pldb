@@ -31,10 +31,12 @@ import org.clauseway.vavr.collection.Array;
  * and every write mints a new value — ancestors keep answering as
  * before, siblings fork legally. The two staged lists (order preserved)
  * are what a commit face lands; until then the base never learns of
- * either. A fact staged both ways refuses with {@link IllegalStateException}:
- * the transaction has not decided what it believes. The DOMAIN's
- * no-delete doctrine lives above this type, at the facades that choose
- * not to expose the retracting door.
+ * either. The delta is a signed set: a write that meets its own opposite
+ * — retracting a fact this value staged, asserting one it staged to
+ * remove — cancels it, so replacing a fact within the transaction that
+ * staged it leaves only the replacement, and what remains is the delta
+ * against the base. The DOMAIN's no-delete doctrine lives above this type,
+ * at the facades that choose not to expose the retracting door.
  */
 @Value
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
@@ -51,27 +53,32 @@ class WriteBuffer implements AnswerSource {
 	}
 
 	public WriteBuffer asserting(List<Answer<Relation>> rows) {
-		refuseCollision(removals, rows);
-		return new WriteBuffer(base, insertions.asserting(rows), removals,
-				stagedAssertions.appendAll(rows), stagedRetractions);
+		List<Answer<Relation>> cancelled = staged(removals, rows);
+		List<Answer<Relation>> fresh = except(rows, cancelled);
+		return new WriteBuffer(base, insertions.asserting(fresh), removals.retracting(cancelled),
+				stagedAssertions.appendAll(fresh), except(stagedRetractions, cancelled));
 	}
 
 	public WriteBuffer retracting(List<Answer<Relation>> rows) {
-		refuseCollision(insertions, rows);
-		return new WriteBuffer(base, insertions, removals.asserting(rows),
-				stagedAssertions, stagedRetractions.appendAll(rows));
+		List<Answer<Relation>> cancelled = staged(insertions, rows);
+		List<Answer<Relation>> fresh = except(rows, cancelled);
+		return new WriteBuffer(base, insertions.retracting(cancelled), removals.asserting(fresh),
+				except(stagedAssertions, cancelled), stagedRetractions.appendAll(fresh));
 	}
 
-	/** A fact staged with the opposite polarity refuses the write whole. */
-	private static void refuseCollision(AnswerStore opposite, List<Answer<Relation>> rows) {
-		for (Answer<Relation> row : rows) {
-			if (opposite.answers(Call.of(row.getRelation(), row.getReified()))
-					.iterator().hasNext()) {
-				throw new IllegalStateException("the fact " + row.getRelation().getName()
-						+ row.getReified() + " is staged with the opposite polarity —"
-						+ " this transaction has not decided what it believes");
-			}
-		}
+	/** The rows the opposite side already holds: the writes that cancel instead of landing. */
+	private static List<Answer<Relation>> staged(AnswerStore opposite, List<Answer<Relation>> rows) {
+		return rows.stream()
+				.filter(row -> opposite.answers(Call.of(row.getRelation(), row.getReified())).iterator().hasNext())
+				.collect(Collectors.toList());
+	}
+
+	private static List<Answer<Relation>> except(List<Answer<Relation>> rows, List<Answer<Relation>> cancelled) {
+		return rows.stream().filter(row -> !cancelled.contains(row)).collect(Collectors.toList());
+	}
+
+	private static Array<Answer<Relation>> except(Array<Answer<Relation>> rows, List<Answer<Relation>> cancelled) {
+		return rows.filter(row -> !cancelled.contains(row));
 	}
 
 	/** The rows this value's lineage staged to land, in staging order. */

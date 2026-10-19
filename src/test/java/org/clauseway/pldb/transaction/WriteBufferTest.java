@@ -100,4 +100,36 @@ public class WriteBufferTest {
 				.map(Object::toString)
 				.collect(Collectors.toList())).containsExactly("{3}");
 	}
+	/** The delta is a signed set: a fact this value staged and then takes back leaves it, and the flush, unchanged. */
+	@Test
+	public void retractingAnOwnStagedAssertionCancelsIt() {
+		WriteBuffer lib = WriteBuffer.over(base())
+				.asserting(Arrays.asList(person(null, lval(3L), lval("Kurt")).fact(), person(null, lval(4L), lval("Emmy")).fact()))
+				.retracting(Collections.singletonList(person(null, lval(3L), lval("Kurt")).fact()));
+		assertThat(ids(lib)).containsExactly("{1}", "{2}", "{4}");
+		assertThat(lib.stagedAssertions()).containsExactly(person(null, lval(4L), lval("Emmy")).fact());
+		assertThat(lib.stagedRetractions()).isEmpty();
+	}
+
+	@Test
+	public void assertingAnOwnStagedRetractionCancelsIt() {
+		WriteBuffer lib = WriteBuffer.over(base())
+				.retracting(Collections.singletonList(person(null, lval(1L), lval("Ada")).fact()))
+				.asserting(Collections.singletonList(person(null, lval(1L), lval("Ada")).fact()));
+		assertThat(ids(lib)).containsExactly("{1}", "{2}");
+		assertThat(lib.stagedAssertions()).isEmpty();
+		assertThat(lib.stagedRetractions()).isEmpty();
+	}
+
+	/** Replacing a value within the transaction that staged it: the first lands as if never staged, the second stands. */
+	@Test
+	public void aStagedFactReplacedInTheSameValueLeavesOnlyTheReplacement() {
+		WriteBuffer lib = WriteBuffer.over(base())
+				.asserting(Collections.singletonList(person(null, lval(3L), lval("Kurt")).fact()))
+				.retracting(Collections.singletonList(person(null, lval(3L), lval("Kurt")).fact()))
+				.asserting(Collections.singletonList(person(null, lval(3L), lval("Goedel")).fact()));
+		assertThat(ids(lib)).containsExactly("{1}", "{2}", "{3}");
+		assertThat(lib.stagedAssertions()).containsExactly(person(null, lval(3L), lval("Goedel")).fact());
+		assertThat(lib.stagedRetractions()).isEmpty();
+	}
 }

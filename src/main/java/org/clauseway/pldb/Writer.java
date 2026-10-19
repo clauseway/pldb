@@ -21,8 +21,8 @@ import org.clauseway.pldb.relations.Literal;
  * always ground and unconditional by construction. {@link #retracting}
  * removes BY FACT — the membership claim leaves whole, every physical
  * duplicate with it; retracting the absent is a set-semantics no-op at
- * a store, and a transaction that both asserts and retracts one fact
- * refuses loudly: it has not decided what it believes.
+ * a store, and a transaction that retracts a fact it staged, or asserts
+ * one it staged to remove, cancels it: the delta is a signed set.
  */
 public interface Writer<S extends Writer<S>> {
 

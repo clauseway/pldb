@@ -122,20 +122,23 @@ public class TransactionMemoryTest {
 				.isInstanceOf(Transaction.Conflict.class);
 	}
 
+	/** The delta is a signed set: a fact staged and taken back in one transaction lands nothing, either way round. */
 	@Test
-	public void assertingAndRetractingOneFactRefusesTheWrite() throws Exception {
+	public void assertingAndRetractingOneFactCancelsOut() throws Exception {
 		SharedDatabase store = seededWithAda();
 
-		assertThatThrownBy(() -> Transaction.recording(store.open("a"))
+		Transaction.recording(store.open("a"))
 				.asserting(Collections.singletonList(book(null, lval("i1"), lval("Tar Pit"))))
-				.retracting(Collections.singletonList(book(null, lval("i1"), lval("Tar Pit")))))
-				.describedAs("a transaction asserting and retracting one fact has not decided what it believes")
-				.isInstanceOf(IllegalStateException.class);
-
-		assertThatThrownBy(() -> Transaction.recording(store.open("b"))
+				.retracting(Collections.singletonList(book(null, lval("i1"), lval("Tar Pit"))))
+				.commit();
+		Transaction.recording(store.open("b"))
 				.retracting(Collections.singletonList(person(null, lval(1), lval("Ada"))))
-				.asserting(Collections.singletonList(person(null, lval(1), lval("Ada")))))
-				.isInstanceOf(IllegalStateException.class);
+				.asserting(Collections.singletonList(person(null, lval(1), lval("Ada"))))
+				.commit();
+
+		Transaction reader = Transaction.recording(store.open("reader"));
+		assertThat(names(reader)).containsExactly("{Ada}");
+		assertThat(Query.of(book(reader, lvar(), lvar())).solve(lval(true)).count()).isZero();
 	}
 
 	private static Literal loanOf(AnswerSource db, Unifiable<Integer> id, Unifiable<String> copy) {
