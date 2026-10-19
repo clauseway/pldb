@@ -3,8 +3,11 @@ package org.clauseway.pldb.transaction;
 // ABOUTME: A frozen base plus a private SIGNED delta — staged assertions and staged
 // ABOUTME: retractions — read as one source with the value semantics of a store.
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -53,32 +56,49 @@ class WriteBuffer implements AnswerSource {
 	}
 
 	public WriteBuffer asserting(List<Answer<Relation>> rows) {
-		List<Answer<Relation>> cancelled = staged(removals, rows);
-		List<Answer<Relation>> fresh = except(rows, cancelled);
-		return new WriteBuffer(base, insertions.asserting(fresh), removals.retracting(cancelled),
-				stagedAssertions.appendAll(fresh), except(stagedRetractions, cancelled));
+		Map<Relation, Set<Reified<?>>> cancelled = staged(removals, rows);
+		return new WriteBuffer(base,
+				insertions.asserting(except(rows, cancelled)),
+				removals.retracting(among(rows, cancelled)),
+				stagedAssertions.appendAll(except(rows, cancelled)),
+				stagedRetractions.filter(row -> !among(row, cancelled)));
 	}
 
 	public WriteBuffer retracting(List<Answer<Relation>> rows) {
-		List<Answer<Relation>> cancelled = staged(insertions, rows);
-		List<Answer<Relation>> fresh = except(rows, cancelled);
-		return new WriteBuffer(base, insertions.retracting(cancelled), removals.asserting(fresh),
-				except(stagedAssertions, cancelled), stagedRetractions.appendAll(fresh));
+		Map<Relation, Set<Reified<?>>> cancelled = staged(insertions, rows);
+		return new WriteBuffer(base,
+				insertions.retracting(among(rows, cancelled)),
+				removals.asserting(except(rows, cancelled)),
+				stagedAssertions.filter(row -> !among(row, cancelled)),
+				stagedRetractions.appendAll(except(rows, cancelled)));
 	}
 
-	/** The rows the opposite side already holds: the writes that cancel instead of landing. */
-	private static List<Answer<Relation>> staged(AnswerStore opposite, List<Answer<Relation>> rows) {
-		return rows.stream()
-				.filter(row -> opposite.answers(Call.of(row.getRelation(), row.getReified())).iterator().hasNext())
-				.collect(Collectors.toList());
+	/**
+	 * The rows the opposite side already holds — the writes that cancel
+	 * instead of landing — keyed as the store keys a fact: by relation and
+	 * whole image, never by the {@link Answer} value, whose guard is not
+	 * part of membership.
+	 */
+	private static Map<Relation, Set<Reified<?>>> staged(AnswerStore opposite, List<Answer<Relation>> rows) {
+		Map<Relation, Set<Reified<?>>> keys = new HashMap<>();
+		for (Answer<Relation> row : rows) {
+			if (opposite.answers(Call.of(row.getRelation(), row.getReified())).iterator().hasNext()) {
+				keys.computeIfAbsent(row.getRelation(), relation -> new HashSet<>()).add(row.getReified());
+			}
+		}
+		return keys;
 	}
 
-	private static List<Answer<Relation>> except(List<Answer<Relation>> rows, List<Answer<Relation>> cancelled) {
-		return rows.stream().filter(row -> !cancelled.contains(row)).collect(Collectors.toList());
+	private static boolean among(Answer<Relation> row, Map<Relation, Set<Reified<?>>> keys) {
+		return keys.getOrDefault(row.getRelation(), Collections.emptySet()).contains(row.getReified());
 	}
 
-	private static Array<Answer<Relation>> except(Array<Answer<Relation>> rows, List<Answer<Relation>> cancelled) {
-		return rows.filter(row -> !cancelled.contains(row));
+	private static List<Answer<Relation>> among(List<Answer<Relation>> rows, Map<Relation, Set<Reified<?>>> keys) {
+		return rows.stream().filter(row -> among(row, keys)).collect(Collectors.toList());
+	}
+
+	private static List<Answer<Relation>> except(List<Answer<Relation>> rows, Map<Relation, Set<Reified<?>>> keys) {
+		return rows.stream().filter(row -> !among(row, keys)).collect(Collectors.toList());
 	}
 
 	/** The rows this value's lineage staged to land, in staging order. */
