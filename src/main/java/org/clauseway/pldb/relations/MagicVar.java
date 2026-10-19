@@ -34,6 +34,11 @@ public abstract class MagicVar<T> implements Unifiable<T> {
 	}
 
 	@Override
+	public final LVar<T> getVar() {
+		return variable.getVar();
+	}
+
+	@Override
 	public final String toString() {
 		return variable.toString();
 	}

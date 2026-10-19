@@ -13,6 +13,8 @@ import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
 import static org.clauseway.pldb.relations.Projected.projected;
 
+import org.clauseway.logic.finitedomain.Ints;
+
 import java.util.List;
 import java.util.stream.Collectors;
 import org.clauseway.logic.unification.structures.LOption;
@@ -163,5 +165,40 @@ public class ProjectedTest {
 				.from(null))
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("id");
+	}
+
+	/**
+	 * The receipt the projected() convention rests on: a free lvar in a
+	 * don't-care column is NOT a projection under exclude. The engine cannot
+	 * tell it from a variable a sibling will bind later, so the nogood never
+	 * fires and the branch survives — person 1 exists, and the query says it
+	 * does not.
+	 */
+	@Test
+	public void aFreeVariableUnderExcludeIsNotAProjection() {
+		Unifiable<Integer> x = lvar();
+		assertThat(Query.of(x.unifies(1)
+				.and(exclude(person(db(), x, lvar())))).solve(x)
+				.map(Object::toString)
+				.collect(Collectors.toList())).containsExactly("{1}");
+	}
+
+	/** A projected column the body constrains arithmetically: the marker is a variable to the finite domain too. */
+	@Test
+	public void aProjectedColumnMayMeetArithmeticInTheBody() {
+		Unifiable<Integer> src = lvar();
+		List<String> sources = Query.of(shifted(db(), src, projected())).solve(src)
+				.map(Object::toString)
+				.sorted()
+				.collect(Collectors.toList());
+		assertThat(sources).containsExactly("{1}", "{2}");
+	}
+
+	private static Literal shifted(AnswerSource db, Unifiable<Integer> src, Unifiable<Integer> shifted) {
+		Unifiable<Integer> dst = lvar();
+		return Literal.relation(ProjectedTest.class, "shifted")
+				.arg("src", src)
+				.arg("shifted", shifted)
+				.solving(edge(db, src, dst).and(Ints.addo(dst, lval(1), shifted)));
 	}
 }
