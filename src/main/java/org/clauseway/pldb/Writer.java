@@ -8,7 +8,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
+import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.solving.Answer;
+import org.clauseway.pldb.relations.Question;
 import org.clauseway.pldb.relations.Literal;
 
 /**
@@ -44,6 +47,37 @@ public interface Writer<S extends Writer<S>> {
 
 	default S retracting(Literal... rows) {
 		return retracting(Arrays.asList(rows));
+	}
+
+	/**
+	 * Every row the stored literal answers leaves: the retract half of a
+	 * refresh. The question is driven to exhaustion on the default fair
+	 * scheduler; a caller wanting another drives {@link Question#select} itself.
+	 */
+	default S clearing(Literal stored) {
+		return retracting(rows(stored, template(stored)));
+	}
+
+	/**
+	 * The refresh of a stored derivation: every row the stored literal
+	 * answers leaves, and every row the derived literal answers lands in
+	 * the stored relation's shape. The template is the stored literal's own
+	 * row over no source, so both literals must be built over the same row;
+	 * a derived cell the row does not share rides wide and the door refuses
+	 * it. A row that leaves and lands unchanged cancels to nothing.
+	 */
+	default S replacing(Literal stored, Literal derived) {
+		return clearing(stored).asserting(rows(derived, template(stored)));
+	}
+
+	/** The stored literal's row over no source: the shape its answers land in. */
+	static Literal template(Literal stored) {
+		return Literal.of((AnswerSource) null, stored.getRel(), stored.getArgs().toJavaList());
+	}
+
+	/** The question's answers in the template's shape, driven to exhaustion. */
+	static List<Answer<Relation>> rows(Goal question, Literal template) {
+		return new BreadthFirstScheduler<>(Question.select(question, template)).get();
 	}
 
 	/** The threshold conversion: statements become rows, holes refuse. */
