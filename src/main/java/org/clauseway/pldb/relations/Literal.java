@@ -4,13 +4,20 @@ package org.clauseway.pldb.relations;
 // ABOUTME: (source, producer, or rule) as a polymorphic Reading behind it.
 
 import org.clauseway.logic.solving.Answer;
+import static org.clauseway.logic.goals.Goal.defer;
+import static org.clauseway.logic.nogoods.Exclusion.exclude;
+import static org.clauseway.logic.unification.structures.LOption.none;
+import static org.clauseway.logic.unification.structures.LOption.some;
 import static org.clauseway.logic.unification.terms.LVal.lval;
+import static org.clauseway.logic.unification.terms.LVar.lvar;
+import static org.clauseway.pldb.relations.Projected.projected;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -167,6 +174,28 @@ public class Literal implements Goal, Bounded, Postable {
 	 */
 	public static Builder relation(Class<?> namespace, String name) {
 		return new Builder(namespace.getName(), name);
+	}
+
+	/**
+	 * A literal reified to a boolean column: true where it answers, false where
+	 * it does not. The false branch is an exclusion, so a column the literal does
+	 * not care about must be {@code projected()}, never a free {@code lvar()}.
+	 */
+	public static Goal flag(Literal rule, Unifiable<Boolean> column) {
+		return rule.and(column.unifies(true)).or(exclude(rule).and(column.unifies(false)));
+	}
+
+	/**
+	 * A literal with one hole reified to an option column: {@code some(value)}
+	 * for each value the literal answers, {@code none()} where it answers
+	 * nothing. The function is applied twice, once with the value and once with
+	 * the hole projected away, so both branches are over the same literal.
+	 */
+	public static <T> Goal option(Function<Unifiable<T>, Literal> rule, Unifiable<LOption<T>> column) {
+		return defer(() -> {
+			Unifiable<T> value = lvar();
+			return rule.apply(value).and(column.unifies(some(value)));
+		}).or(exclude(rule.apply(projected())).and(column.unifies(none())));
 	}
 
 	/**
