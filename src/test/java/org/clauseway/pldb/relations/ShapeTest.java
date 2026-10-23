@@ -1,7 +1,7 @@
 package org.clauseway.pldb.relations;
 
-// ABOUTME: A shape is a signed row with column names: a literal is built from it, remembers it, stays
-// ABOUTME: equal to the same literal built by args, and selects its answers back as ground rows of the shape.
+// ABOUTME: A shape is a signed row with column names: a literal built from it is a Rows of its type, keeps
+// ABOUTME: the relation and args of one built by args, hands the row to a body, and selects ground rows back.
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -48,8 +48,8 @@ public class ShapeTest {
 		}
 	}
 
-	private static Literal point(AnswerSource db, Point row) {
-		return Literal.relation(ShapeTest.class, "point").columns(row).from(db);
+	private static Rows<Point> point(AnswerSource db, Point row) {
+		return Literal.relation(ShapeTest.class, "point").rows(row).from(db);
 	}
 
 	private static AnswerStore twoPoints() {
@@ -58,7 +58,7 @@ public class ShapeTest {
 				point(null, new Point(lval(3), lval(4))));
 	}
 
-	/** The relation and the arguments are what tabling and the stores key by; the remembered row touches neither. A literal's own equality is identity through its reading, with or without a row. */
+	/** The relation and the arguments are what tabling and the stores key by; the kept row touches neither. */
 	@Test
 	public void aLiteralBuiltFromARowHasTheRelationAndArgsOfOneBuiltByArgs() {
 		Unifiable<Integer> x = lvar();
@@ -75,7 +75,7 @@ public class ShapeTest {
 
 	@Test
 	public void selectAnswersGroundRowsOfTheShape() {
-		List<Point> rows = point(twoPoints(), Point.anyPoint()).select(Point.class)
+		List<Point> rows = point(twoPoints(), Point.anyPoint()).select()
 				.sorted((a, b) -> a.getX().get().compareTo(b.getX().get()))
 				.collect(Collectors.toList());
 		assertThat(rows).containsExactly(new Point(lval(1), lval(2)), new Point(lval(3), lval(4)));
@@ -83,26 +83,25 @@ public class ShapeTest {
 
 	@Test
 	public void aValueMemberNarrowsTheQuestionAndRidesTheAnswer() {
-		List<Point> rows = point(twoPoints(), new Point(lval(3), lvar())).select(Point.class)
+		List<Point> rows = point(twoPoints(), new Point(lval(3), lvar())).select()
 				.collect(Collectors.toList());
 		assertThat(rows).containsExactly(new Point(lval(3), lval(4)));
 	}
 
+	/** The body receives the row the head is built from: both are over the same variables by construction. */
 	@Test
-	public void selectRefusesALiteralBuiltWithoutAShape() {
-		Literal byArgs = Literal.relation(ShapeTest.class, "point")
-				.arg("x", lvar()).indexed()
-				.arg("y", lvar())
-				.from(twoPoints());
-		assertThatThrownBy(() -> byArgs.select(Point.class))
-				.isInstanceOf(IllegalStateException.class)
-				.hasMessageContaining("shape");
+	public void aRuleBodyIsHandedTheHeadsRow() {
+		List<Point> rows = Literal.relation(ShapeTest.class, "origin").rows(Point.anyPoint())
+				.solving(r -> r.getX().unifies(0).and(r.getY().unifies(0)))
+				.select()
+				.collect(Collectors.toList());
+		assertThat(rows).containsExactly(new Point(lval(0), lval(0)));
 	}
 
 	@Test
 	public void selectRefusesAWideAnswer() {
-		Literal anyPoint = Literal.relation(ShapeTest.class, "anyPoint").columns(Point.anyPoint()).solving(Goal.success());
-		assertThatThrownBy(() -> anyPoint.select(Point.class).collect(Collectors.toList()))
+		Rows<Point> anyPoint = Literal.relation(ShapeTest.class, "anyPoint").rows(Point.anyPoint()).solving(r -> Goal.success());
+		assertThatThrownBy(() -> anyPoint.select().collect(Collectors.toList()))
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("wide");
 	}

@@ -7,20 +7,15 @@ import org.clauseway.logic.solving.Answer;
 import static org.clauseway.logic.unification.terms.LVal.lval;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.ToString;
 import lombok.Value;
 import lombok.experimental.NonFinal;
 import org.clauseway.functional.Nothing;
@@ -33,9 +28,7 @@ import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.goals.optimizer.Bounded;
 import org.clauseway.logic.tabling.Tabling;
-import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.solving.Residues;
-import org.clauseway.logic.solving.Row;
 import org.clauseway.logic.solving.Call;
 import org.clauseway.logic.unification.MiniKanren;
 import org.clauseway.logic.unification.Substitutions;
@@ -63,23 +56,19 @@ import org.clauseway.vavr.collection.Array;
  * consumer whose rings seal.
  */
 @Value
+@NonFinal
 @RequiredArgsConstructor(access = AccessLevel.MODULE)
 public class Literal implements Goal, Bounded, Postable {
 	Relation rel;
 	Array<Unifiable<?>> args;
 	Reading reading;
-	/** The row this literal was built from, when built from a shape: what {@link #select} rebuilds answers into. Not part of the literal's identity. */
-	@EqualsAndHashCode.Exclude
-	@ToString.Exclude
-	@Getter(AccessLevel.NONE)
-	Shape<?> shape;
 
 	public static Literal of(AnswerSource source, Relation rel, List<Unifiable<?>> args) {
-		return new Literal(rel, Array.ofAll(args), new SourceReading(source), null);
+		return new Literal(rel, Array.ofAll(args), new SourceReading(source));
 	}
 
 	public static Literal of(AnswerProducer producer, Relation rel, List<Unifiable<?>> args) {
-		return new Literal(rel, Array.ofAll(args), new ProducerReading(producer), null);
+		return new Literal(rel, Array.ofAll(args), new ProducerReading(producer));
 	}
 
 	/**
@@ -198,9 +187,6 @@ public class Literal implements Goal, Bounded, Postable {
 		List<Property<?>> columns = new ArrayList<>();
 		List<Unifiable<?>> values = new ArrayList<>();
 		List<Boolean> projectedHere = new ArrayList<>();
-		@NonFinal
-		@Getter(AccessLevel.NONE)
-		Shape<?> shape;
 
 		private Builder(String namespace, String name) {
 			this.namespace = namespace;
@@ -213,9 +199,9 @@ public class Literal implements Goal, Bounded, Postable {
 
 		/**
 		 * The row's columns, its names over its members in order, flags as the
-		 * shape declares them; the literal remembers the row for {@link Literal#select}.
+		 * shape declares them; the literal built from it is a {@link Rows} of the row's type.
 		 */
-		public <R extends Shape<R>> Builder columns(R row) {
+		public <R extends Shape<R>> Rows.Builder<R> rows(R row) {
 			Iterator<? extends Term<?>> members = row.members().iterator();
 			for (Property<?> column : row.columns()) {
 				if (!members.hasNext()) {
@@ -232,8 +218,7 @@ public class Literal implements Goal, Bounded, Postable {
 			if (members.hasNext()) {
 				throw new IllegalStateException("relation '" + name + "': the shape has more members than columns");
 			}
-			shape = row;
-			return this;
+			return new Rows.Builder<>(this, row);
 		}
 
 		private Builder column(Property<?> column, Unifiable<?> value) {
@@ -284,15 +269,15 @@ public class Literal implements Goal, Bounded, Postable {
 		}
 
 		public Literal from(AnswerSource source) {
-			return projecting(new Literal(relation(), Array.ofAll(values), new SourceReading(source), shape));
+			return projecting(new Literal(relation(), Array.ofAll(values), new SourceReading(source)));
 		}
 
 		public Literal produced(AnswerProducer producer) {
-			return projecting(new Literal(relation(), Array.ofAll(values), new ProducerReading(producer), shape));
+			return projecting(new Literal(relation(), Array.ofAll(values), new ProducerReading(producer)));
 		}
 
 		public Literal solving(Goal body) {
-			return projecting(new Literal(relation(), Array.ofAll(values), new RuleReading(body), shape));
+			return projecting(new Literal(relation(), Array.ofAll(values), new RuleReading(body)));
 		}
 
 		/**
@@ -325,8 +310,7 @@ public class Literal implements Goal, Bounded, Postable {
 			return new Literal(
 					RelationN.of(namespace, name + "[" + keptNames + "]", keptColumns.toArray(new Property<?>[0])),
 					Array.ofAll(keptValues),
-					new RuleReading(full),
-					full.shape);
+					new RuleReading(full));
 		}
 	}
 
@@ -334,48 +318,6 @@ public class Literal implements Goal, Bounded, Postable {
 	@Override
 	public Posting posted() {
 		return reading.posted(this);
-	}
-
-	/**
-	 * The answers as ground rows of the shape this literal was built from:
-	 * its members that are variables are selected, and each answer rebuilds
-	 * the row with them bound. Refuses a literal built by args rather than
-	 * from a shape, a shape of another kind, and a wide cell — a row is
-	 * ground, so a projected member, which never binds, cannot be selected.
-	 */
-	public <R extends Shape<R>> Stream<R> select(Class<R> kind) {
-		if (shape == null) {
-			throw new IllegalStateException(rel.getName()
-					+ ": select needs a literal built from a shape — columns(row), not arg()");
-		}
-		if (!kind.isInstance(shape)) {
-			throw new IllegalStateException(rel.getName() + ": built from a " + shape.getClass().getSimpleName()
-					+ ", not a " + kind.getSimpleName());
-		}
-		R row = kind.cast(shape);
-		List<Term<?>> members = StreamSupport.stream(row.members().spliterator(), false)
-				.collect(Collectors.<Term<?>> toList());
-		Unifiable<?>[] holes = members.stream()
-				.filter(member -> !member.isVal())
-				.map(member -> (Unifiable<?>) member)
-				.toArray(Unifiable<?>[]::new);
-		if (holes.length == 0) {
-			return Query.of(this).solve(lval(true)).map(answer -> row);
-		}
-		return Query.of(this).select(holes[0], Arrays.copyOfRange(holes, 1, holes.length)).rows()
-				.map(answer -> row.withMembers(members.stream()
-						.map(member -> member.isVal() ? member : bound(answer, member))
-						.toArray(Term<?>[]::new)));
-	}
-
-	/** The answer's cell at a member, which must be ground: a row is a value, not a question. */
-	private Term<?> bound(Row answer, Term<?> member) {
-		Reified<?> cell = answer.get(member);
-		if (!cell.isGround()) {
-			throw new IllegalStateException(rel.getName() + ": a wide cell at " + member
-					+ " — select answers ground rows only");
-		}
-		return cell;
 	}
 
 	/**
