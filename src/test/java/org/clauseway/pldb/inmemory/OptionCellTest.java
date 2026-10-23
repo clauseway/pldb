@@ -66,7 +66,7 @@ public class OptionCellTest {
 	public void aSomeProbeBindsTheValueAndSkipsTheAbsentRows() {
 		Unifiable<Integer> id = lvar();
 		Unifiable<String> name = lvar();
-		assertThat(Query.of(person(db(), id, some(name))).select(id, name).rows()
+		assertThat(Query.of(person(db(), id, some(name))).select(id, name).solutions()
 				.map(row -> row.get(id).get() + ":" + row.get(name).get())
 				.collect(Collectors.toList())).containsExactly("1:Ada");
 		assertThat(Query.of(person(db(), id, some(lval("Ada")))).solve(id)

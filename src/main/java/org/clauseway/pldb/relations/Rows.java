@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.solving.Query;
-import org.clauseway.logic.solving.Row;
+import org.clauseway.logic.solving.Solution;
 import org.clauseway.logic.unification.terms.Reified;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
@@ -21,13 +21,13 @@ import org.clauseway.pldb.AnswerProducer;
 import org.clauseway.pldb.AnswerSource;
 
 /**
- * A literal over a {@link Shape}'s row. The head is the row's columns
+ * A literal over a {@link Row}'s row. The head is the row's columns
  * applied over its members; the row rides along, outside the literal's
  * identity, and {@link #select} rebuilds each answer into it. A plain
  * literal has no select: only a literal that knows its row can answer
  * as rows of it.
  */
-public final class Rows<R extends Shape<R>> extends Literal {
+public final class Rows<R extends Row<R>> extends Literal {
 
 	private final R row;
 
@@ -52,14 +52,14 @@ public final class Rows<R extends Shape<R>> extends Literal {
 		if (holes.length == 0) {
 			return Query.of(this).solve(lval(true)).map(answer -> row);
 		}
-		return Query.of(this).select(holes[0], Arrays.copyOfRange(holes, 1, holes.length)).rows()
+		return Query.of(this).select(holes[0], Arrays.copyOfRange(holes, 1, holes.length)).solutions()
 				.map(answer -> row.withMembers(members.stream()
 						.map(member -> member.isVal() ? member : bound(answer, member))
 						.toArray(Term<?>[]::new)));
 	}
 
 	/** The answer's cell at a member, which must be ground: a row is a value, not a question. */
-	private Term<?> bound(Row answer, Term<?> member) {
+	private Term<?> bound(Solution answer, Term<?> member) {
 		Reified<?> cell = answer.get(member);
 		if (!cell.isGround()) {
 			throw new IllegalStateException(getRel().getName() + ": a wide cell at " + member
@@ -69,7 +69,7 @@ public final class Rows<R extends Shape<R>> extends Literal {
 	}
 
 	/** The builder after {@code rows(row)}: the names applied over the row's members, three ways to read. */
-	public static final class Builder<R extends Shape<R>> {
+	public static final class Builder<R extends Row<R>> {
 		private final Literal.Builder head;
 		private final R row;
 

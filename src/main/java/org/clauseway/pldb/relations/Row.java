@@ -10,13 +10,13 @@ import org.clauseway.logic.unification.structures.Structural;
 import org.clauseway.logic.unification.terms.Term;
 
 /**
- * A shape signs the structural contract and names its members: one
+ * A row signs the structural contract and names its members: one
  * {@link Property} per member, in order, carrying the column's name and
  * flags. That is all a relation needs from a row type; a literal over the
  * row ({@code relation(ns, name).columns(row)}), the template, the probe
  * and {@link Literal#select} derive from it.
  */
-public interface Shape<R extends Shape<R>> extends Structural<R> {
+public interface Row<R extends Row<R>> extends Structural<R> {
 
 	/** The columns, one per member, in member order. */
 	List<Property<?>> columns();

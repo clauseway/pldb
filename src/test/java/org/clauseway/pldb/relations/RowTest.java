@@ -1,6 +1,6 @@
 package org.clauseway.pldb.relations;
 
-// ABOUTME: A shape is a signed row with column names: a literal built from it is a Rows of its type, keeps
+// ABOUTME: A row is a signed value with column names: a literal built from it is a Rows of its type, keeps
 // ABOUTME: the relation and args of one built by args, hands the row to a body, and selects ground rows back.
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,11 +19,11 @@ import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.inmemory.AnswerStore;
 import org.junit.Test;
 
-public class ShapeTest {
+public class RowTest {
 
 	/** A point row: two columns, the first indexed. */
 	@Value
-	static class Point implements Shape<Point> {
+	static class Point implements Row<Point> {
 		Unifiable<Integer> x;
 		Unifiable<Integer> y;
 
@@ -49,7 +49,7 @@ public class ShapeTest {
 	}
 
 	private static Rows<Point> point(AnswerSource db, Point row) {
-		return Literal.relation(ShapeTest.class, "point").rows(row).from(db);
+		return Literal.relation(RowTest.class, "point").rows(row).from(db);
 	}
 
 	private static AnswerStore twoPoints() {
@@ -64,7 +64,7 @@ public class ShapeTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
 		Literal byRow = point(null, new Point(x, y));
-		Literal byArgs = Literal.relation(ShapeTest.class, "point")
+		Literal byArgs = Literal.relation(RowTest.class, "point")
 				.arg("x", x).indexed()
 				.arg("y", y)
 				.from(null);
@@ -74,7 +74,7 @@ public class ShapeTest {
 	}
 
 	@Test
-	public void selectAnswersGroundRowsOfTheShape() {
+	public void selectAnswersGroundRowsOfTheKind() {
 		List<Point> rows = point(twoPoints(), Point.anyPoint()).select()
 				.sorted((a, b) -> a.getX().get().compareTo(b.getX().get()))
 				.collect(Collectors.toList());
@@ -91,7 +91,7 @@ public class ShapeTest {
 	/** The body receives the row the head is built from: both are over the same variables by construction. */
 	@Test
 	public void aRuleBodyIsHandedTheHeadsRow() {
-		List<Point> rows = Literal.relation(ShapeTest.class, "origin").rows(Point.anyPoint())
+		List<Point> rows = Literal.relation(RowTest.class, "origin").rows(Point.anyPoint())
 				.solving(r -> r.getX().unifies(0).and(r.getY().unifies(0)))
 				.select()
 				.collect(Collectors.toList());
@@ -100,7 +100,7 @@ public class ShapeTest {
 
 	@Test
 	public void selectRefusesAWideAnswer() {
-		Rows<Point> anyPoint = Literal.relation(ShapeTest.class, "anyPoint").rows(Point.anyPoint()).solving(r -> Goal.success());
+		Rows<Point> anyPoint = Literal.relation(RowTest.class, "anyPoint").rows(Point.anyPoint()).solving(r -> Goal.success());
 		assertThatThrownBy(() -> anyPoint.select().collect(Collectors.toList()))
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("wide");

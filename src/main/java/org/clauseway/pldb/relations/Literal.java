@@ -199,13 +199,13 @@ public class Literal implements Goal, Bounded, Postable {
 
 		/**
 		 * The row's columns, its names over its members in order, flags as the
-		 * shape declares them; the literal built from it is a {@link Rows} of the row's type.
+		 * row declares them; the literal built from it is a {@link Rows} of the row's type.
 		 */
-		public <R extends Shape<R>> Rows.Builder<R> rows(R row) {
+		public <R extends Row<R>> Rows.Builder<R> rows(R row) {
 			Iterator<? extends Term<?>> members = row.members().iterator();
 			for (Property<?> column : row.columns()) {
 				if (!members.hasNext()) {
-					throw new IllegalStateException("relation '" + name + "': the shape names column '"
+					throw new IllegalStateException("relation '" + name + "': the row names column '"
 							+ column.getName() + "' but has no member for it");
 				}
 				Term<?> member = members.next();
@@ -216,7 +216,7 @@ public class Literal implements Goal, Bounded, Postable {
 				column(column, (Unifiable<?>) member);
 			}
 			if (members.hasNext()) {
-				throw new IllegalStateException("relation '" + name + "': the shape has more members than columns");
+				throw new IllegalStateException("relation '" + name + "': the row has more members than columns");
 			}
 			return new Rows.Builder<>(this, row);
 		}

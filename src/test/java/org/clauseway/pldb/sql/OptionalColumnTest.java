@@ -88,7 +88,7 @@ public class OptionalColumnTest {
 		try (CachingSqlFetch source = source()) {
 			Unifiable<Integer> id = lvar();
 			Unifiable<String> name = lvar();
-			assertThat(Query.of(person(source, id, some(name))).select(id, name).rows()
+			assertThat(Query.of(person(source, id, some(name))).select(id, name).solutions()
 					.map(row -> row.get(id).get() + ":" + row.get(name).get())
 					.collect(Collectors.toList())).containsExactly("1:Ada");
 		}
