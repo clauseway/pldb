@@ -1,6 +1,6 @@
 package org.clauseway.pldb.relations;
 
-// ABOUTME: A relation schema as a type: a mapper whose keys are the columns' variables, plus the columns' names
+// ABOUTME: A relation schema as a type: a selector whose keys are the columns' variables, plus the columns' names
 // ABOUTME: and flags in key order. An instance is a row of it; a literal is built from one and selects its values back.
 
 import java.util.ArrayList;
@@ -9,12 +9,12 @@ import java.util.List;
 import java.util.function.UnaryOperator;
 import lombok.Value;
 
-import org.clauseway.logic.solving.Mapper;
+import org.clauseway.logic.solving.Selector;
 import org.clauseway.logic.solving.Solution;
 import org.clauseway.logic.unification.terms.Unifiable;
 
 /**
- * A schema is a {@link Mapper} that names its keys: one {@link Property}
+ * A schema is a {@link Selector} that names its keys: one {@link Property}
  * per key, in order, carrying the column's name and flags. An instance is
  * a row of the schema — a pattern with variables, or a probe — and the
  * value it maps a solution into is the row as Java reads it. That is all a
@@ -26,7 +26,7 @@ import org.clauseway.logic.unification.terms.Unifiable;
  *
  * @param <D> the value a row of this schema maps a solution into
  */
-public interface Schema<D> extends Mapper<D> {
+public interface Schema<D> extends Selector<D> {
 
 	/** The columns, one per key, in key order. */
 	List<Property<?>> columns();

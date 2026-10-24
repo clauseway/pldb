@@ -28,7 +28,7 @@ Java 8, vavr, lombok. Auto-loaded every session — read before changing code.
 - `org.clauseway.pldb` — the contracts. `AnswerSource` answers a `Call<Relation>` probe
   inline; `AnswerProducer` is the async kind (rows as a `Fiber`, `AnswerProducer.of` lifts a
   source); `GoalProducer` runs a rule through the solve's table; `Writer` asserts/retracts.
-- `relations` — the schema and the question. `Schema<D>` is a logic `Mapper<D>` plus
+- `relations` — the schema and the question. `Schema<D>` is a logic `Selector<D>` plus
   `columns()`: a row type's fields are its keys (`Unifiable`), `map(Solution)` is the row as
   Java reads it, `Query.select(row).stream()` streams the values; `Schema.builder().arg(name,
   x)….build()` is an anonymous row (`Schema<Solution>`). `Property<T>` is a typed column

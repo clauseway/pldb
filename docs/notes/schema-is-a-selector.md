@@ -1,22 +1,22 @@
-# A schema is a mapper with column names: variables in, a Java value out, and the engine never rebuilds a row
+# A schema is a selector with column names: variables in, a Java value out, and the engine never rebuilds a row
 
 - **status**: receipted (October 2026; the human's direction after three
   tries in two days — see the lineage at the end)
-- **evidence held**: demonstration — logic `MapperTest` (4), pldb
+- **evidence held**: demonstration — logic `SelectorTest` (4), pldb
   `SchemaTest` (10), and the cargo port's five row types
   (`Delivery`, `Leg`, `RouteSpecification`, `HandlingActivity`,
   `HandlingEvent`) with their reads through `Query.select(row)`;
   negative witness — the two designs this replaces, each green and each
   wrong for a stated reason (lineage).
-- **imports**: Mapper, Solution, Selection, Schema, External, Literal,
+- **imports**: Selector, Solution, Selection, Schema, External, Literal,
   Term / Unifiable / Reified, structural contract, a don't-care column
   is `projected()` (glossary; all ratified).
 - **obligations**:
-  - (1) MET. `Mapper<D>` in logic's `solving`: `keys()` and
-    `map(Solution)`; `Query.select(mapper)` → `Selection<D>`, each
+  - (1) MET. `Selector<D>` in logic's `solving`: `keys()` and
+    `map(Solution)`; `Query.select(selector)` → `Selection<D>`, each
     solution through `decided()` before `map`. The solutions reading is
     the identity mapping; `stream()` is the one terminal.
-  - (2) MET. `Schema<D> extends Mapper<D>` adds `columns()`, one
+  - (2) MET. `Schema<D> extends Selector<D>` adds `columns()`, one
     `Property` per key in order; the literal builder zips columns over
     keys (`relation(ns, name).args(row)`); `Schema.Anonymous` is a
     `Schema<Solution>`. Not a `Structural`; no `withMembers`, no default
@@ -34,7 +34,7 @@
     against. Trigger: a second application with more than a dozen
     row types.
   - (5) OPEN. The ordinal problem in (3) is solved by a tuple; a named
-    value or a mapper that carries its sort key would read better.
+    value or a selector that carries its sort key would read better.
     Trigger: a third row type that needs it.
 - **links**: logic `structure-is-one-contract.md` (the contract a row
   does NOT sign; `CandidateLeg` is its receipt instead),
@@ -49,7 +49,7 @@ Java has no such distinction — a field is a field — and every attempt
 to give a row type one field type that serves both ends was a lie in one
 direction. The resolution is that the field is the variable, and the
 variable is already both: it enters the goal as itself and it reads the
-answer as the key of a `Solution`. A schema is therefore a mapper, the
+answer as the key of a `Solution`. A schema is therefore a selector, the
 variables a row is built from and the mapping of one solution over them
 into the row as Java reads it, plus the one thing the literal head needs
 that the engine does not, the columns' names and flags in key order.
@@ -75,7 +75,7 @@ tier. Nor does it buy generation (obligation 4). And the engine's
 `select` deduplicates by default where `solve` did not; the port's reads
 all want distinct rows, and `all()` is one call away.
 
-Cheapest way to kill it: a row type that must be both a mapper and a
+Cheapest way to kill it: a row type that must be both a selector and a
 term — selected as values AND carried inside a list. Then either it is
 two classes (the port's `Leg` and `CandidateLeg` already are, and the
 seam is one `LegDto` apart) or the contract would have to let a
@@ -94,5 +94,5 @@ that ended it: `Structural` is the honest term tier and should keep
 `Term`; a schema is the Java interop layer, it should not be a
 Structural at all, and the merged type Java needs already exists in the
 engine as the variable read through a `Solution`. Promoted to logic as
-`Mapper` because it is the whole of the Java interop story, and more
+`Selector` because it is the whole of the Java interop story, and more
 important than `Structural` itself.

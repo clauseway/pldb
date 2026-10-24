@@ -1,6 +1,6 @@
 package org.clauseway.pldb.relations;
 
-// ABOUTME: A schema is a mapper with column names: a literal is built from a row of it, typed by it, keeps
+// ABOUTME: A schema is a selector with column names: a literal is built from a row of it, typed by it, keeps
 // ABOUTME: the relation of one built from an anonymous row of the same columns, and selects its values back.
 
 import static org.assertj.core.api.Assertions.assertThat;
