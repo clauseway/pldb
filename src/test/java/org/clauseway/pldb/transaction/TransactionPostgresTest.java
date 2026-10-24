@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
+import org.clauseway.pldb.relations.External;
 import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.sql.SerializableSource;
@@ -65,7 +66,7 @@ public class TransactionPostgresTest {
 		return connection;
 	}
 
-	private static Literal<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
+	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(TransactionPostgresTest.class, "person")
 				.args(Schema.builder()
 						.arg("id", id).indexed()

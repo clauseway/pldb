@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
+import org.clauseway.pldb.relations.External;
 import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.relations.Schema;
 import org.junit.After;
@@ -53,7 +54,7 @@ public class CodecTest {
 		connection.close();
 	}
 
-	private static Literal<?> loan(AnswerSource db, Unifiable<Integer> id, Unifiable<LocalDate> due) {
+	private static External<?> loan(AnswerSource db, Unifiable<Integer> id, Unifiable<LocalDate> due) {
 		return Literal.relation(CodecTest.class, "loan")
 				.args(Schema.builder()
 						.arg("id", id).indexed()
@@ -66,7 +67,7 @@ public class CodecTest {
 	 * One Java type, TWO wire encodings in one relation — the codec is a
 	 * property of the COLUMN, addressed through the defining method.
 	 */
-	private static Literal<?> event(AnswerSource db, Unifiable<LocalDate> at, Unifiable<LocalDate> logged) {
+	private static External<?> event(AnswerSource db, Unifiable<LocalDate> at, Unifiable<LocalDate> logged) {
 		return Literal.relation(CodecTest.class, "event")
 				.args(Schema.builder()
 						.arg("at", at).indexed()
@@ -147,7 +148,7 @@ public class CodecTest {
 
 	@Test
 	public void aStructuralValueKeepsTheModellingRefusal() {
-		Literal<?> bad = Literal.relation(CodecTest.class, "loan")
+		External<?> bad = Literal.relation(CodecTest.class, "loan")
 				.args(Schema.builder()
 						.arg("id", lval(1)).indexed()
 						.arg("due", lval((Object) Arrays.asList(1, 2)))

@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.inmemory.AnswerStore;
+import org.clauseway.pldb.relations.External;
 import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.AnswerSource;
@@ -22,7 +23,7 @@ import org.junit.Test;
 
 public class WriteBufferTest {
 
-	private static Literal<?> person(AnswerSource db, Unifiable<Long> id, Unifiable<String> name) {
+	private static External<?> person(AnswerSource db, Unifiable<Long> id, Unifiable<String> name) {
 		return Literal.relation(WriteBufferTest.class, "person").args(Schema.builder().arg("id", id).indexed().arg("name", name).build()).from(db);
 	}
 

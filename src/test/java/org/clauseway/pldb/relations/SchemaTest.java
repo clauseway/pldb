@@ -48,12 +48,12 @@ public class SchemaTest {
 		}
 	}
 
-	private static Literal<Point> point(AnswerSource db, Point row) {
+	private static External<Point> point(AnswerSource db, Point row) {
 		return Literal.relation(SchemaTest.class, "point").args(row).from(db);
 	}
 
 	/** The same relation over an anonymous row: the columns spelled by name, flags on the last one named. */
-	private static Literal<Schema.Anonymous> point(AnswerSource db, Unifiable<Integer> x, Unifiable<Integer> y) {
+	private static External<Schema.Anonymous> point(AnswerSource db, Unifiable<Integer> x, Unifiable<Integer> y) {
 		return Literal.relation(SchemaTest.class, "point")
 				.args(Schema.builder()
 								.arg("x", x).indexed()

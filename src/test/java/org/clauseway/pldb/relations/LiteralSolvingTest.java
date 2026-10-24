@@ -26,7 +26,7 @@ import org.junit.Test;
 
 public class LiteralSolvingTest {
 
-	private static Literal<?> edge(AnswerSource db, Unifiable<Integer> src, Unifiable<Integer> dst) {
+	private static External<?> edge(AnswerSource db, Unifiable<Integer> src, Unifiable<Integer> dst) {
 		return Literal.relation(LiteralSolvingTest.class, "edge")
 				.args(Schema.builder()
 						.arg("src", src).indexed()

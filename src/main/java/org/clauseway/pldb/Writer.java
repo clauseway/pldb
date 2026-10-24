@@ -12,7 +12,9 @@ import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Question;
+import org.clauseway.pldb.relations.External;
 import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.Schema;
 
 /**
  * A value that accepts writes. The PRIMITIVE doors speak {@link Answer}
@@ -33,19 +35,19 @@ public interface Writer<S extends Writer<S>> {
 
 	S retracting(List<Answer<Relation>> rows);
 
-	default S asserting(Collection<? extends Literal<?>> rows) {
+	default S asserting(Collection<? extends External<?>> rows) {
 		return asserting(facts(rows));
 	}
 
-	default S retracting(Collection<? extends Literal<?>> rows) {
+	default S retracting(Collection<? extends External<?>> rows) {
 		return retracting(facts(rows));
 	}
 
-	default S asserting(Literal<?>... rows) {
+	default S asserting(External<?>... rows) {
 		return asserting(Arrays.asList(rows));
 	}
 
-	default S retracting(Literal<?>... rows) {
+	default S retracting(External<?>... rows) {
 		return retracting(Arrays.asList(rows));
 	}
 
@@ -54,7 +56,7 @@ public interface Writer<S extends Writer<S>> {
 	 * refresh. The question is driven to exhaustion on the default fair
 	 * scheduler; a caller wanting another drives {@link Question#select} itself.
 	 */
-	default S clearing(Literal<?> stored) {
+	default S clearing(External<?> stored) {
 		return retracting(rows(stored, template(stored)));
 	}
 
@@ -66,12 +68,12 @@ public interface Writer<S extends Writer<S>> {
 	 * a derived cell the row does not share rides wide and the door refuses
 	 * it. A row that leaves and lands unchanged cancels to nothing.
 	 */
-	default S replacing(Literal<?> stored, Literal<?> derived) {
+	default <R extends Schema<R>> S replacing(External<R> stored, Literal<R> derived) {
 		return clearing(stored).asserting(rows(derived, template(stored)));
 	}
 
 	/** The stored literal's row over no source: the shape its answers land in. */
-	static Literal<?> template(Literal<?> stored) {
+	static Literal<?> template(External<?> stored) {
 		return Literal.of((AnswerSource) null, stored.getRel(), stored.getArgs().toJavaList());
 	}
 
@@ -81,7 +83,7 @@ public interface Writer<S extends Writer<S>> {
 	}
 
 	/** The threshold conversion: statements become rows, holes refuse. */
-	static List<Answer<Relation>> facts(Collection<? extends Literal<?>> rows) {
-		return rows.stream().map(Literal::fact).collect(Collectors.toList());
+	static List<Answer<Relation>> facts(Collection<? extends External<?>> rows) {
+		return rows.stream().map(External::fact).collect(Collectors.toList());
 	}
 }

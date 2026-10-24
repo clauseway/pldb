@@ -19,6 +19,7 @@ import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.clauseway.pldb.Writer;
 import org.clauseway.logic.solving.Answer;
+import org.clauseway.pldb.relations.External;
 import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.relations.Property;
 import org.clauseway.pldb.relations.Relation;
@@ -62,12 +63,12 @@ public class SqlFlush {
 	}
 
 	/** The statement face: literals convert at the threshold, holes refuse. */
-	public void flush(Collection<? extends Literal<?>> statements) {
+	public void flush(Collection<? extends External<?>> statements) {
 		flush(Writer.facts(statements));
 	}
 
 	/** The statement face of the removal lane. */
-	public void delete(Collection<? extends Literal<?>> statements) {
+	public void delete(Collection<? extends External<?>> statements) {
 		delete(Writer.facts(statements));
 	}
 

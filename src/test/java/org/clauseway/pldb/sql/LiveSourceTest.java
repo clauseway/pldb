@@ -25,6 +25,7 @@ import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Answers;
+import org.clauseway.pldb.relations.External;
 import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.relations.Relation;
@@ -75,7 +76,7 @@ public class LiveSourceTest {
 		}
 	}
 
-	private static Literal<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
+	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(LiveSourceTest.class, "person")
 				.args(Schema.builder()
 						.arg("id", id).indexed()
@@ -84,7 +85,7 @@ public class LiveSourceTest {
 				.from(db);
 	}
 
-	private static Literal<?> book(AnswerSource db, Unifiable<String> isbn, Unifiable<String> title) {
+	private static External<?> book(AnswerSource db, Unifiable<String> isbn, Unifiable<String> title) {
 		return Literal.relation(LiveSourceTest.class, "book")
 				.args(Schema.builder()
 						.arg("isbn", isbn).indexed()

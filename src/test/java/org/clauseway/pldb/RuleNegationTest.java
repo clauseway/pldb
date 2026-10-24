@@ -18,6 +18,7 @@ import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.inmemory.AnswerStore;
+import org.clauseway.pldb.relations.External;
 import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.relations.Schema;
 import org.junit.Test;
@@ -200,7 +201,7 @@ public class RuleNegationTest {
 		assertThat(answers(exclude(tautology).and(x.unifies(2)), x)).isEmpty();
 	}
 
-	private static Literal<?> edge(AnswerSource db, Unifiable<Integer> src, Unifiable<Integer> dst) {
+	private static External<?> edge(AnswerSource db, Unifiable<Integer> src, Unifiable<Integer> dst) {
 		return Literal.relation(RuleNegationTest.class, "edge")
 				.args(Schema.builder()
 						.arg("src", src).indexed()

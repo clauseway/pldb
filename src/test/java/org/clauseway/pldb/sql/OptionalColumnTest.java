@@ -23,6 +23,7 @@ import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.unification.structures.LOption;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
+import org.clauseway.pldb.relations.External;
 import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.relations.Schema;
 import org.junit.After;
@@ -50,7 +51,7 @@ public class OptionalColumnTest {
 	}
 
 	/** The column's type says it may be absent; the codec says how NULL crosses the wire. */
-	private static Literal<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<LOption<String>> name) {
+	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<LOption<String>> name) {
 		return Literal.relation(OptionalColumnTest.class, "person")
 				.args(Schema.builder()
 						.arg("id", id).indexed()
@@ -155,7 +156,7 @@ public class OptionalColumnTest {
 	}
 
 	/** A column with no optional codec: a NULL cell still refuses by relation and column. */
-	private static Literal<?> strict(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
+	private static External<?> strict(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(OptionalColumnTest.class, "person")
 				.args(Schema.builder()
 						.arg("id", id).indexed()

@@ -23,6 +23,7 @@ import org.clauseway.logic.finitedomain.Longs;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
+import org.clauseway.pldb.relations.External;
 import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.transaction.Transaction;
@@ -81,7 +82,7 @@ public class VersionedWatermarkTest {
 				VersionedWatermark.over(SqlFetch.live(id, connection()), this::connection));
 	}
 
-	private static Literal<?> loan(AnswerSource db, Unifiable<String> member, Unifiable<String> copy) {
+	private static External<?> loan(AnswerSource db, Unifiable<String> member, Unifiable<String> copy) {
 		return Literal.relation(VersionedWatermarkTest.class, "loan")
 				.args(Schema.builder()
 						.arg("member", member).indexed()
@@ -90,7 +91,7 @@ public class VersionedWatermarkTest {
 				.from(db);
 	}
 
-	private static Literal<?> book(AnswerSource db, Unifiable<String> isbn, Unifiable<String> title) {
+	private static External<?> book(AnswerSource db, Unifiable<String> isbn, Unifiable<String> title) {
 		return Literal.relation(VersionedWatermarkTest.class, "book")
 				.args(Schema.builder()
 						.arg("isbn", isbn).indexed()
@@ -242,7 +243,7 @@ public class VersionedWatermarkTest {
 		}
 	}
 
-	private static Literal<?> invoice(AnswerSource db, Unifiable<String> member, Unifiable<Long> day) {
+	private static External<?> invoice(AnswerSource db, Unifiable<String> member, Unifiable<Long> day) {
 		return Literal.relation(VersionedWatermarkTest.class, "invoice")
 				.args(Schema.builder()
 						.arg("member", member)

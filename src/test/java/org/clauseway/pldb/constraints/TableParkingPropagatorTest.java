@@ -33,6 +33,7 @@ import org.clauseway.pldb.GoalProducer;
 import org.clauseway.pldb.inmemory.AnswerStore;
 import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Answers;
+import org.clauseway.pldb.relations.External;
 import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.relations.Property;
@@ -41,7 +42,7 @@ import org.junit.Test;
 
 public class TableParkingPropagatorTest {
 
-	private static Literal<?> r(AnswerSource db, Unifiable<Integer> item, Unifiable<String> tag) {
+	private static External<?> r(AnswerSource db, Unifiable<Integer> item, Unifiable<String> tag) {
 		return Literal.relation(TableParkingPropagatorTest.class, "r")
 				.args(Schema.builder()
 						.arg("item", item).indexed()

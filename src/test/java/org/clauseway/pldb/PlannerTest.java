@@ -19,6 +19,7 @@ import org.clauseway.logic.solving.Call;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.inmemory.AnswerStore;
 import org.clauseway.logic.solving.Answer;
+import org.clauseway.pldb.relations.External;
 import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.relations.Property;
@@ -27,7 +28,7 @@ import org.junit.Test;
 
 public class PlannerTest {
 
-	private static Literal<?> parent(AnswerSource db, Unifiable<Integer> parentId, Unifiable<Integer> childId) {
+	private static External<?> parent(AnswerSource db, Unifiable<Integer> parentId, Unifiable<Integer> childId) {
 		return Literal.relation(PlannerTest.class, "parentP")
 				.args(Schema.builder()
 						.arg("parentId", parentId).indexed()
@@ -72,7 +73,7 @@ public class PlannerTest {
 	}
 
 	private static AnswerSource chain(AtomicLong counter) {
-		List<Literal<?>> facts = new ArrayList<>();
+		List<External<?>> facts = new ArrayList<>();
 		for (int i = 0; i < N; i++) {
 			facts.add(parent(null, lval(i), lval(i + 1)));
 		}

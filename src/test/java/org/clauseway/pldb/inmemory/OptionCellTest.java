@@ -16,13 +16,14 @@ import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.unification.structures.LOption;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
+import org.clauseway.pldb.relations.External;
 import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.relations.Schema;
 import org.junit.Test;
 
 public class OptionCellTest {
 
-	private static Literal<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<LOption<String>> name) {
+	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<LOption<String>> name) {
 		return Literal.relation(OptionCellTest.class, "person")
 				.args(Schema.builder()
 						.arg("id", id).indexed()
@@ -32,7 +33,7 @@ public class OptionCellTest {
 	}
 
 	/** tag INDEXED: a None cell must key its bucket. */
-	private static Literal<?> tagged(AnswerSource db, Unifiable<Integer> id, Unifiable<LOption<String>> tag) {
+	private static External<?> tagged(AnswerSource db, Unifiable<Integer> id, Unifiable<LOption<String>> tag) {
 		return Literal.relation(OptionCellTest.class, "tagged")
 				.args(Schema.builder()
 						.arg("id", id).indexed()

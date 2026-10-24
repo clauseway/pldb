@@ -14,13 +14,14 @@ import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.inmemory.SharedDatabase;
+import org.clauseway.pldb.relations.External;
 import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.relations.Schema;
 import org.junit.Test;
 
 public class ReplacingTest {
 
-	private static Literal<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
+	private static External<Schema.Anonymous> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(ReplacingTest.class, "person")
 				.args(Schema.builder()
 						.arg("id", id).indexed()
@@ -30,7 +31,7 @@ public class ReplacingTest {
 	}
 
 	/** The person's name with a title: the derived face, in the stored relation's shape. */
-	private static Literal<?> titled(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
+	private static Literal<Schema.Anonymous> titled(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(ReplacingTest.class, "titled")
 				.args(Schema.builder()
 						.arg("id", id)

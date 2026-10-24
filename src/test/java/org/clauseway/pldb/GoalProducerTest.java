@@ -26,6 +26,7 @@ import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.inmemory.AnswerStore;
 import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Answers;
+import org.clauseway.pldb.relations.External;
 import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.relations.Relation;
@@ -33,11 +34,11 @@ import org.junit.Test;
 
 public class GoalProducerTest {
 
-	private static Literal<?> person(AnswerSource db, Unifiable<Long> id, Unifiable<String> name) {
+	private static External<?> person(AnswerSource db, Unifiable<Long> id, Unifiable<String> name) {
 		return Literal.relation(GoalProducerTest.class, "person").args(Schema.builder().arg("id", id).arg("name", name).build()).from(db);
 	}
 
-	private static Literal<?> person(AnswerProducer p, Unifiable<Long> id, Unifiable<String> name) {
+	private static External<?> person(AnswerProducer p, Unifiable<Long> id, Unifiable<String> name) {
 		return Literal.relation(GoalProducerTest.class, "person").args(Schema.builder().arg("id", id).arg("name", name).build()).produced(p);
 	}
 

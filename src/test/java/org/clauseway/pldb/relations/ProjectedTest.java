@@ -25,7 +25,7 @@ import org.junit.Test;
 
 public class ProjectedTest {
 
-	private static Literal<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
+	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(ProjectedTest.class, "person")
 				.args(Schema.builder()
 						.arg("id", id).indexed()
@@ -34,7 +34,7 @@ public class ProjectedTest {
 				.from(db);
 	}
 
-	private static Literal<?> edge(AnswerSource db, Unifiable<Integer> src, Unifiable<Integer> dst) {
+	private static External<?> edge(AnswerSource db, Unifiable<Integer> src, Unifiable<Integer> dst) {
 		return Literal.relation(ProjectedTest.class, "edge")
 				.args(Schema.builder()
 						.arg("src", src).indexed()
@@ -43,7 +43,7 @@ public class ProjectedTest {
 				.from(db);
 	}
 
-	private static Literal<?> tagged(AnswerSource db, Unifiable<Integer> id, Unifiable<LOption<String>> tag) {
+	private static External<?> tagged(AnswerSource db, Unifiable<Integer> id, Unifiable<LOption<String>> tag) {
 		return Literal.relation(ProjectedTest.class, "tagged")
 				.args(Schema.builder()
 						.arg("id", id).indexed()

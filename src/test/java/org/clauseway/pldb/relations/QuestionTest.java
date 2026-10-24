@@ -20,7 +20,7 @@ import org.junit.Test;
 
 public class QuestionTest {
 
-	private static Literal<?> loan(Unifiable<Integer> id, Unifiable<String> copy) {
+	private static External<?> loan(Unifiable<Integer> id, Unifiable<String> copy) {
 		return Literal.relation(QuestionTest.class, "loan")
 				.args(Schema.builder()
 						.arg("loanId", id).indexed()
@@ -29,7 +29,7 @@ public class QuestionTest {
 				.from(null);
 	}
 
-	private static Literal<?> returned(Unifiable<Integer> id) {
+	private static External<?> returned(Unifiable<Integer> id) {
 		return Literal.relation(QuestionTest.class, "returned")
 				.args(Schema.builder()
 						.arg("loanId", id).indexed()

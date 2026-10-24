@@ -30,6 +30,7 @@ import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.GoalProducer;
 import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Answers;
+import org.clauseway.pldb.relations.External;
 import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.relations.Relation;
@@ -72,7 +73,7 @@ public class AnswerStoreTest {
 		assertThat(store.estimate(probe(Any.of(0), Any.of(1)))).isEqualTo(3);
 	}
 
-	private static Literal<?> loanFact(String member, String copy) {
+	private static External<?> loanFact(String member, String copy) {
 		return Literal.relation(AnswerStoreTest.class, "loan")
 				.args(Schema.builder()
 						.arg("member", lval(member)).indexed()

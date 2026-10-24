@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.util.Collections;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
+import org.clauseway.pldb.relations.External;
 import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.sql.SerializableSource;
@@ -34,7 +35,7 @@ public class TransactionPredicateTest {
 		connection.close();
 	}
 
-	private static Literal<?> orphan(AnswerSource db, Unifiable<Integer> id) {
+	private static External<?> orphan(AnswerSource db, Unifiable<Integer> id) {
 		return Literal.relation(TransactionPredicateTest.class, "orphan").args(Schema.builder().arg("id", id).build()).from(db);
 	}
 

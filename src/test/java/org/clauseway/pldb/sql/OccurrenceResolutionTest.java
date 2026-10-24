@@ -20,6 +20,7 @@ import org.clauseway.logic.finitedomain.Longs;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
+import org.clauseway.pldb.relations.External;
 import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.relations.Schema;
 import org.junit.After;
@@ -44,7 +45,7 @@ public class OccurrenceResolutionTest {
 		connection.close();
 	}
 
-	private static Literal<?> pair(AnswerSource db, Unifiable<Long> a, Unifiable<Long> b) {
+	private static External<?> pair(AnswerSource db, Unifiable<Long> a, Unifiable<Long> b) {
 		return Literal.relation(OccurrenceResolutionTest.class, "pair")
 				.args(Schema.builder()
 						.arg("a", a)

@@ -24,6 +24,7 @@ import org.clauseway.logic.finitedomain.Longs;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.inmemory.AnswerStore;
+import org.clauseway.pldb.relations.External;
 import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.relations.Property;
@@ -34,7 +35,7 @@ import org.junit.Test;
 
 public class SqlPushdownTest {
 
-	private static Literal<?> person(AnswerSource db, Unifiable<Long> id, Unifiable<String> name) {
+	private static External<?> person(AnswerSource db, Unifiable<Long> id, Unifiable<String> name) {
 		return Literal.relation(SqlPushdownTest.class, "person")
 				.args(Schema.builder()
 						.arg("id", id).indexed()

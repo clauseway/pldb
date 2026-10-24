@@ -14,13 +14,14 @@ import java.util.stream.Collectors;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.inmemory.SharedDatabase;
+import org.clauseway.pldb.relations.External;
 import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.relations.Schema;
 import org.junit.Test;
 
 public class PremiseTest {
 
-	private static Literal<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
+	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(PremiseTest.class, "person")
 				.args(Schema.builder()
 						.arg("id", id).indexed()
@@ -29,7 +30,7 @@ public class PremiseTest {
 				.from(db);
 	}
 
-	private static Literal<?> book(AnswerSource db, Unifiable<String> isbn, Unifiable<String> title) {
+	private static External<?> book(AnswerSource db, Unifiable<String> isbn, Unifiable<String> title) {
 		return Literal.relation(PremiseTest.class, "book")
 				.args(Schema.builder()
 						.arg("isbn", isbn).indexed()

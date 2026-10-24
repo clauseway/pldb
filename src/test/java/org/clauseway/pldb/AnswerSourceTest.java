@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.inmemory.AnswerStore;
+import org.clauseway.pldb.relations.External;
 import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.relations.Property;
@@ -20,7 +21,7 @@ import org.junit.Test;
 
 public class AnswerSourceTest {
 
-	private static Literal<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
+	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(AnswerSourceTest.class, "person")
 				.args(Schema.builder()
 						.arg("id", id).indexed()

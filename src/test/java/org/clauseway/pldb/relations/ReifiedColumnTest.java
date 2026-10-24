@@ -20,7 +20,7 @@ import org.junit.Test;
 
 public class ReifiedColumnTest {
 
-	private static Literal<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
+	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(ReifiedColumnTest.class, "person")
 				.args(Schema.builder()
 						.arg("id", id).indexed()
