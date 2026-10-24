@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
 import org.clauseway.logic.goals.Goal;
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.literals.Question;
 import org.clauseway.pldb.relations.literals.External;
@@ -57,7 +58,7 @@ public interface Writer<S extends Writer<S>> {
 	 * scheduler; a caller wanting another drives {@link Question#select} itself.
 	 */
 	default S clearing(External<?> stored) {
-		return retracting(rows(stored, template(stored)));
+		return retracting(rows(stored, stored));
 	}
 
 	/**
@@ -69,17 +70,12 @@ public interface Writer<S extends Writer<S>> {
 	 * it. A row that leaves and lands unchanged cancels to nothing.
 	 */
 	default <R extends Schema<R>> S replacing(External<R> stored, Literal<R> derived) {
-		return clearing(stored).asserting(rows(derived, template(stored)));
-	}
-
-	/** The stored literal's row over no source: the shape its answers land in. */
-	static Literal<?> template(External<?> stored) {
-		return Literal.of((AnswerSource) null, stored.getRelation(), stored.getArgs().toJavaList());
+		return clearing(stored).asserting(rows(derived, stored));
 	}
 
 	/** The question's answers in the template's shape, driven to exhaustion. */
-	static List<Answer<Relation>> rows(Goal question, Literal<?> template) {
-		return new BreadthFirstScheduler<>(Question.select(question, template)).get();
+	static List<Answer<Relation>> rows(Goal question, External<?> template) {
+		return new BreadthFirstScheduler<>(Question.select(Query.of(question), template)).get();
 	}
 
 	/** The threshold conversion: statements become rows, holes refuse. */

@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.solving.Condition;
+import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.junit.Test;
 
@@ -44,8 +45,8 @@ public class QuestionTest {
 	}
 
 	/** The test's engine choice, stated where the doctrine wants it. */
-	private static List<Answer<Relation>> selected(Goal question, Literal... schemas) {
-		return new BreadthFirstScheduler<>(Question.select(question, schemas)).get();
+	private static List<Answer<Relation>> selected(Goal question, External<?>... schemas) {
+		return new BreadthFirstScheduler<>(Question.select(Query.of(question), schemas)).get();
 	}
 
 	private static String render(Answer<Relation> row) {
@@ -164,7 +165,8 @@ public class QuestionTest {
 	/** A projection is a literal-definition marker: in a selected row it is a category error, refused before solving. */
 	@Test
 	public void selectRefusesAProjectedMemberBeforeSolving() {
-		assertThatThrownBy(() -> Question.select(loan(lvar(), projected())))
+		Schema.Anonymous row = Schema.builder().arg("loanId", lvar()).arg("copy", projected()).build();
+		assertThatThrownBy(() -> Question.select(Query.of(Goal.success()), row))
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("copy")
 				.hasMessageContaining("projected");
@@ -174,7 +176,7 @@ public class QuestionTest {
 	@Test
 	public void aTemplateWithAProjectedColumnRefusesBeforeSolving() {
 		Unifiable<Integer> id = lvar();
-		assertThatThrownBy(() -> Question.select(loan(id, lvar()), loan(id, projected())))
+		assertThatThrownBy(() -> Question.select(Query.of(loan(id, lvar())), loan(id, projected())))
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("copy")
 				.hasMessageContaining("projected");

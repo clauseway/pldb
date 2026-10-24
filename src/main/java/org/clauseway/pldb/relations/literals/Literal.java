@@ -151,14 +151,10 @@ public interface Literal<S extends Schema<S>> extends Goal, Bounded, Postable {
 					throw new IllegalStateException("relation '" + name + "': the schema names column '"
 							+ column.getName() + "' but has no member for it");
 				}
-				Term<?> member = members.next();
-				if (!(member instanceof Unifiable)) {
-					throw new IllegalStateException("relation '" + name + "': column '" + column.getName()
-							+ "' holds a reified term — a literal takes unifiables");
-				}
+				Unifiable<?> value = members.next().unifiable();
 				columns.add(column);
-				values.add((Unifiable<?>) member);
-				projectedHere.add(Projection.marker((Unifiable<?>) member).map(Projected::claim).orElse(false));
+				values.add(value);
+				projectedHere.add(Projection.marker(value).map(Projected::claim).orElse(false));
 			}
 			if (members.hasNext()) {
 				throw new IllegalStateException("relation '" + name + "': the row has more members than columns");

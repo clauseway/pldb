@@ -23,10 +23,12 @@ import org.clauseway.logic.goals.Exhaustion;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.solving.Condition;
 import org.clauseway.logic.solving.Query;
-import org.clauseway.logic.solving.Solution;
+import org.clauseway.logic.unification.MiniKanren;
+import org.clauseway.logic.unification.structures.Structural;
 import org.clauseway.logic.unification.terms.Reified;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
+import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
 import org.clauseway.pldb.relations.Relation;
 import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.relations.Answers;
@@ -55,49 +57,47 @@ public class Question {
 	 * (cold and finite, structurally), awaiting whatever engine the
 	 * caller constructs — the scheduler is deliberately not chosen here.
 	 */
+
 	/**
-	 * The literal's answers as ground rows of its schema: the row's members that
-	 * are variables are selected, and each answer rebuilds the row with them
-	 * bound. A projected() member refuses before solving — a projection belongs
-	 * to a literal's definition, and a selected row is a value with no cell for
-	 * "some value". A wide cell refuses per answer: a row is ground.
+	 * The query's answers as rows: the row is a pattern over variables the
+	 * query mentions, and each answer is that pattern rebuilt with them bound.
+	 * A free cell comes back as a fresh variable, so a wide answer is a
+	 * pattern again; the Java boundary decides what a free cell means. A
+	 * projected() member refuses before solving — a projection belongs to a
+	 * literal's definition, and a row has no cell for "some value".
 	 */
-	public static <S extends Schema<S>> Stream<S> select(Literal<S> literal) {
-		S row = literal.getRow();
-		List<Term<?>> members = StreamSupport.stream(row.members().spliterator(), false)
-				.collect(Collectors.<Term<?>> toList());
-		for (int i = 0; i < members.size(); i++) {
-			if (members.get(i) instanceof Unifiable && Projection.marker((Unifiable<?>) members.get(i)).isPresent()) {
-				throw new IllegalStateException(literal.getRelation().getName() + ": member '"
-						+ row.columns().get(i).getName() + "' is projected() — a projection belongs to a literal's"
-						+ " definition; a selected row needs a variable or a value in every member");
+	public static <S extends Structural<S>> Stream<S> select(Query query, S row) {
+		refuseProjected(row);
+		return query.solve(lval(row)).map(Question::pattern);
+	}
+
+	/** A ground answer as it is; a wide one with every reified name a fresh variable. */
+	private static <S> S pattern(Reified<S> answer) {
+		if (answer.isGround()) {
+			return answer.get();
+		}
+		return new BreadthFirstScheduler<>(MiniKanren.instantiate(answer)).get().get();
+	}
+
+	/** A projected() member in a row a question lands in: the marker belongs to a literal's definition. */
+	private static void refuseProjected(Structural<?> row) {
+		int position = 0;
+		for (Term<?> member : row.members()) {
+			if (Projection.marker(member).isPresent()) {
+				String column = row instanceof Schema
+						? "'" + ((Schema<?>) row).columns().get(position).getName() + "'"
+						: "at position " + position;
+				throw new IllegalStateException("member " + column + " is projected() — a projection belongs to a"
+						+ " literal's definition; a row a question lands in needs a variable or a value in every member");
 			}
+			position++;
 		}
-		Unifiable<?>[] holes = members.stream()
-				.filter(member -> !member.isVal())
-				.map(member -> (Unifiable<?>) member)
-				.toArray(Unifiable<?>[]::new);
-		if (holes.length == 0) {
-			return Query.of(literal).solve(lval(true)).map(answer -> row);
-		}
-		return Query.of(literal).select(holes[0], Arrays.copyOfRange(holes, 1, holes.length)).solutions()
-				.map(answer -> row.withMembers(members.stream()
-						.map(member -> member.isVal() ? member : bound(literal, answer, member))
-						.toArray(Term<?>[]::new)));
 	}
 
-	/** The answer's cell at a member, which must be ground: a row is a value, not a question. */
-	private static Term<?> bound(Literal<?> literal, Solution answer, Term<?> member) {
-		Reified<?> cell = answer.get(member);
-		if (!cell.isGround()) {
-			throw new IllegalStateException(literal.getRelation().getName() + ": a wide cell at " + member
-					+ " — select answers ground rows only");
+	public static Fiber<List<Answer<Relation>>> select(Query question, External<?>... schemas) {
+		for (External<?> schema : schemas) {
+			refuseProjected(schema.getRow());
 		}
-		return cell;
-	}
-
-	public static Fiber<List<Answer<Relation>>> select(Goal question, Literal<?>... schemas) {
-		refuseProjected(schemas);
 		Array<Unifiable<?>> variables = variablesOf(schemas);
 		return Exhaustion.collected(rows(question,
 				lval(Tuple.ofAll(variables.map(Unifiable::getObjectTerm).toJavaArray())),
@@ -110,9 +110,9 @@ public class Question {
 	 * ({@code Residues.all} at the anchor, walking + slot
 	 * canonicalization), collected instead of emitted.
 	 */
-	private static Cont<Answer<Relation>, Nothing> rows(Goal question, Unifiable<?> anchor,
-			Array<Unifiable<?>> variables, Literal<?>[] schemas) {
-		return Cont.suspend(k -> Query.of(question).run()
+	private static Cont<Answer<Relation>, Nothing> rows(Query question, Unifiable<?> anchor,
+			Array<Unifiable<?>> variables, External<?>[] schemas) {
+		return Cont.suspend(k -> question.run()
 				.apply(answerPkg -> Answer.capture(anchor, answerPkg, anchor)
 						.flatMap(answer -> facts(
 								bind(variables, Array.ofAll(Answers.positions(answer.getReified()))),
@@ -122,23 +122,8 @@ public class Question {
 										(delivered, next) -> delivered.flatMap(nothing -> next)))));
 	}
 
-	/** A template with a projected() column: the row shape a question lands in cannot leave a column out. */
-	private static void refuseProjected(Literal<?>[] schemas) {
-		for (Literal<?> schema : schemas) {
-			List<Term<?>> members = StreamSupport.stream(schema.getRow().members().spliterator(), false)
-					.collect(Collectors.<Term<?>> toList());
-			for (int i = 0; i < members.size(); i++) {
-				if (members.get(i) instanceof Unifiable && Projection.marker((Unifiable<?>) members.get(i)).isPresent()) {
-					throw new IllegalStateException(schema.getRelation().getName() + ": template column '"
-							+ schema.getRow().columns().get(i).getName() + "' is projected() — a projection belongs"
-							+ " to a literal's definition; a template names every column it lands");
-				}
-			}
-		}
-	}
-
 	/** The templates' distinct variables, in birth order — the solve tuple. */
-	private static Array<Unifiable<?>> variablesOf(Literal<?>[] schemas) {
+	private static Array<Unifiable<?>> variablesOf(External<?>[] schemas) {
 		return Arrays.stream(schemas)
 				.flatMap(schema -> schema.getArgs().toJavaStream())
 				.flatMap(arg -> arg.asVar()
@@ -165,7 +150,7 @@ public class Question {
 	 * every row under the derivation's one guard.
 	 */
 	private static Stream<Answer<Relation>> facts(Map<Unifiable<?>, Term<?>> bound,
-			Condition condition, Literal<?>[] schemas) {
+			Condition condition, External<?>[] schemas) {
 		return Arrays.stream(schemas)
 				.map(schema -> Answer.of(schema.getRelation(),
 						Answers.image(IntStream.range(0, schema.getArgs().length())
@@ -179,7 +164,7 @@ public class Question {
 	 * the answer holds at the shared variable — a value, or the Any a
 	 * free cell rides as.
 	 */
-	private static Term<?> cell(Literal<?> schema, int position, Map<Unifiable<?>, Term<?>> bound) {
+	private static Term<?> cell(External<?> schema, int position, Map<Unifiable<?>, Term<?>> bound) {
 		Unifiable<?> arg = schema.getArgs().get(position);
 		return arg.isVal() ? arg : bound.get(arg);
 	}

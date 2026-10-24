@@ -10,6 +10,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.clauseway.logic.unification.MiniKanren;
 import org.clauseway.logic.unification.structures.LOption;
+import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.relations.Projected;
 import org.clauseway.pldb.relations.Property;
@@ -40,7 +41,7 @@ final class Projection {
 	}
 
 	/** The projection marker at the arg, or one level inside a some(): present, don't care. */
-	static Optional<Projected<?>> marker(Unifiable<?> value) {
+	static Optional<Projected<?>> marker(Term<?> value) {
 		if (value instanceof Projected) {
 			return Optional.of((Projected<?>) value);
 		}

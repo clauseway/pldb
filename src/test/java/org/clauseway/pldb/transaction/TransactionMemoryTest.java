@@ -178,7 +178,7 @@ public class TransactionMemoryTest {
 		Unifiable<Integer> id = lvar();
 		Unifiable<String> copy = lvar();
 		List<Answer<Relation>> cluster = new BreadthFirstScheduler<>(Question.select(
-				loanOf(tx, id, copy).and(returnedOf(tx, id)),
+				Query.of(loanOf(tx, id, copy).and(returnedOf(tx, id))),
 				loanOf(null, id, copy), returnedOf(null, id))).get();
 		assertThat(cluster).hasSize(2);
 

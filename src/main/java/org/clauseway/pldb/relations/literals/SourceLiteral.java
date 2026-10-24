@@ -23,7 +23,7 @@ import org.clauseway.vavr.collection.Array;
 final class SourceLiteral<S extends Schema<S>> implements External<S> {
 	private final Relation relation;
 	private final Array<Unifiable<?>> args;
-	private final S schema;
+	private final S row;
 	private final AnswerSource source;
 
 	@Override
