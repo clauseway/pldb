@@ -1,7 +1,7 @@
 package org.clauseway.pldb.relations;
 
-// ABOUTME: A schema is a signed value with column names: a literal built from a row of it is a Rows of its type, keeps
-// ABOUTME: the relation and args of one built by args, hands the row to a body, and selects ground rows back.
+// ABOUTME: A schema is a signed value with column names: a literal is built from a row of it, typed by it, keeps
+// ABOUTME: the relation of one built from an anonymous row of the same columns, and selects ground rows back.
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -48,8 +48,18 @@ public class SchemaTest {
 		}
 	}
 
-	private static Rows<Point> point(AnswerSource db, Point row) {
-		return Literal.relation(SchemaTest.class, "point").rows(row).from(db);
+	private static Literal<Point> point(AnswerSource db, Point row) {
+		return Literal.relation(SchemaTest.class, "point").args(row).from(db);
+	}
+
+	/** The same relation over an anonymous row: the columns spelled by name, flags on the last one named. */
+	private static Literal<Schema.Anonymous> point(AnswerSource db, Unifiable<Integer> x, Unifiable<Integer> y) {
+		return Literal.relation(SchemaTest.class, "point")
+				.args(Schema.builder()
+								.arg("x", x).indexed()
+								.arg("y", y)
+								.build())
+				.from(db);
 	}
 
 	private static AnswerStore twoPoints() {
@@ -58,19 +68,32 @@ public class SchemaTest {
 				point(null, new Point(lval(3), lval(4))));
 	}
 
-	/** The relation and the arguments are what tabling and the stores key by; the kept row touches neither. */
 	@Test
-	public void aLiteralBuiltFromARowHasTheRelationAndArgsOfOneBuiltByArgs() {
+	public void anAnonymousRowNamesItsColumnsInOrderWithTheirFlags() {
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
-		Literal byRow = point(null, new Point(x, y));
-		Literal byArgs = Literal.relation(SchemaTest.class, "point")
-				.arg("x", x).indexed()
-				.arg("y", y)
-				.from(null);
-		assertThat(byRow.getRel()).isEqualTo(byArgs.getRel());
-		assertThat(byRow.getRel().hashCode()).isEqualTo(byArgs.getRel().hashCode());
-		assertThat(byRow.getArgs()).isEqualTo(byArgs.getArgs());
+		Schema.Anonymous row = Schema.builder().arg("x", x).indexed().arg("y", y).build();
+		assertThat(row.columns()).containsExactly(Property.of("x").indexed(), Property.of("y"));
+		assertThat(row.getMembers()).containsExactly(x, y);
+	}
+
+	@Test
+	public void aFlagBeforeAnyColumnRefuses() {
+		assertThatThrownBy(() -> Schema.builder().indexed())
+				.isInstanceOf(IllegalStateException.class)
+				.hasMessageContaining("column");
+	}
+
+	/** The relation and the arguments are what tabling and the stores key by; the row's type touches neither. */
+	@Test
+	public void aLiteralOverATypedRowHasTheRelationAndArgsOfOneOverAnAnonymousRow() {
+		Unifiable<Integer> x = lvar();
+		Unifiable<Integer> y = lvar();
+		Literal<Point> typed = point(null, new Point(x, y));
+		Literal<Schema.Anonymous> anonymous = point(null, x, y);
+		assertThat(typed.getRel()).isEqualTo(anonymous.getRel());
+		assertThat(typed.getRel().hashCode()).isEqualTo(anonymous.getRel().hashCode());
+		assertThat(typed.getArgs()).isEqualTo(anonymous.getArgs());
 	}
 
 	@Test
@@ -82,17 +105,26 @@ public class SchemaTest {
 	}
 
 	@Test
+	public void selectOverAnAnonymousRowAnswersAnonymousRows() {
+		List<Schema.Anonymous> rows = point(twoPoints(), lval(3), lvar()).select()
+				.collect(Collectors.toList());
+		assertThat(rows).hasSize(1);
+		assertThat(rows.get(0).getMembers()).containsExactly(lval(3), lval(4));
+	}
+
+	@Test
 	public void aValueMemberNarrowsTheQuestionAndRidesTheAnswer() {
 		List<Point> rows = point(twoPoints(), new Point(lval(3), lvar())).select()
 				.collect(Collectors.toList());
 		assertThat(rows).containsExactly(new Point(lval(3), lval(4)));
 	}
 
-	/** The body receives the row the head is built from: both are over the same variables by construction. */
+	/** The head is the row's columns over its members, so a body over the same row is over the head's variables. */
 	@Test
-	public void aRuleBodyIsHandedTheHeadsRow() {
-		List<Point> rows = Literal.relation(SchemaTest.class, "origin").rows(Point.anyPoint())
-				.solving(r -> r.getX().unifies(0).and(r.getY().unifies(0)))
+	public void aRuleHeadAndItsBodyShareTheRow() {
+		Point origin = Point.anyPoint();
+		List<Point> rows = Literal.relation(SchemaTest.class, "origin").args(origin)
+				.solving(origin.getX().unifies(0).and(origin.getY().unifies(0)))
 				.select()
 				.collect(Collectors.toList());
 		assertThat(rows).containsExactly(new Point(lval(0), lval(0)));
@@ -100,7 +132,7 @@ public class SchemaTest {
 
 	@Test
 	public void selectRefusesAWideAnswer() {
-		Rows<Point> anyPoint = Literal.relation(SchemaTest.class, "anyPoint").rows(Point.anyPoint()).solving(r -> Goal.success());
+		Literal<Point> anyPoint = Literal.relation(SchemaTest.class, "anyPoint").args(Point.anyPoint()).solving(Goal.success());
 		assertThatThrownBy(() -> anyPoint.select().collect(Collectors.toList()))
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("wide");

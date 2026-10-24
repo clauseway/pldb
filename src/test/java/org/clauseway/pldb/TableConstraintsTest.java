@@ -27,6 +27,7 @@ import org.clauseway.pldb.constraints.TableConstraints;
 import org.clauseway.pldb.inmemory.AnswerStore;
 import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.relations.Property;
 import org.clauseway.pldb.relations.Relation;
 import org.junit.Test;
@@ -40,10 +41,12 @@ import org.junit.Test;
  */
 public class TableConstraintsTest {
 
-	private static Literal r(AnswerSource db, Unifiable<Integer> item, Unifiable<String> tag) {
+	private static Literal<?> r(AnswerSource db, Unifiable<Integer> item, Unifiable<String> tag) {
 		return Literal.relation(TableConstraintsTest.class, "r")
-				.arg("item", item).indexed()
-				.arg("tag", tag).indexed()
+				.args(Schema.builder()
+						.arg("item", item).indexed()
+						.arg("tag", tag).indexed()
+						.build())
 				.from(db);
 	}
 
@@ -51,10 +54,12 @@ public class TableConstraintsTest {
 		return r(null, lvar(), lvar()).getRel();
 	}
 
-	private static Literal s(AnswerSource db, Unifiable<String> label, Unifiable<Integer> price) {
+	private static Literal<?> s(AnswerSource db, Unifiable<String> label, Unifiable<Integer> price) {
 		return Literal.relation(TableConstraintsTest.class, "s")
-				.arg("label", label).indexed()
-				.arg("price", price).indexed()
+				.args(Schema.builder()
+						.arg("label", label).indexed()
+						.arg("price", price).indexed()
+						.build())
 				.from(db);
 	}
 
@@ -62,10 +67,12 @@ public class TableConstraintsTest {
 		return s(null, lvar(), lvar()).getRel();
 	}
 
-	private static Literal t(AnswerSource db, Unifiable<Integer> item, Unifiable<String> tag) {
+	private static Literal<?> t(AnswerSource db, Unifiable<Integer> item, Unifiable<String> tag) {
 		return Literal.relation(TableConstraintsTest.class, "t")
-				.arg("item", item).indexed()
-				.arg("tag", tag).indexed()
+				.args(Schema.builder()
+						.arg("item", item).indexed()
+						.arg("tag", tag).indexed()
+						.build())
 				.from(db);
 	}
 

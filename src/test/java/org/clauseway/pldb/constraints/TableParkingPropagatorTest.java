@@ -34,16 +34,19 @@ import org.clauseway.pldb.inmemory.AnswerStore;
 import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Answers;
 import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.relations.Property;
 import org.clauseway.pldb.relations.Relation;
 import org.junit.Test;
 
 public class TableParkingPropagatorTest {
 
-	private static Literal r(AnswerSource db, Unifiable<Integer> item, Unifiable<String> tag) {
+	private static Literal<?> r(AnswerSource db, Unifiable<Integer> item, Unifiable<String> tag) {
 		return Literal.relation(TableParkingPropagatorTest.class, "r")
-				.arg("item", item).indexed()
-				.arg("tag", tag).indexed()
+				.args(Schema.builder()
+						.arg("item", item).indexed()
+						.arg("tag", tag).indexed()
+						.build())
 				.from(db);
 	}
 
@@ -63,8 +66,10 @@ public class TableParkingPropagatorTest {
 	/** The reference relation as a rule: the body is the db lookup over the heads. */
 	private static Posting posted(Unifiable<Integer> i, Unifiable<String> t) {
 		return Literal.relation(TableParkingPropagatorTest.class, "rr")
-				.arg("item", i)
-				.arg("tag", t)
+				.args(Schema.builder()
+						.arg("item", i)
+						.arg("tag", t)
+						.build())
 				.solving(r(db, i, t)).posted();
 	}
 
@@ -117,8 +122,10 @@ public class TableParkingPropagatorTest {
 	/** A rule ignoring its tag: one row under the guard item ≠ 2. */
 	private static Posting guardedPosted(Unifiable<Integer> i, Unifiable<String> t) {
 		return Literal.relation(TableParkingPropagatorTest.class, "guardedR")
-				.arg("item", i)
-				.arg("tag", t)
+				.args(Schema.builder()
+						.arg("item", i)
+						.arg("tag", t)
+						.build())
 				.solving(exclude(i.unifies(2))).posted();
 	}
 
@@ -153,8 +160,10 @@ public class TableParkingPropagatorTest {
 
 	private static Posting twoGuardsPosted(Unifiable<Integer> i, Unifiable<String> t) {
 		return Literal.relation(TableParkingPropagatorTest.class, "twoGuardsR")
-				.arg("item", i)
-				.arg("tag", t)
+				.args(Schema.builder()
+						.arg("item", i)
+						.arg("tag", t)
+						.build())
 				.solving(exclude(i.unifies(2)).or(exclude(i.unifies(3)))).posted();
 	}
 
@@ -171,8 +180,10 @@ public class TableParkingPropagatorTest {
 
 	private static Posting widePosted(Unifiable<Integer> i, Unifiable<String> t) {
 		return Literal.relation(TableParkingPropagatorTest.class, "wideR")
-				.arg("item", i)
-				.arg("tag", t)
+				.args(Schema.builder()
+						.arg("item", i)
+						.arg("tag", t)
+						.build())
 				.solving(i.unifies(1)).posted();
 	}
 
@@ -189,8 +200,10 @@ public class TableParkingPropagatorTest {
 
 	private static Posting diagonalPosted(Unifiable<String> l, Unifiable<String> r) {
 		return Literal.relation(TableParkingPropagatorTest.class, "diagR")
-				.arg("l", l)
-				.arg("r", r)
+				.args(Schema.builder()
+						.arg("l", l)
+						.arg("r", r)
+						.build())
 				.solving(l.unifies(r)).posted();
 	}
 
@@ -202,8 +215,10 @@ public class TableParkingPropagatorTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<String> y = lvar();
 		Posting tautology = Literal.relation(TableParkingPropagatorTest.class, "tautR")
-				.arg("item", x)
-				.arg("tag", y)
+				.args(Schema.builder()
+						.arg("item", x)
+						.arg("tag", y)
+						.build())
 				.solving(Goal.success().or(x.unifies(1).and(y.unifies("b")))).posted();
 		assertThat(answers(tautology, lvar())).containsExactly("_.0");
 	}
@@ -237,8 +252,10 @@ public class TableParkingPropagatorTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<String> t = lvar();
 		Posting mixed = Literal.relation(TableParkingPropagatorTest.class, "mixedR")
-				.arg("item", x)
-				.arg("tag", t)
+				.args(Schema.builder()
+						.arg("item", x)
+						.arg("tag", t)
+						.build())
 				.solving(x.unifies(7).or(x.unifies(8).and(t.unifies("a")))).posted();
 		assertThat(answers(mixed, x)).containsExactlyInAnyOrder("{7}", "{8}");
 	}
@@ -251,8 +268,10 @@ public class TableParkingPropagatorTest {
 		Unifiable<Integer> i = lvar();
 		Unifiable<String> y = lvar();
 		Posting guarded = Literal.relation(TableParkingPropagatorTest.class, "condR")
-				.arg("item", i)
-				.arg("tag", y)
+				.args(Schema.builder()
+						.arg("item", i)
+						.arg("tag", y)
+						.build())
 				.solving(i.unifies(7).and(exclude(y.unifies("q")))
 						.or(i.unifies(8).and(y.unifies("a")))).posted();
 		assertThat(answers(guarded, y))
@@ -292,8 +311,10 @@ public class TableParkingPropagatorTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<String> y = lvar();
 		Posting mixed = Literal.relation(TableParkingPropagatorTest.class, "mixedTopR")
-				.arg("item", x)
-				.arg("tag", y)
+				.args(Schema.builder()
+						.arg("item", x)
+						.arg("tag", y)
+						.build())
 				.solving(x.unifies(7).or(x.unifies(8).and(y.unifies("a")))).posted();
 		assertThat(answers((Goal) mixed
 				.and(probe(p -> {

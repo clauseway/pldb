@@ -25,24 +25,30 @@ import org.junit.Test;
 
 public class ProjectedTest {
 
-	private static Literal person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
+	private static Literal<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(ProjectedTest.class, "person")
-				.arg("id", id).indexed()
-				.arg("name", name)
+				.args(Schema.builder()
+						.arg("id", id).indexed()
+						.arg("name", name)
+						.build())
 				.from(db);
 	}
 
-	private static Literal edge(AnswerSource db, Unifiable<Integer> src, Unifiable<Integer> dst) {
+	private static Literal<?> edge(AnswerSource db, Unifiable<Integer> src, Unifiable<Integer> dst) {
 		return Literal.relation(ProjectedTest.class, "edge")
-				.arg("src", src).indexed()
-				.arg("dst", dst)
+				.args(Schema.builder()
+						.arg("src", src).indexed()
+						.arg("dst", dst)
+						.build())
 				.from(db);
 	}
 
-	private static Literal tagged(AnswerSource db, Unifiable<Integer> id, Unifiable<LOption<String>> tag) {
+	private static Literal<?> tagged(AnswerSource db, Unifiable<Integer> id, Unifiable<LOption<String>> tag) {
 		return Literal.relation(ProjectedTest.class, "tagged")
-				.arg("id", id).indexed()
-				.arg("tag", tag)
+				.args(Schema.builder()
+						.arg("id", id).indexed()
+						.arg("tag", tag)
+						.build())
 				.from(db);
 	}
 
@@ -130,10 +136,12 @@ public class ProjectedTest {
 				.collect(Collectors.toList())).containsExactly("{9}");
 	}
 
-	private static Literal linked(AnswerSource db, Unifiable<Integer> node, Unifiable<Integer> via) {
+	private static Literal<?> linked(AnswerSource db, Unifiable<Integer> node, Unifiable<Integer> via) {
 		return Literal.relation(ProjectedTest.class, "linked")
-				.arg("node", node)
-				.arg("via", via)
+				.args(Schema.builder()
+						.arg("node", node)
+						.arg("via", via)
+						.build())
 				.solving(edge(db, node, via));
 	}
 
@@ -141,10 +149,12 @@ public class ProjectedTest {
 	 * The marker is a JOIN variable in the body: used twice, the projection
 	 * must not sever the join — that is the leak that broke availableCopy.
 	 */
-	private static Literal reciprocal(AnswerSource db, Unifiable<Integer> node, Unifiable<Integer> via) {
+	private static Literal<?> reciprocal(AnswerSource db, Unifiable<Integer> node, Unifiable<Integer> via) {
 		return Literal.relation(ProjectedTest.class, "reciprocal")
-				.arg("node", node)
-				.arg("via", via)
+				.args(Schema.builder()
+						.arg("node", node)
+						.arg("via", via)
+						.build())
 				.solving(edge(db, node, via).and(edge(db, via, node)));
 	}
 
@@ -160,8 +170,10 @@ public class ProjectedTest {
 	@Test
 	public void projectedOnAGroundColumnRefuses() {
 		assertThatThrownBy(() -> Literal.relation(ProjectedTest.class, "person")
-				.arg("id", projected()).ground()
-				.arg("name", lvar())
+				.args(Schema.builder()
+						.arg("id", projected()).ground()
+						.arg("name", lvar())
+						.build())
 				.from(null))
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("id");
@@ -194,11 +206,13 @@ public class ProjectedTest {
 		assertThat(sources).containsExactly("{1}", "{2}");
 	}
 
-	private static Literal shifted(AnswerSource db, Unifiable<Integer> src, Unifiable<Integer> shifted) {
+	private static Literal<?> shifted(AnswerSource db, Unifiable<Integer> src, Unifiable<Integer> shifted) {
 		Unifiable<Integer> dst = lvar();
 		return Literal.relation(ProjectedTest.class, "shifted")
-				.arg("src", src)
-				.arg("shifted", shifted)
+				.args(Schema.builder()
+						.arg("src", src)
+						.arg("shifted", shifted)
+						.build())
 				.solving(edge(db, src, dst).and(Ints.addo(dst, lval(1), shifted)));
 	}
 }

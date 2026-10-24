@@ -25,10 +25,12 @@ import org.junit.Test;
 public class LiteralTest {
 
 	/** The function-shaped definition: one method, names once, no relation constant. */
-	private static Literal person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
+	private static Literal<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(LiteralTest.class, "person")
-				.arg("id", id).indexed()
-				.arg("name", name)
+				.args(Schema.builder()
+						.arg("id", id).indexed()
+						.arg("name", name)
+						.build())
 				.from(db);
 	}
 
@@ -84,7 +86,7 @@ public class LiteralTest {
 	public void arityOutrunsTheTupleCap() {
 		// twelve columns: past vavr's 8-arity wall, through fact and query
 		Unifiable<Integer> key = lvar();
-		Literal wideProbe = wide(null, lval(7),
+		Literal<?> wideProbe = wide(null, lval(7),
 				lvar(), lvar(), lvar(), lvar(), lvar(), lvar(),
 				lvar(), lvar(), lvar(), lvar(), lvar());
 		AnswerStore wideDb = AnswerStore.empty()
@@ -98,32 +100,36 @@ public class LiteralTest {
 				lvar(), lvar(), lvar(), lvar(), last), last)).containsExactly("{k}");
 	}
 
-	private static Literal wide(AnswerSource db, Unifiable<Integer> k,
+	private static Literal<?> wide(AnswerSource db, Unifiable<Integer> k,
 			Unifiable<String> c1, Unifiable<String> c2, Unifiable<String> c3,
 			Unifiable<String> c4, Unifiable<String> c5, Unifiable<String> c6,
 			Unifiable<String> c7, Unifiable<String> c8, Unifiable<String> c9,
 			Unifiable<String> c10, Unifiable<String> c11) {
 		return Literal.relation(LiteralTest.class, "wide")
-				.arg("k", k).indexed()
-				.arg("c1", c1)
-				.arg("c2", c2)
-				.arg("c3", c3)
-				.arg("c4", c4)
-				.arg("c5", c5)
-				.arg("c6", c6)
-				.arg("c7", c7)
-				.arg("c8", c8)
-				.arg("c9", c9)
-				.arg("c10", c10)
-				.arg("c11", c11)
+				.args(Schema.builder()
+						.arg("k", k).indexed()
+						.arg("c1", c1)
+						.arg("c2", c2)
+						.arg("c3", c3)
+						.arg("c4", c4)
+						.arg("c5", c5)
+						.arg("c6", c6)
+						.arg("c7", c7)
+						.arg("c8", c8)
+						.arg("c9", c9)
+						.arg("c10", c10)
+						.arg("c11", c11)
+						.build())
 				.from(db);
 	}
 
 	@Test
 	public void tailModifiersComposeOnTheLastColumn() {
-		Literal lit = Literal.relation(LiteralTest.class, "flags")
-				.arg("k", lvar()).indexed().ground()
-				.arg("v", lvar())
+		Literal<?> lit = Literal.relation(LiteralTest.class, "flags")
+				.args(Schema.builder()
+						.arg("k", lvar()).indexed().ground()
+						.arg("v", lvar())
+						.build())
 				.from(db);
 		Property<?>[] cols = lit.getRel().getArgs();
 		assertThat(cols[0].isIndexed()).isTrue();
@@ -134,15 +140,17 @@ public class LiteralTest {
 
 	@Test
 	public void aModifierWithoutAColumnRefuses() {
-		assertThatThrownBy(() -> Literal.relation(LiteralTest.class, "early").indexed())
+		assertThatThrownBy(() -> Schema.builder().indexed())
 				.isInstanceOf(IllegalStateException.class)
-				.hasMessageContaining("early");
+				.hasMessageContaining("column");
 	}
 
 	@Test
 	public void aGroundColumnRefusesAnUnboundArgAtApplication() {
-		Literal lit = Literal.relation(LiteralTest.class, "strict")
-				.arg("k", lvar()).ground()
+		Literal<?> lit = Literal.relation(LiteralTest.class, "strict")
+				.args(Schema.builder()
+						.arg("k", lvar()).ground()
+						.build())
 				.from(db);
 		assertThatThrownBy(() -> Query.of(lit).solve(lvar()).collect(Collectors.toList()))
 				.hasMessageContaining("strict")
@@ -152,8 +160,10 @@ public class LiteralTest {
 	@Test
 	public void aGroundColumnAdmitsABoundArg() {
 		Unifiable<Integer> k = lvar();
-		Literal lit = Literal.relation(LiteralTest.class, "strictOk")
-				.arg("k", k).ground()
+		Literal<?> lit = Literal.relation(LiteralTest.class, "strictOk")
+				.args(Schema.builder()
+						.arg("k", k).ground()
+						.build())
 				.solving(k.unifies(5));
 		assertThat(answers(k.unifies(5).and(lit), k)).containsExactly("{5}");
 	}
@@ -161,8 +171,10 @@ public class LiteralTest {
 	@Test
 	public void aDuplicateColumnRefusesByName() {
 		assertThatThrownBy(() -> Literal.relation(LiteralTest.class, "dup")
-				.arg("k", lvar())
-				.arg("k", lvar())
+				.args(Schema.builder()
+						.arg("k", lvar())
+						.arg("k", lvar())
+						.build())
 				.from(db))
 				.isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("Duplicated");
@@ -174,11 +186,11 @@ public class LiteralTest {
 		// hole refusal arrives with the relation and column named
 		org.clauseway.pldb.inmemory.AnswerStore db = org.clauseway.pldb.inmemory.AnswerStore.empty()
 				.asserting(Arrays.asList(
-						Literal.relation(LiteralTest.class, "person").arg("id", lval(1)).arg("name", lval("Ada")).from(null),
-						Literal.relation(LiteralTest.class, "person").arg("id", lval(2)).arg("name", lval("Alan")).from(null)));
+						Literal.relation(LiteralTest.class, "person").args(Schema.builder().arg("id", lval(1)).arg("name", lval("Ada")).build()).from(null),
+						Literal.relation(LiteralTest.class, "person").args(Schema.builder().arg("id", lval(2)).arg("name", lval("Alan")).build()).from(null)));
 		org.assertj.core.api.Assertions.assertThat(db.estimate(
 						Call.of(
-								Literal.relation(LiteralTest.class, "person").arg("id", lval(1)).arg("name", lval("Ada")).from(null).getRel(),
+								Literal.relation(LiteralTest.class, "person").args(Schema.builder().arg("id", lval(1)).arg("name", lval("Ada")).build()).from(null).getRel(),
 								Answers.image(
 										Any.of(0), Any.of(1)))))
 				.isEqualTo(2);

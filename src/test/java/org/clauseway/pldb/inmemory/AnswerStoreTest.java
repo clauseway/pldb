@@ -31,14 +31,17 @@ import org.clauseway.pldb.GoalProducer;
 import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Answers;
 import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.relations.Relation;
 import org.junit.Test;
 
 public class AnswerStoreTest {
 
 	private static final Relation LOAN = Literal.relation(AnswerStoreTest.class, "loan")
-			.arg("member", lvar()).indexed()
-			.arg("copy", lvar())
+			.args(Schema.builder()
+					.arg("member", lvar()).indexed()
+					.arg("copy", lvar())
+					.build())
 			.from(null)
 			.getRel();
 
@@ -69,10 +72,12 @@ public class AnswerStoreTest {
 		assertThat(store.estimate(probe(Any.of(0), Any.of(1)))).isEqualTo(3);
 	}
 
-	private static Literal loanFact(String member, String copy) {
+	private static Literal<?> loanFact(String member, String copy) {
 		return Literal.relation(AnswerStoreTest.class, "loan")
-				.arg("member", lval(member)).indexed()
-				.arg("copy", lval(copy))
+				.args(Schema.builder()
+						.arg("member", lval(member)).indexed()
+						.arg("copy", lval(copy))
+						.build())
 				.from(null);
 	}
 
@@ -269,8 +274,10 @@ public class AnswerStoreTest {
 	}
 
 	private static final Relation PAIR = Literal.relation(AnswerStoreTest.class, "pair")
-			.arg("a", lvar()).indexed()
-			.arg("b", lvar()).indexed()
+			.args(Schema.builder()
+					.arg("a", lvar()).indexed()
+					.arg("b", lvar()).indexed()
+					.build())
 			.from(null)
 			.getRel();
 
@@ -325,8 +332,10 @@ public class AnswerStoreTest {
 	}
 
 	private static final Relation FLAGLESS = Literal.relation(AnswerStoreTest.class, "flagless")
-			.arg("member", lvar())
-			.arg("copy", lvar())
+			.args(Schema.builder()
+					.arg("member", lvar())
+					.arg("copy", lvar())
+					.build())
 			.from(null)
 			.getRel();
 

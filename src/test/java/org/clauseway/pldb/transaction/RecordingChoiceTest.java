@@ -15,6 +15,7 @@ import org.clauseway.logic.solving.Call;
 import org.clauseway.pldb.inmemory.AnswerStore;
 import org.clauseway.pldb.relations.Answers;
 import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.relations.Relation;
 import org.junit.Test;
 
@@ -69,8 +70,10 @@ public class RecordingChoiceTest {
 	}
 
 	private static final Relation PERSON = Literal.relation(RecordingChoiceTest.class, "person")
-			.arg("id", lvar()).indexed()
-			.arg("name", lvar())
+			.args(Schema.builder()
+					.arg("id", lvar()).indexed()
+					.arg("name", lvar())
+					.build())
 			.from(AnswerStore.empty())
 			.getRel();
 

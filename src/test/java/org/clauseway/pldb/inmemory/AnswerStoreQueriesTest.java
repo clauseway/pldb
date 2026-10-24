@@ -29,23 +29,28 @@ import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.Schema;
 import org.junit.Test;
 
 public class AnswerStoreQueriesTest {
 
-	private static Literal person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name, Unifiable<String> surname, Unifiable<Gender> gender) {
+	private static Literal<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name, Unifiable<String> surname, Unifiable<Gender> gender) {
 		return Literal.relation(AnswerStoreQueriesTest.class, "person")
-				.arg("id", id).indexed()
-				.arg("name", name).indexed()
-				.arg("surname", surname)
-				.arg("gender", gender)
+				.args(Schema.builder()
+						.arg("id", id).indexed()
+						.arg("name", name).indexed()
+						.arg("surname", surname)
+						.arg("gender", gender)
+						.build())
 				.from(db);
 	}
 
-	private static Literal parent(AnswerSource db, Unifiable<Integer> parentId, Unifiable<Integer> childId) {
+	private static Literal<?> parent(AnswerSource db, Unifiable<Integer> parentId, Unifiable<Integer> childId) {
 		return Literal.relation(AnswerStoreQueriesTest.class, "parent")
-				.arg("parentId", parentId).indexed()
-				.arg("childId", childId).indexed()
+				.args(Schema.builder()
+						.arg("parentId", parentId).indexed()
+						.arg("childId", childId).indexed()
+						.build())
 				.from(db);
 	}
 

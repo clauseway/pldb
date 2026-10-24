@@ -16,15 +16,18 @@ import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.inmemory.SharedDatabase;
 import org.clauseway.pldb.relations.Answers;
 import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.relations.Relation;
 import org.junit.Test;
 
 public class PinWorldIdentityTest {
 
-	private static Literal person(Unifiable<Integer> id, Unifiable<String> name) {
+	private static Literal<?> person(Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(PinWorldIdentityTest.class, "person")
-				.arg("id", id).indexed()
-				.arg("name", name)
+				.args(Schema.builder()
+						.arg("id", id).indexed()
+						.arg("name", name)
+						.build())
 				.from(null);
 	}
 
@@ -37,10 +40,12 @@ public class PinWorldIdentityTest {
 		return Call.of(relation, Answers.image(anys));
 	}
 
-	private static Literal loan(Unifiable<Integer> id, Unifiable<String> copy) {
+	private static Literal<?> loan(Unifiable<Integer> id, Unifiable<String> copy) {
 		return Literal.relation(PinWorldIdentityTest.class, "loan")
-				.arg("id", id).indexed()
-				.arg("copy", copy)
+				.args(Schema.builder()
+						.arg("id", id).indexed()
+						.arg("copy", copy)
+						.build())
 				.from(null);
 	}
 
@@ -74,10 +79,12 @@ public class PinWorldIdentityTest {
 
 	/** A stranger's relation wearing the same bare name, other namespace. */
 	private static final class Elsewhere {
-		private static Literal person(Unifiable<Integer> id, Unifiable<String> name) {
+		private static Literal<?> person(Unifiable<Integer> id, Unifiable<String> name) {
 			return Literal.relation(Elsewhere.class, "person")
-					.arg("id", id).indexed()
-					.arg("name", name)
+					.args(Schema.builder()
+							.arg("id", id).indexed()
+							.arg("name", name)
+							.build())
 					.from(null);
 		}
 	}

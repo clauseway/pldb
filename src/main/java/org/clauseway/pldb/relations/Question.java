@@ -48,7 +48,7 @@ public class Question {
 	 * (cold and finite, structurally), awaiting whatever engine the
 	 * caller constructs — the scheduler is deliberately not chosen here.
 	 */
-	public static Fiber<List<Answer<Relation>>> select(Goal question, Literal... schemas) {
+	public static Fiber<List<Answer<Relation>>> select(Goal question, Literal<?>... schemas) {
 		Array<Unifiable<?>> variables = variablesOf(schemas);
 		return Exhaustion.collected(rows(question,
 				lval(Tuple.ofAll(variables.map(Unifiable::getObjectTerm).toJavaArray())),
@@ -62,7 +62,7 @@ public class Question {
 	 * canonicalization), collected instead of emitted.
 	 */
 	private static Cont<Answer<Relation>, Nothing> rows(Goal question, Unifiable<?> anchor,
-			Array<Unifiable<?>> variables, Literal[] schemas) {
+			Array<Unifiable<?>> variables, Literal<?>[] schemas) {
 		return Cont.suspend(k -> Query.of(question).run()
 				.apply(answerPkg -> Answer.capture(anchor, answerPkg, anchor)
 						.flatMap(answer -> facts(
@@ -74,7 +74,7 @@ public class Question {
 	}
 
 	/** The templates' distinct variables, in birth order — the solve tuple. */
-	private static Array<Unifiable<?>> variablesOf(Literal[] schemas) {
+	private static Array<Unifiable<?>> variablesOf(Literal<?>[] schemas) {
 		return Arrays.stream(schemas)
 				.flatMap(schema -> schema.getArgs().toJavaStream())
 				.flatMap(arg -> arg.asVar()
@@ -101,7 +101,7 @@ public class Question {
 	 * every row under the derivation's one guard.
 	 */
 	private static Stream<Answer<Relation>> facts(Map<Unifiable<?>, Term<?>> bound,
-			Condition condition, Literal[] schemas) {
+			Condition condition, Literal<?>[] schemas) {
 		return Arrays.stream(schemas)
 				.map(schema -> Answer.of(schema.getRel(),
 						Answers.image(IntStream.range(0, schema.getArgs().length())
@@ -115,7 +115,7 @@ public class Question {
 	 * the answer holds at the shared variable — a value, or the Any a
 	 * free cell rides as.
 	 */
-	private static Term<?> cell(Literal schema, int position, Map<Unifiable<?>, Term<?>> bound) {
+	private static Term<?> cell(Literal<?> schema, int position, Map<Unifiable<?>, Term<?>> bound) {
 		Unifiable<?> arg = schema.getArgs().get(position);
 		return arg.isVal() ? arg : bound.get(arg);
 	}

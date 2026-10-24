@@ -14,6 +14,7 @@ import java.util.Collections;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.sql.SerializableSource;
 import org.junit.After;
 import org.junit.Before;
@@ -33,8 +34,8 @@ public class TransactionPredicateTest {
 		connection.close();
 	}
 
-	private static Literal orphan(AnswerSource db, Unifiable<Integer> id) {
-		return Literal.relation(TransactionPredicateTest.class, "orphan").arg("id", id).from(db);
+	private static Literal<?> orphan(AnswerSource db, Unifiable<Integer> id) {
+		return Literal.relation(TransactionPredicateTest.class, "orphan").args(Schema.builder().arg("id", id).build()).from(db);
 	}
 
 	/** No orphan table exists, so the flush inside commit fails for real. */

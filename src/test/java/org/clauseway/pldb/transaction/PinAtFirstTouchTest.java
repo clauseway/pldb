@@ -17,6 +17,7 @@ import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.relations.Relation;
 import org.junit.Test;
 
@@ -61,10 +62,12 @@ public class PinAtFirstTouchTest {
 		}
 	}
 
-	private static Literal person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
+	private static Literal<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(PinAtFirstTouchTest.class, "person")
-				.arg("id", id).indexed()
-				.arg("name", name)
+				.args(Schema.builder()
+						.arg("id", id).indexed()
+						.arg("name", name)
+						.build())
 				.from(db);
 	}
 

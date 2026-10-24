@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.Schema;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,10 +38,12 @@ public class NullColumnTest {
 		connection.close();
 	}
 
-	private static Literal person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
+	private static Literal<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(NullColumnTest.class, "person")
-				.arg("id", id).indexed()
-				.arg("name", name)
+				.args(Schema.builder()
+						.arg("id", id).indexed()
+						.arg("name", name)
+						.build())
 				.from(db);
 	}
 

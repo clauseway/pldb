@@ -1,9 +1,8 @@
 package org.clauseway.pldb.relations;
 
-// ABOUTME: A relation applied to arguments — ONE public type, with how it reads
-// ABOUTME: (source, producer, or rule) as a polymorphic Reading behind it.
+// ABOUTME: A relation applied to a row — ONE public type, typed by the row's schema, with how it reads
+// ABOUTME: (source, producer, or rule) as a polymorphic Reading behind it; it selects its answers back as rows.
 
-import org.clauseway.logic.solving.Answer;
 import static org.clauseway.logic.goals.Goal.defer;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
 import static org.clauseway.logic.unification.structures.LOption.none;
@@ -12,16 +11,21 @@ import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
 import static org.clauseway.pldb.relations.Projected.projected;
 
+import org.clauseway.logic.solving.Answer;
+
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.experimental.NonFinal;
@@ -34,6 +38,8 @@ import org.clauseway.logic.constraints.Posting;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.goals.optimizer.Bounded;
+import org.clauseway.logic.solving.Query;
+import org.clauseway.logic.solving.Solution;
 import org.clauseway.logic.tabling.Tabling;
 import org.clauseway.logic.solving.Residues;
 import org.clauseway.logic.solving.Call;
@@ -50,7 +56,7 @@ import org.clauseway.pldb.constraints.TableConstraints;
 import org.clauseway.vavr.collection.Array;
 
 /**
- * A relation applied to arguments. ONE user-facing type: how the relation
+ * A relation applied to a row. ONE user-facing type: how the relation
  * answers — an enumerating source, a streaming producer, or a rule tabled
  * in the solve — is a {@code Reading} chosen by the builder's terminal and
  * never visible above it. Bare in a conjunction the literal reads its
@@ -60,22 +66,31 @@ import org.clauseway.vavr.collection.Array;
  * restated at the query anchor. Relation identity is by value (name plus
  * columns): every mint of one definition is the same relation, so a rule
  * literal's recursion is the method calling itself — an ordinary tabled
- * consumer whose rings seal.
+ * consumer whose rings seal. The row the literal was built from rides
+ * along, outside its identity, and {@link #select} rebuilds each answer
+ * into it: a literal answers as rows of its own schema and no other.
  */
 @Value
 @NonFinal
 @RequiredArgsConstructor(access = AccessLevel.MODULE)
-public class Literal implements Goal, Bounded, Postable {
+public class Literal<R extends Schema<R>> implements Goal, Bounded, Postable {
 	Relation rel;
 	Array<Unifiable<?>> args;
+	@EqualsAndHashCode.Exclude
+	R row;
 	Reading reading;
 
-	public static Literal of(AnswerSource source, Relation rel, List<Unifiable<?>> args) {
-		return new Literal(rel, Array.ofAll(args), new SourceReading(source));
+	public static Literal<Schema.Anonymous> of(AnswerSource source, Relation rel, List<Unifiable<?>> args) {
+		return new Literal<>(rel, Array.ofAll(args), anonymous(rel, args), new SourceReading(source));
 	}
 
-	public static Literal of(AnswerProducer producer, Relation rel, List<Unifiable<?>> args) {
-		return new Literal(rel, Array.ofAll(args), new ProducerReading(producer));
+	public static Literal<Schema.Anonymous> of(AnswerProducer producer, Relation rel, List<Unifiable<?>> args) {
+		return new Literal<>(rel, Array.ofAll(args), anonymous(rel, args), new ProducerReading(producer));
+	}
+
+	/** The relation's columns over the arguments: the row a literal minted from a relation value keeps. */
+	private static Schema.Anonymous anonymous(Relation rel, List<Unifiable<?>> args) {
+		return new Schema.Anonymous(Arrays.asList(rel.getArgs()), new ArrayList<>(args));
 	}
 
 	/**
@@ -83,11 +98,11 @@ public class Literal implements Goal, Bounded, Postable {
 	 * one per builder terminal; the public type never branches on them.
 	 */
 	interface Reading {
-		Goal read(Literal lit);
+		Goal read(Literal<?> lit);
 
-		Posting posted(Literal lit);
+		Posting posted(Literal<?> lit);
 
-		long estimate(Literal lit, Call<Relation> call);
+		long estimate(Literal<?> lit, Call<Relation> call);
 	}
 
 	/** The sync kind: the source's pairs enumerated inline. */
@@ -96,7 +111,7 @@ public class Literal implements Goal, Bounded, Postable {
 		private final AnswerSource source;
 
 		@Override
-		public Goal read(Literal lit) {
+		public Goal read(Literal<?> lit) {
 			return lit.lookup((probe, anchor) ->
 					StreamSupport.stream(source.answers(probe).spliterator(), false)
 							.flatMap(answer -> answer.getCondition().conjuncts().toJavaStream()
@@ -106,12 +121,12 @@ public class Literal implements Goal, Bounded, Postable {
 		}
 
 		@Override
-		public Posting posted(Literal lit) {
+		public Posting posted(Literal<?> lit) {
 			return TableConstraints.posted(source, lit.rel, lit.args.toJavaList());
 		}
 
 		@Override
-		public long estimate(Literal lit, Call<Relation> call) {
+		public long estimate(Literal<?> lit, Call<Relation> call) {
 			return source.estimate(call);
 		}
 	}
@@ -122,18 +137,18 @@ public class Literal implements Goal, Bounded, Postable {
 		private final AnswerProducer producer;
 
 		@Override
-		public Goal read(Literal lit) {
+		public Goal read(Literal<?> lit) {
 			return lit.lookup((probe, anchor) -> st -> k -> producer.produce(probe,
 					answer -> deliver(answer, anchor).apply(st).apply(k)));
 		}
 
 		@Override
-		public Posting posted(Literal lit) {
+		public Posting posted(Literal<?> lit) {
 			return TableConstraints.posted(producer, lit.rel, lit.args.toJavaList());
 		}
 
 		@Override
-		public long estimate(Literal lit, Call<Relation> call) {
+		public long estimate(Literal<?> lit, Call<Relation> call) {
 			return producer.estimate(call);
 		}
 	}
@@ -149,18 +164,18 @@ public class Literal implements Goal, Bounded, Postable {
 		private final Goal body;
 
 		@Override
-		public Goal read(Literal lit) {
+		public Goal read(Literal<?> lit) {
 			return Tabling.call(lit.rel,
 					Tuple.ofAll(lit.args.map(Unifiable::getObjectUnifiable).toJavaArray()), () -> body);
 		}
 
 		@Override
-		public Posting posted(Literal lit) {
+		public Posting posted(Literal<?> lit) {
 			return TableConstraints.postedRule(lit.rel, body, lit.args.toJavaList());
 		}
 
 		@Override
-		public long estimate(Literal lit, Call<Relation> call) {
+		public long estimate(Literal<?> lit, Call<Relation> call) {
 			return Long.MAX_VALUE;
 		}
 	}
@@ -170,10 +185,12 @@ public class Literal implements Goal, Bounded, Postable {
 	 * two authors' vocabularies cannot collide in tabling, knowledge
 	 * identity, or the store — while the physical name stays the bare
 	 * string: tables, endpoints, and mark rows are the backend's world
-	 * and spell the name alone.
+	 * and spell the name alone. The row starts empty; {@link Builder#args}
+	 * sets it.
 	 */
-	public static Builder relation(Class<?> namespace, String name) {
-		return new Builder(namespace.getName(), name);
+	public static Builder<Schema.Anonymous> relation(Class<?> namespace, String name) {
+		return new Builder<>(namespace.getName(), name,
+				new Schema.Anonymous(Collections.emptyList(), Collections.emptyList()));
 	}
 
 	/**
@@ -181,7 +198,7 @@ public class Literal implements Goal, Bounded, Postable {
 	 * it does not. The false branch is an exclusion, so a column the literal does
 	 * not care about must be {@code projected()}, never a free {@code lvar()}.
 	 */
-	public static Goal flag(Literal rule, Unifiable<Boolean> column) {
+	public static Goal flag(Literal<?> rule, Unifiable<Boolean> column) {
 		return rule.and(column.unifies(true)).or(exclude(rule).and(column.unifies(false)));
 	}
 
@@ -191,7 +208,7 @@ public class Literal implements Goal, Bounded, Postable {
 	 * nothing. The function is applied twice, once with the value and once with
 	 * the hole projected away, so both branches are over the same literal.
 	 */
-	public static <T> Goal option(Function<Unifiable<T>, Literal> rule, Unifiable<LOption<T>> column) {
+	public static <T> Goal option(Function<Unifiable<T>, ? extends Literal<?>> rule, Unifiable<LOption<T>> column) {
 		return defer(() -> {
 			Unifiable<T> value = lvar();
 			return rule.apply(value).and(column.unifies(some(value)));
@@ -199,38 +216,31 @@ public class Literal implements Goal, Bounded, Postable {
 	}
 
 	/**
-	 * The function-shaped front door: columns first, backend last. One
-	 * {@link Builder#arg} per column — names stated once, arity unbounded,
-	 * the defining method's signature the only typed surface — with
-	 * {@link Builder#indexed()}/{@link Builder#ground()} as TAIL modifiers
-	 * on the last column, freely composed. The terminal picks the reading:
-	 * {@link Builder#from} enumerates a source, {@link Builder#produced}
-	 * streams a producer, {@link Builder#solving} tables a rule in the
-	 * solve — and a half-built literal is not a goal, so applying one is
-	 * unrepresentable.
+	 * The front door: relation first, row next, backend last. The row's
+	 * columns name the head over the row's members, flags as the row
+	 * declares them, and the terminal picks the reading: {@link #from}
+	 * enumerates a source, {@link #produced} streams a producer,
+	 * {@link #solving} tables a rule in the solve. A half-built literal is
+	 * not a goal, so applying one is unrepresentable.
 	 */
-	@Value
-	public static class Builder {
-		String namespace;
-		String name;
-		List<Property<?>> columns = new ArrayList<>();
-		List<Unifiable<?>> values = new ArrayList<>();
-		List<Boolean> projectedHere = new ArrayList<>();
-
-		private Builder(String namespace, String name) {
-			this.namespace = namespace;
-			this.name = name;
-		}
-
-		public Builder arg(String column, Unifiable<?> value) {
-			return column(Property.of(column), value);
-		}
+	public static final class Builder<R extends Schema<R>> {
+		private final String namespace;
+		private final String name;
+		private final R row;
+		private final List<Property<?>> columns = new ArrayList<>();
+		private final List<Unifiable<?>> values = new ArrayList<>();
+		private final List<Boolean> projectedHere = new ArrayList<>();
 
 		/**
-		 * The row's columns, its names over its members in order, flags as the
-		 * row declares them; the literal built from it is a {@link Rows} of the row's schema.
+		 * The row is read, and its markers claimed, HERE rather than at the
+		 * terminal: the row is handed over before the body expression is
+		 * built, so the head owns a projection and the body sees the marker
+		 * as the one join variable it delegates to.
 		 */
-		public <R extends Schema<R>> Rows.Builder<R> rows(R row) {
+		private Builder(String namespace, String name, R row) {
+			this.namespace = namespace;
+			this.name = name;
+			this.row = row;
 			Iterator<? extends Term<?>> members = row.members().iterator();
 			for (Property<?> column : row.columns()) {
 				if (!members.hasNext()) {
@@ -242,19 +252,36 @@ public class Literal implements Goal, Bounded, Postable {
 					throw new IllegalStateException("relation '" + name + "': column '" + column.getName()
 							+ "' holds a reified term — a literal takes unifiables");
 				}
-				column(column, (Unifiable<?>) member);
+				columns.add(column);
+				values.add((Unifiable<?>) member);
+				projectedHere.add(marker((Unifiable<?>) member).map(Projected::claim).orElse(false));
 			}
 			if (members.hasNext()) {
 				throw new IllegalStateException("relation '" + name + "': the row has more members than columns");
 			}
-			return new Rows.Builder<>(this, row);
 		}
 
-		private Builder column(Property<?> column, Unifiable<?> value) {
-			columns.add(column);
-			values.add(value);
-			projectedHere.add(marker(value).map(Projected::claim).orElse(false));
-			return this;
+		/** The row the literal is over: its columns are the head, its members the arguments. */
+		public <S extends Schema<S>> Builder<S> args(S row) {
+			return new Builder<>(namespace, name, row);
+		}
+
+		public Literal<R> from(AnswerSource source) {
+			return build(new SourceReading(source));
+		}
+
+		public Literal<R> produced(AnswerProducer producer) {
+			return build(new ProducerReading(producer));
+		}
+
+		public Literal<R> solving(Goal body) {
+			return build(new RuleReading(body));
+		}
+
+		private Literal<R> build(Reading reading) {
+			Literal<R> full = new Literal<>(RelationN.of(namespace, name, columns.toArray(new Property<?>[0])),
+					Array.ofAll(values), row, reading);
+			return projecting(full);
 		}
 
 		/** The projection marker at the arg, or one level inside a some(): present, don't care. */
@@ -270,45 +297,6 @@ public class Literal implements Goal, Bounded, Postable {
 					.map(inner -> (Projected<?>) inner);
 		}
 
-		/** Marks the LAST declared column; refuses before any column. */
-		public Builder indexed() {
-			return modify(Property::indexed);
-		}
-
-		/**
-		 * Marks the LAST declared column as an input: its argument must walk
-		 * to a ground value when the literal applies, refused loudly
-		 * otherwise.
-		 */
-		public Builder ground() {
-			return modify(Property::ground);
-		}
-
-		private Builder modify(UnaryOperator<Property<?>> flag) {
-			if (columns.isEmpty()) {
-				throw new IllegalStateException(
-						"relation '" + name + "': a modifier needs a column — declare arg() first");
-			}
-			columns.set(columns.size() - 1, flag.apply(columns.get(columns.size() - 1)));
-			return this;
-		}
-
-		private Relation relation() {
-			return RelationN.of(namespace, name, columns.toArray(new Property<?>[0]));
-		}
-
-		public Literal from(AnswerSource source) {
-			return projecting(new Literal(relation(), Array.ofAll(values), new SourceReading(source)));
-		}
-
-		public Literal produced(AnswerProducer producer) {
-			return projecting(new Literal(relation(), Array.ofAll(values), new ProducerReading(producer)));
-		}
-
-		public Literal solving(Goal body) {
-			return projecting(new Literal(relation(), Array.ofAll(values), new RuleReading(body)));
-		}
-
 		/**
 		 * A {@link Projected} column drops out of the head into a GENERATED
 		 * projection rule over the full literal — the tabled cell folds
@@ -317,7 +305,7 @@ public class Literal implements Goal, Bounded, Postable {
 		 * ordinary fresh variable. A projected column marked ground()
 		 * refuses: an input cannot be projected away.
 		 */
-		private Literal projecting(Literal full) {
+		private Literal<R> projecting(Literal<R> full) {
 			List<Property<?>> keptColumns = new ArrayList<>();
 			List<Unifiable<?>> keptValues = new ArrayList<>();
 			StringBuilder keptNames = new StringBuilder();
@@ -336,11 +324,44 @@ public class Literal implements Goal, Bounded, Postable {
 			if (keptColumns.size() == values.size()) {
 				return full;
 			}
-			return new Literal(
+			return new Literal<>(
 					RelationN.of(namespace, name + "[" + keptNames + "]", keptColumns.toArray(new Property<?>[0])),
 					Array.ofAll(keptValues),
+					row,
 					new RuleReading(full));
 		}
+	}
+
+	/**
+	 * The answers as ground rows of the schema: the row's members that are
+	 * variables are selected, and each answer rebuilds the row with them
+	 * bound. Refuses a wide cell — a row is ground, so a projected member,
+	 * which never binds, cannot be selected.
+	 */
+	public Stream<R> select() {
+		List<Term<?>> members = StreamSupport.stream(row.members().spliterator(), false)
+				.collect(Collectors.<Term<?>> toList());
+		Unifiable<?>[] holes = members.stream()
+				.filter(member -> !member.isVal())
+				.map(member -> (Unifiable<?>) member)
+				.toArray(Unifiable<?>[]::new);
+		if (holes.length == 0) {
+			return Query.of(this).solve(lval(true)).map(answer -> row);
+		}
+		return Query.of(this).select(holes[0], Arrays.copyOfRange(holes, 1, holes.length)).solutions()
+				.map(answer -> row.withMembers(members.stream()
+						.map(member -> member.isVal() ? member : bound(answer, member))
+						.toArray(Term<?>[]::new)));
+	}
+
+	/** The answer's cell at a member, which must be ground: a row is a value, not a question. */
+	private Term<?> bound(Solution answer, Term<?> member) {
+		Reified<?> cell = answer.get(member);
+		if (!cell.isGround()) {
+			throw new IllegalStateException(rel.getName() + ": a wide cell at " + member
+					+ " — select answers ground rows only");
+		}
+		return cell;
 	}
 
 	/** The imposition reading — under {@code exclude} this is the only one. */

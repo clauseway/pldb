@@ -20,16 +20,20 @@ import org.junit.Test;
 
 public class QuestionTest {
 
-	private static Literal loan(Unifiable<Integer> id, Unifiable<String> copy) {
+	private static Literal<?> loan(Unifiable<Integer> id, Unifiable<String> copy) {
 		return Literal.relation(QuestionTest.class, "loan")
-				.arg("loanId", id).indexed()
-				.arg("copy", copy)
+				.args(Schema.builder()
+						.arg("loanId", id).indexed()
+						.arg("copy", copy)
+						.build())
 				.from(null);
 	}
 
-	private static Literal returned(Unifiable<Integer> id) {
+	private static Literal<?> returned(Unifiable<Integer> id) {
 		return Literal.relation(QuestionTest.class, "returned")
-				.arg("loanId", id).indexed()
+				.args(Schema.builder()
+						.arg("loanId", id).indexed()
+						.build())
 				.from(null);
 	}
 

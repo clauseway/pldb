@@ -17,22 +17,27 @@ import org.clauseway.logic.unification.structures.LOption;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.Schema;
 import org.junit.Test;
 
 public class OptionCellTest {
 
-	private static Literal person(AnswerSource db, Unifiable<Integer> id, Unifiable<LOption<String>> name) {
+	private static Literal<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<LOption<String>> name) {
 		return Literal.relation(OptionCellTest.class, "person")
-				.arg("id", id).indexed()
-				.arg("name", name)
+				.args(Schema.builder()
+						.arg("id", id).indexed()
+						.arg("name", name)
+						.build())
 				.from(db);
 	}
 
 	/** tag INDEXED: a None cell must key its bucket. */
-	private static Literal tagged(AnswerSource db, Unifiable<Integer> id, Unifiable<LOption<String>> tag) {
+	private static Literal<?> tagged(AnswerSource db, Unifiable<Integer> id, Unifiable<LOption<String>> tag) {
 		return Literal.relation(OptionCellTest.class, "tagged")
-				.arg("id", id).indexed()
-				.arg("tag", tag).indexed()
+				.args(Schema.builder()
+						.arg("id", id).indexed()
+						.arg("tag", tag).indexed()
+						.build())
 				.from(db);
 	}
 

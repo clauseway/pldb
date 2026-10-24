@@ -62,12 +62,12 @@ public class SqlFlush {
 	}
 
 	/** The statement face: literals convert at the threshold, holes refuse. */
-	public void flush(Collection<Literal> statements) {
+	public void flush(Collection<? extends Literal<?>> statements) {
 		flush(Writer.facts(statements));
 	}
 
 	/** The statement face of the removal lane. */
-	public void delete(Collection<Literal> statements) {
+	public void delete(Collection<? extends Literal<?>> statements) {
 		delete(Writer.facts(statements));
 	}
 

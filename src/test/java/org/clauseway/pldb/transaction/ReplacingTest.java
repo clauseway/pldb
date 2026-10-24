@@ -15,22 +15,27 @@ import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.inmemory.SharedDatabase;
 import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.Schema;
 import org.junit.Test;
 
 public class ReplacingTest {
 
-	private static Literal person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
+	private static Literal<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(ReplacingTest.class, "person")
-				.arg("id", id).indexed()
-				.arg("name", name)
+				.args(Schema.builder()
+						.arg("id", id).indexed()
+						.arg("name", name)
+						.build())
 				.from(db);
 	}
 
 	/** The person's name with a title: the derived face, in the stored relation's shape. */
-	private static Literal titled(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
+	private static Literal<?> titled(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(ReplacingTest.class, "titled")
-				.arg("id", id)
-				.arg("name", name)
+				.args(Schema.builder()
+						.arg("id", id)
+						.arg("name", name)
+						.build())
 				.solving(person(db, id, projected()).and(name.unifies("Dr. Ada")));
 	}
 

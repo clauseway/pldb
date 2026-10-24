@@ -59,7 +59,7 @@ public final class Codecs {
 	 * at its position. A markerless template refuses — it registers
 	 * nothing. A doubly-bound column refuses.
 	 */
-	public Codecs withCodec(Literal template) {
+	public Codecs withCodec(Literal<?> template) {
 		Relation relation = template.getRel();
 		Property<?>[] columns = relation.getArgs();
 		Array<Unifiable<?>> args = template.getArgs();

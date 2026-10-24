@@ -26,10 +26,12 @@ import org.junit.Test;
 
 public class LiteralSolvingTest {
 
-	private static Literal edge(AnswerSource db, Unifiable<Integer> src, Unifiable<Integer> dst) {
+	private static Literal<?> edge(AnswerSource db, Unifiable<Integer> src, Unifiable<Integer> dst) {
 		return Literal.relation(LiteralSolvingTest.class, "edge")
-				.arg("src", src).indexed()
-				.arg("dst", dst).indexed()
+				.args(Schema.builder()
+						.arg("src", src).indexed()
+						.arg("dst", dst).indexed()
+						.build())
 				.from(db);
 	}
 
@@ -41,10 +43,12 @@ public class LiteralSolvingTest {
 	}
 
 	/** The residence arc's target: recursion by calling the METHOD. */
-	private static Literal reach(AnswerSource db, Unifiable<Integer> x, Unifiable<Integer> y) {
+	private static Literal<?> reach(AnswerSource db, Unifiable<Integer> x, Unifiable<Integer> y) {
 		return Literal.relation(LiteralSolvingTest.class, "reach")
-				.arg("from", x)
-				.arg("to", y)
+				.args(Schema.builder()
+						.arg("from", x)
+						.arg("to", y)
+						.build())
 				.solving(edge(db, x, y)
 						.or(defer(() -> {
 							Unifiable<Integer> z = lvar();
@@ -61,9 +65,11 @@ public class LiteralSolvingTest {
 		AnswerStore db = edges(new int[][]{{1, 2}, {1, 3}});
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
-		Literal direct = Literal.relation(LiteralSolvingTest.class, "direct")
-				.arg("from", x)
-				.arg("to", y)
+		Literal<?> direct = Literal.relation(LiteralSolvingTest.class, "direct")
+				.args(Schema.builder()
+						.arg("from", x)
+						.arg("to", y)
+						.build())
 				.solving(edge(db, x, y));
 		assertThat(answers(x.unifies(1).and(direct), y)).containsExactlyInAnyOrder("{2}", "{3}");
 	}
@@ -87,11 +93,13 @@ public class LiteralSolvingTest {
 		assertThat(productions.get()).isEqualTo(1);
 	}
 
-	private static Literal counted(AnswerSource db, AtomicInteger productions,
+	private static Literal<?> counted(AnswerSource db, AtomicInteger productions,
 			Unifiable<Integer> x, Unifiable<Integer> y) {
 		return Literal.relation(LiteralSolvingTest.class, "counted")
-				.arg("from", x)
-				.arg("to", y)
+				.args(Schema.builder()
+						.arg("from", x)
+						.arg("to", y)
+						.build())
 				.solving(defer(() -> {
 					productions.incrementAndGet();
 					return edge(db, x, y);
@@ -130,7 +138,7 @@ public class LiteralSolvingTest {
 		AnswerStore db = edges(new int[][]{{1, 2}, {2, 3}});
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
-		Literal hoisted = reach(db, x, y);
+		Literal<?> hoisted = reach(db, x, y);
 		// one mint, two branches, different key bindings per branch
 		List<String> both = Query.of(x.unifies(1).and(hoisted).and(y.unifies(2))
 				.or(x.unifies(2).and(hoisted).and(y.unifies(3)))).solve(lval(Tuple.of(x, y)))
@@ -148,7 +156,7 @@ public class LiteralSolvingTest {
 		AtomicInteger productions = new AtomicInteger();
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
-		Literal lit = counted(db, productions, x, y);
+		Literal<?> lit = counted(db, productions, x, y);
 		assertThat(answers(x.unifies(1).and(lit), y)).containsExactly("{2}");
 		Unifiable<Integer> x2 = lvar();
 		Unifiable<Integer> y2 = lvar();
@@ -186,9 +194,11 @@ public class LiteralSolvingTest {
 		Unifiable<Integer> b = lvar();
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
-		Literal viaRule = Literal.relation(LiteralSolvingTest.class, "viaRule")
-				.arg("from", x)
-				.arg("to", y)
+		Literal<?> viaRule = Literal.relation(LiteralSolvingTest.class, "viaRule")
+				.args(Schema.builder()
+						.arg("from", x)
+						.arg("to", y)
+						.build())
 				.solving(edge(db, x, y));
 		assertThat(answers(x.unifies(1).and(viaRule), y))
 				.containsExactlyInAnyOrder("{2}", "{3}")

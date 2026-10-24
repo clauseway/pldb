@@ -33,19 +33,19 @@ public interface Writer<S extends Writer<S>> {
 
 	S retracting(List<Answer<Relation>> rows);
 
-	default S asserting(Collection<Literal> rows) {
+	default S asserting(Collection<? extends Literal<?>> rows) {
 		return asserting(facts(rows));
 	}
 
-	default S retracting(Collection<Literal> rows) {
+	default S retracting(Collection<? extends Literal<?>> rows) {
 		return retracting(facts(rows));
 	}
 
-	default S asserting(Literal... rows) {
+	default S asserting(Literal<?>... rows) {
 		return asserting(Arrays.asList(rows));
 	}
 
-	default S retracting(Literal... rows) {
+	default S retracting(Literal<?>... rows) {
 		return retracting(Arrays.asList(rows));
 	}
 
@@ -54,7 +54,7 @@ public interface Writer<S extends Writer<S>> {
 	 * refresh. The question is driven to exhaustion on the default fair
 	 * scheduler; a caller wanting another drives {@link Question#select} itself.
 	 */
-	default S clearing(Literal stored) {
+	default S clearing(Literal<?> stored) {
 		return retracting(rows(stored, template(stored)));
 	}
 
@@ -66,22 +66,22 @@ public interface Writer<S extends Writer<S>> {
 	 * a derived cell the row does not share rides wide and the door refuses
 	 * it. A row that leaves and lands unchanged cancels to nothing.
 	 */
-	default S replacing(Literal stored, Literal derived) {
+	default S replacing(Literal<?> stored, Literal<?> derived) {
 		return clearing(stored).asserting(rows(derived, template(stored)));
 	}
 
 	/** The stored literal's row over no source: the shape its answers land in. */
-	static Literal template(Literal stored) {
+	static Literal<?> template(Literal<?> stored) {
 		return Literal.of((AnswerSource) null, stored.getRel(), stored.getArgs().toJavaList());
 	}
 
 	/** The question's answers in the template's shape, driven to exhaustion. */
-	static List<Answer<Relation>> rows(Goal question, Literal template) {
+	static List<Answer<Relation>> rows(Goal question, Literal<?> template) {
 		return new BreadthFirstScheduler<>(Question.select(question, template)).get();
 	}
 
 	/** The threshold conversion: statements become rows, holes refuse. */
-	static List<Answer<Relation>> facts(Collection<Literal> rows) {
+	static List<Answer<Relation>> facts(Collection<? extends Literal<?>> rows) {
 		return rows.stream().map(Literal::fact).collect(Collectors.toList());
 	}
 }

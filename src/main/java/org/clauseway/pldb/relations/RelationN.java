@@ -49,15 +49,15 @@ public class RelationN implements Relation {
 		return args;
 	}
 
-	public Literal apply(AnswerSource source, Unifiable<?>... args) {
+	public Literal<Schema.Anonymous> apply(AnswerSource source, Unifiable<?>... args) {
 		return relation(source, this, args);
 	}
 
-	public static Literal relation(AnswerSource source, Relation rel, Unifiable<?>... args) {
+	public static Literal<Schema.Anonymous> relation(AnswerSource source, Relation rel, Unifiable<?>... args) {
 		return Literal.of(source, rel, Arrays.asList(args));
 	}
 
-	public static Literal relation(AnswerProducer producer, Relation rel, Unifiable<?>... args) {
+	public static Literal<Schema.Anonymous> relation(AnswerProducer producer, Relation rel, Unifiable<?>... args) {
 		return Literal.of(producer, rel, Arrays.asList(args));
 	}
 

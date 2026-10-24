@@ -25,14 +25,17 @@ import org.clauseway.pldb.GoalProducer;
 import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Answers;
 import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.relations.Relation;
 import org.junit.Test;
 
 public class CachingAnswerSourceTest {
 
 	private static final Relation GUARDED = Literal.relation(CachingAnswerSourceTest.class, "guarded")
-			.arg("id", lvar()).indexed()
-			.arg("tag", lvar())
+			.args(Schema.builder()
+					.arg("id", lvar()).indexed()
+					.arg("tag", lvar())
+					.build())
 			.from(null)
 			.getRel();
 

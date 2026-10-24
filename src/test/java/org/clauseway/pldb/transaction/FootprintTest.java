@@ -13,6 +13,7 @@ import org.clauseway.logic.unification.terms.Any;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.pldb.relations.Answers;
 import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.relations.Relation;
 import org.junit.Test;
 
@@ -25,8 +26,10 @@ public class FootprintTest {
 
 	private static Call<Relation> region(String relation) {
 		Relation rel = Literal.relation(FootprintTest.class, relation)
-				.arg("id", lvar())
-				.arg("value", lvar())
+				.args(Schema.builder()
+						.arg("id", lvar())
+						.arg("value", lvar())
+						.build())
 				.from(null)
 				.getRel();
 		Term<?>[] anys = new Term<?>[rel.getArgs().length];

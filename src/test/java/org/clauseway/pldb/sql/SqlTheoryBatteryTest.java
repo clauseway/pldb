@@ -35,6 +35,7 @@ import org.clauseway.pldb.inmemory.AnswerStore;
 import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Answers;
 import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.relations.Property;
 import org.clauseway.pldb.relations.Relation;
 import org.junit.After;
@@ -50,10 +51,12 @@ import org.junit.Test;
  */
 public class SqlTheoryBatteryTest {
 
-	private static Literal person(AnswerSource db, Unifiable<Long> id, Unifiable<String> name) {
+	private static Literal<?> person(AnswerSource db, Unifiable<Long> id, Unifiable<String> name) {
 		return Literal.relation(SqlTheoryBatteryTest.class, "person")
-				.arg("id", id).indexed()
-				.arg("name", name)
+				.args(Schema.builder()
+						.arg("id", id).indexed()
+						.arg("name", name)
+						.build())
 				.from(db);
 	}
 
@@ -61,10 +64,12 @@ public class SqlTheoryBatteryTest {
 		return person(null, lvar(), lvar()).getRel();
 	}
 
-	private static Literal edge(AnswerSource db, Unifiable<Long> lo, Unifiable<Long> hi) {
+	private static Literal<?> edge(AnswerSource db, Unifiable<Long> lo, Unifiable<Long> hi) {
 		return Literal.relation(SqlTheoryBatteryTest.class, "edge")
-				.arg("lo", lo).indexed()
-				.arg("hi", hi).indexed()
+				.args(Schema.builder()
+						.arg("lo", lo).indexed()
+						.arg("hi", hi).indexed()
+						.build())
 				.from(db);
 	}
 

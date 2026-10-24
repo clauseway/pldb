@@ -21,6 +21,7 @@ import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.Schema;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,10 +44,12 @@ public class OccurrenceResolutionTest {
 		connection.close();
 	}
 
-	private static Literal pair(AnswerSource db, Unifiable<Long> a, Unifiable<Long> b) {
+	private static Literal<?> pair(AnswerSource db, Unifiable<Long> a, Unifiable<Long> b) {
 		return Literal.relation(OccurrenceResolutionTest.class, "pair")
-				.arg("a", a)
-				.arg("b", b)
+				.args(Schema.builder()
+						.arg("a", a)
+						.arg("b", b)
+						.build())
 				.from(db);
 	}
 

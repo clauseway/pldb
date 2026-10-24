@@ -23,6 +23,7 @@ import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.Schema;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,10 +53,12 @@ public class CodecTest {
 		connection.close();
 	}
 
-	private static Literal loan(AnswerSource db, Unifiable<Integer> id, Unifiable<LocalDate> due) {
+	private static Literal<?> loan(AnswerSource db, Unifiable<Integer> id, Unifiable<LocalDate> due) {
 		return Literal.relation(CodecTest.class, "loan")
-				.arg("id", id).indexed()
-				.arg("due", due)
+				.args(Schema.builder()
+						.arg("id", id).indexed()
+						.arg("due", due)
+						.build())
 				.from(db);
 	}
 
@@ -63,10 +66,12 @@ public class CodecTest {
 	 * One Java type, TWO wire encodings in one relation — the codec is a
 	 * property of the COLUMN, addressed through the defining method.
 	 */
-	private static Literal event(AnswerSource db, Unifiable<LocalDate> at, Unifiable<LocalDate> logged) {
+	private static Literal<?> event(AnswerSource db, Unifiable<LocalDate> at, Unifiable<LocalDate> logged) {
 		return Literal.relation(CodecTest.class, "event")
-				.arg("at", at).indexed()
-				.arg("logged", logged)
+				.args(Schema.builder()
+						.arg("at", at).indexed()
+						.arg("logged", logged)
+						.build())
 				.from(db);
 	}
 
@@ -142,9 +147,11 @@ public class CodecTest {
 
 	@Test
 	public void aStructuralValueKeepsTheModellingRefusal() {
-		Literal bad = Literal.relation(CodecTest.class, "loan")
-				.arg("id", lval(1)).indexed()
-				.arg("due", lval((Object) Arrays.asList(1, 2)))
+		Literal<?> bad = Literal.relation(CodecTest.class, "loan")
+				.args(Schema.builder()
+						.arg("id", lval(1)).indexed()
+						.arg("due", lval((Object) Arrays.asList(1, 2)))
+						.build())
 				.from(null);
 		assertThatThrownBy(() -> SqlFlush.over(connection).flush(Arrays.asList(bad)))
 				.isInstanceOf(IllegalStateException.class)
@@ -159,7 +166,7 @@ public class CodecTest {
 		}
 		try (CachingSqlFetch source = CachingSqlFetch.pinned("h2", connection)) {
 			Unifiable<String> name = lvar();
-			Query.of(Literal.relation(CodecTest.class, "person").arg("id", lvar()).indexed().arg("name", name).from(source)).solve(name).collect(Collectors.toList());
+			Query.of(Literal.relation(CodecTest.class, "person").args(Schema.builder().arg("id", lvar()).indexed().arg("name", name).build()).from(source)).solve(name).collect(Collectors.toList());
 			assertThatThrownBy(() -> source.withCodec(loan(null, lvar(), AS_DATE.arg())))
 					.isInstanceOf(IllegalStateException.class)
 					.hasMessageContaining("before first use");

@@ -20,10 +20,12 @@ import org.junit.Test;
 
 public class ReifiedColumnTest {
 
-	private static Literal person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
+	private static Literal<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(ReifiedColumnTest.class, "person")
-				.arg("id", id).indexed()
-				.arg("name", name)
+				.args(Schema.builder()
+						.arg("id", id).indexed()
+						.arg("name", name)
+						.build())
 				.from(db);
 	}
 
@@ -73,10 +75,12 @@ public class ReifiedColumnTest {
 		Unifiable<Integer> id = lvar();
 		Unifiable<Boolean> known = lvar();
 		Unifiable<LOption<String>> name = lvar();
-		Literal card = Literal.relation(ReifiedColumnTest.class, "card")
-				.arg("id", id)
-				.arg("known", known)
-				.arg("name", name)
+		Literal<?> card = Literal.relation(ReifiedColumnTest.class, "card")
+				.args(Schema.builder()
+						.arg("id", id)
+						.arg("known", known)
+						.arg("name", name)
+						.build())
 				.solving(flag(person(db, id, projected()), known)
 						.and(option(n -> person(db, id, n), name)));
 		assertThat(Query.of(id.unifies(1).and(card)).solve(known)

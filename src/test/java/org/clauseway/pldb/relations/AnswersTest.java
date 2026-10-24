@@ -27,7 +27,9 @@ import org.junit.Test;
 public class AnswersTest {
 
 	private final Relation person = Literal.relation(AnswersTest.class, "person")
-			.arg("id", lvar()).arg("name", lvar()).from(null).getRel();
+			.args(Schema.builder()
+					.arg("id", lvar()).arg("name", lvar())
+					.build()).from(null).getRel();
 
 	@Test
 	public void aFactEncodesAsAGroundRowAtOne() {

@@ -27,6 +27,7 @@ import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.inmemory.AnswerStore;
 import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.relations.Property;
 import org.clauseway.pldb.relations.Relation;
 import org.junit.After;
@@ -47,10 +48,12 @@ import org.testcontainers.containers.PostgreSQLContainer;
  */
 public class PostgresFactSourceTest {
 
-	private static Literal person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
+	private static Literal<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(PostgresFactSourceTest.class, "person")
-				.arg("id", id).indexed()
-				.arg("name", name)
+				.args(Schema.builder()
+						.arg("id", id).indexed()
+						.arg("name", name)
+						.build())
 				.from(db);
 	}
 
@@ -58,10 +61,12 @@ public class PostgresFactSourceTest {
 		return person(null, lvar(), lvar()).getRel();
 	}
 
-	private static Literal edge(AnswerSource db, Unifiable<Integer> src, Unifiable<Integer> dst) {
+	private static Literal<?> edge(AnswerSource db, Unifiable<Integer> src, Unifiable<Integer> dst) {
 		return Literal.relation(PostgresFactSourceTest.class, "edge")
-				.arg("src", src).indexed()
-				.arg("dst", dst).indexed()
+				.args(Schema.builder()
+						.arg("src", src).indexed()
+						.arg("dst", dst).indexed()
+						.build())
 				.from(db);
 	}
 
@@ -74,7 +79,7 @@ public class PostgresFactSourceTest {
 	private static final Property<Integer> src = Property.of("src");
 	private static final Property<Integer> dst = Property.of("dst");
 
-	private static final List<Literal> facts = Arrays.asList(
+	private static final List<Literal<?>> facts = Arrays.asList(
 			person(null, lval(1), lval("Ada")),
 			person(null, lval(2), lval("Alan")),
 			person(null, lval(3), lval("Kurt")),
@@ -120,7 +125,7 @@ public class PostgresFactSourceTest {
 	 * names the columns, column types inferred from the values. One fact
 	 * list feeds both worlds — the proof compares backings, not fixtures.
 	 */
-	private static void push(Connection connection, List<Literal> facts) throws SQLException {
+	private static void push(Connection connection, List<Literal<?>> facts) throws SQLException {
 		Map<Relation, List<Answer<Relation>>> byRelation = facts.stream()
 				.map(Literal::fact)
 				.collect(Collectors.groupingBy(Answer::getRelation,
@@ -203,10 +208,12 @@ public class PostgresFactSourceTest {
 	 * ground answers. On data whose recursive steps branch, the guard would
 	 * park and answers would go conditional.
 	 */
-	private static Literal reach(AnswerSource backing, Unifiable<Integer> x, Unifiable<Integer> y) {
+	private static Literal<?> reach(AnswerSource backing, Unifiable<Integer> x, Unifiable<Integer> y) {
 		return Literal.relation(PostgresFactSourceTest.class, "reachable")
-				.arg("src", x)
-				.arg("dst", y)
+				.args(Schema.builder()
+						.arg("src", x)
+						.arg("dst", y)
+						.build())
 				.solving(edge(backing, x, y)
 						.or(defer(() -> {
 							Unifiable<Integer> z = lvar();

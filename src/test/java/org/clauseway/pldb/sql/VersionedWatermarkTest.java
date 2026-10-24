@@ -24,6 +24,7 @@ import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.transaction.Transaction;
 import org.junit.After;
 import org.junit.Before;
@@ -80,17 +81,21 @@ public class VersionedWatermarkTest {
 				VersionedWatermark.over(SqlFetch.live(id, connection()), this::connection));
 	}
 
-	private static Literal loan(AnswerSource db, Unifiable<String> member, Unifiable<String> copy) {
+	private static Literal<?> loan(AnswerSource db, Unifiable<String> member, Unifiable<String> copy) {
 		return Literal.relation(VersionedWatermarkTest.class, "loan")
-				.arg("member", member).indexed()
-				.arg("copy", copy)
+				.args(Schema.builder()
+						.arg("member", member).indexed()
+						.arg("copy", copy)
+						.build())
 				.from(db);
 	}
 
-	private static Literal book(AnswerSource db, Unifiable<String> isbn, Unifiable<String> title) {
+	private static Literal<?> book(AnswerSource db, Unifiable<String> isbn, Unifiable<String> title) {
 		return Literal.relation(VersionedWatermarkTest.class, "book")
-				.arg("isbn", isbn).indexed()
-				.arg("title", title)
+				.args(Schema.builder()
+						.arg("isbn", isbn).indexed()
+						.arg("title", title)
+						.build())
 				.from(db);
 	}
 
@@ -237,10 +242,12 @@ public class VersionedWatermarkTest {
 		}
 	}
 
-	private static Literal invoice(AnswerSource db, Unifiable<String> member, Unifiable<Long> day) {
+	private static Literal<?> invoice(AnswerSource db, Unifiable<String> member, Unifiable<Long> day) {
 		return Literal.relation(VersionedWatermarkTest.class, "invoice")
-				.arg("member", member)
-				.arg("due", day)
+				.args(Schema.builder()
+						.arg("member", member)
+						.arg("due", day)
+						.build())
 				.from(db);
 	}
 
