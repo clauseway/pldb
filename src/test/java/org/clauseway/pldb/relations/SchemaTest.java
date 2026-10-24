@@ -15,6 +15,7 @@ import lombok.Value;
 import org.clauseway.pldb.relations.literals.External;
 
 import org.clauseway.pldb.relations.literals.Literal;
+import org.clauseway.pldb.relations.literals.Question;
 
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.unification.terms.Term;
@@ -102,7 +103,7 @@ public class SchemaTest {
 
 	@Test
 	public void selectAnswersGroundRowsOfTheKind() {
-		List<Point> rows = point(twoPoints(), Point.anyPoint()).select()
+		List<Point> rows = Question.select(point(twoPoints(), Point.anyPoint()))
 				.sorted((a, b) -> a.getX().get().compareTo(b.getX().get()))
 				.collect(Collectors.toList());
 		assertThat(rows).containsExactly(new Point(lval(1), lval(2)), new Point(lval(3), lval(4)));
@@ -110,7 +111,7 @@ public class SchemaTest {
 
 	@Test
 	public void selectOverAnAnonymousRowAnswersAnonymousRows() {
-		List<Schema.Anonymous> rows = point(twoPoints(), lval(3), lvar()).select()
+		List<Schema.Anonymous> rows = Question.select(point(twoPoints(), lval(3), lvar()))
 				.collect(Collectors.toList());
 		assertThat(rows).hasSize(1);
 		assertThat(rows.get(0).getMembers()).containsExactly(lval(3), lval(4));
@@ -118,7 +119,7 @@ public class SchemaTest {
 
 	@Test
 	public void aValueMemberNarrowsTheQuestionAndRidesTheAnswer() {
-		List<Point> rows = point(twoPoints(), new Point(lval(3), lvar())).select()
+		List<Point> rows = Question.select(point(twoPoints(), new Point(lval(3), lvar())))
 				.collect(Collectors.toList());
 		assertThat(rows).containsExactly(new Point(lval(3), lval(4)));
 	}
@@ -127,9 +128,8 @@ public class SchemaTest {
 	@Test
 	public void aRuleHeadAndItsBodyShareTheRow() {
 		Point origin = Point.anyPoint();
-		List<Point> rows = Literal.relation(SchemaTest.class, "origin").args(origin)
-				.solving(origin.getX().unifies(0).and(origin.getY().unifies(0)))
-				.select()
+		List<Point> rows = Question.select(Literal.relation(SchemaTest.class, "origin").args(origin)
+				.solving(origin.getX().unifies(0).and(origin.getY().unifies(0))))
 				.collect(Collectors.toList());
 		assertThat(rows).containsExactly(new Point(lval(0), lval(0)));
 	}
@@ -137,7 +137,7 @@ public class SchemaTest {
 	@Test
 	public void selectRefusesAWideAnswer() {
 		Literal<Point> anyPoint = Literal.relation(SchemaTest.class, "anyPoint").args(Point.anyPoint()).solving(Goal.success());
-		assertThatThrownBy(() -> anyPoint.select().collect(Collectors.toList()))
+		assertThatThrownBy(() -> Question.select(anyPoint).collect(Collectors.toList()))
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("wide");
 	}

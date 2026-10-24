@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import org.clauseway.functional.Nothing;
 import org.clauseway.functional.fibers.Cont;
 import org.clauseway.functional.fibers.Fiber;
@@ -22,9 +23,12 @@ import org.clauseway.logic.goals.Exhaustion;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.solving.Condition;
 import org.clauseway.logic.solving.Query;
+import org.clauseway.logic.solving.Solution;
+import org.clauseway.logic.unification.terms.Reified;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.relations.Relation;
+import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.relations.Answers;
 
 import org.clauseway.vavr.collection.Array;
@@ -51,7 +55,49 @@ public class Question {
 	 * (cold and finite, structurally), awaiting whatever engine the
 	 * caller constructs — the scheduler is deliberately not chosen here.
 	 */
+	/**
+	 * The literal's answers as ground rows of its schema: the row's members that
+	 * are variables are selected, and each answer rebuilds the row with them
+	 * bound. A projected() member refuses before solving — a projection belongs
+	 * to a literal's definition, and a selected row is a value with no cell for
+	 * "some value". A wide cell refuses per answer: a row is ground.
+	 */
+	public static <S extends Schema<S>> Stream<S> select(Literal<S> literal) {
+		S row = literal.getSchema();
+		List<Term<?>> members = StreamSupport.stream(row.members().spliterator(), false)
+				.collect(Collectors.<Term<?>> toList());
+		for (int i = 0; i < members.size(); i++) {
+			if (members.get(i) instanceof Unifiable && Projection.marker((Unifiable<?>) members.get(i)).isPresent()) {
+				throw new IllegalStateException(literal.getRelation().getName() + ": member '"
+						+ row.columns().get(i).getName() + "' is projected() — a projection belongs to a literal's"
+						+ " definition; a selected row needs a variable or a value in every member");
+			}
+		}
+		Unifiable<?>[] holes = members.stream()
+				.filter(member -> !member.isVal())
+				.map(member -> (Unifiable<?>) member)
+				.toArray(Unifiable<?>[]::new);
+		if (holes.length == 0) {
+			return Query.of(literal).solve(lval(true)).map(answer -> row);
+		}
+		return Query.of(literal).select(holes[0], Arrays.copyOfRange(holes, 1, holes.length)).solutions()
+				.map(answer -> row.withMembers(members.stream()
+						.map(member -> member.isVal() ? member : bound(literal, answer, member))
+						.toArray(Term<?>[]::new)));
+	}
+
+	/** The answer's cell at a member, which must be ground: a row is a value, not a question. */
+	private static Term<?> bound(Literal<?> literal, Solution answer, Term<?> member) {
+		Reified<?> cell = answer.get(member);
+		if (!cell.isGround()) {
+			throw new IllegalStateException(literal.getRelation().getName() + ": a wide cell at " + member
+					+ " — select answers ground rows only");
+		}
+		return cell;
+	}
+
 	public static Fiber<List<Answer<Relation>>> select(Goal question, Literal<?>... schemas) {
+		refuseProjected(schemas);
 		Array<Unifiable<?>> variables = variablesOf(schemas);
 		return Exhaustion.collected(rows(question,
 				lval(Tuple.ofAll(variables.map(Unifiable::getObjectTerm).toJavaArray())),
@@ -74,6 +120,21 @@ public class Question {
 								.map(k)
 								.reduce(Fiber.done(Nothing.nothing()),
 										(delivered, next) -> delivered.flatMap(nothing -> next)))));
+	}
+
+	/** A template with a projected() column: the row shape a question lands in cannot leave a column out. */
+	private static void refuseProjected(Literal<?>[] schemas) {
+		for (Literal<?> schema : schemas) {
+			List<Term<?>> members = StreamSupport.stream(schema.getSchema().members().spliterator(), false)
+					.collect(Collectors.<Term<?>> toList());
+			for (int i = 0; i < members.size(); i++) {
+				if (members.get(i) instanceof Unifiable && Projection.marker((Unifiable<?>) members.get(i)).isPresent()) {
+					throw new IllegalStateException(schema.getRelation().getName() + ": template column '"
+							+ schema.getSchema().columns().get(i).getName() + "' is projected() — a projection belongs"
+							+ " to a literal's definition; a template names every column it lands");
+				}
+			}
+		}
 	}
 
 	/** The templates' distinct variables, in birth order — the solve tuple. */

@@ -18,9 +18,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import org.clauseway.functional.Nothing;
 import org.clauseway.functional.fibers.Cont;
 import org.clauseway.functional.tuples.Tuple;
@@ -29,9 +26,7 @@ import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.goals.optimizer.Bounded;
 import org.clauseway.logic.solving.Call;
-import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.solving.Residues;
-import org.clauseway.logic.solving.Solution;
 import org.clauseway.logic.unification.MiniKanren;
 import org.clauseway.logic.unification.Substitutions;
 import org.clauseway.logic.unification.structures.LOption;
@@ -58,8 +53,8 @@ import org.clauseway.vavr.collection.Array;
  * columns): every mint of one definition is the same relation, so a rule
  * literal's recursion is the method calling itself — an ordinary tabled
  * consumer whose rings seal. The row the literal was built from rides
- * along, outside its identity, and {@link #select} rebuilds each answer
- * into it: a literal answers as rows of its own schema and no other. The
+ * along, outside its identity, and {@link Question#select(Literal)} rebuilds each
+ * answer into it: a literal answers as rows of its own schema and no other. The
  * kinds a transaction can write are {@link External}.
  */
 public interface Literal<S extends Schema<S>> extends Goal, Bounded, Postable {
@@ -198,39 +193,6 @@ public interface Literal<S extends Schema<S>> extends Goal, Bounded, Postable {
 		private Optional<Projection.Kept> kept() {
 			return Projection.kept(namespace, name, columns, values, projectedHere);
 		}
-	}
-
-	/**
-	 * The answers as ground rows of the schema: the row's members that are
-	 * variables are selected, and each answer rebuilds the row with them
-	 * bound. Refuses a wide cell — a row is ground, so a projected member,
-	 * which never binds, cannot be selected.
-	 */
-	default Stream<S> select() {
-		S row = getSchema();
-		List<Term<?>> members = StreamSupport.stream(row.members().spliterator(), false)
-				.collect(Collectors.<Term<?>> toList());
-		Unifiable<?>[] holes = members.stream()
-				.filter(member -> !member.isVal())
-				.map(member -> (Unifiable<?>) member)
-				.toArray(Unifiable<?>[]::new);
-		if (holes.length == 0) {
-			return Query.of(this).solve(lval(true)).map(answer -> row);
-		}
-		return Query.of(this).select(holes[0], Arrays.copyOfRange(holes, 1, holes.length)).solutions()
-				.map(answer -> row.withMembers(members.stream()
-						.map(member -> member.isVal() ? member : bound(answer, member))
-						.toArray(Term<?>[]::new)));
-	}
-
-	/** The answer's cell at a member, which must be ground: a row is a value, not a question. */
-	default Term<?> bound(Solution answer, Term<?> member) {
-		Reified<?> cell = answer.get(member);
-		if (!cell.isGround()) {
-			throw new IllegalStateException(getRelation().getName() + ": a wide cell at " + member
-					+ " — select answers ground rows only");
-		}
-		return cell;
 	}
 
 	@Override

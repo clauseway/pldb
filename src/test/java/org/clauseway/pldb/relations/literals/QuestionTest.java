@@ -10,9 +10,11 @@ import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.relations.Answers;
 import org.clauseway.logic.solving.Answer;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
 import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
+import static org.clauseway.pldb.relations.Projected.projected;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -157,5 +159,24 @@ public class QuestionTest {
 		Goal question = id.unifies(1).and(id.unifies(2));
 
 		assertThat(selected(question, loan(id, lval("c1")))).isEmpty();
+	}
+
+	/** A projection is a literal-definition marker: in a selected row it is a category error, refused before solving. */
+	@Test
+	public void selectRefusesAProjectedMemberBeforeSolving() {
+		assertThatThrownBy(() -> Question.select(loan(lvar(), projected())))
+				.isInstanceOf(IllegalStateException.class)
+				.hasMessageContaining("copy")
+				.hasMessageContaining("projected");
+	}
+
+	/** The same marker in a template: the row shape a question lands in cannot leave a column out. */
+	@Test
+	public void aTemplateWithAProjectedColumnRefusesBeforeSolving() {
+		Unifiable<Integer> id = lvar();
+		assertThatThrownBy(() -> Question.select(loan(id, lvar()), loan(id, projected())))
+				.isInstanceOf(IllegalStateException.class)
+				.hasMessageContaining("copy")
+				.hasMessageContaining("projected");
 	}
 }
