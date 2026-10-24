@@ -1,4 +1,4 @@
-package org.clauseway.pldb.relations;
+package org.clauseway.pldb.relations.literals;
 
 // ABOUTME: A relation applied to a row — the ONE public read type, typed by the row's schema: a goal in a
 // ABOUTME: conjunction, a constraint under exclude, selected back as rows. Built through relation(ns, name).args(row).
@@ -38,6 +38,12 @@ import org.clauseway.logic.unification.structures.LOption;
 import org.clauseway.logic.unification.terms.Reified;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
+import org.clauseway.pldb.relations.Relation;
+import org.clauseway.pldb.relations.RelationN;
+import org.clauseway.pldb.relations.Property;
+import org.clauseway.pldb.relations.Schema;
+import org.clauseway.pldb.relations.Projected;
+
 import org.clauseway.pldb.AnswerProducer;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.vavr.collection.Array;
@@ -158,7 +164,7 @@ public interface Literal<R extends Schema<R>> extends Goal, Bounded, Postable {
 				}
 				columns.add(column);
 				values.add((Unifiable<?>) member);
-				projectedHere.add(marker((Unifiable<?>) member).map(Projected::claim).orElse(false));
+				projectedHere.add(Projection.marker((Unifiable<?>) member).map(Projected::claim).orElse(false));
 			}
 			if (members.hasNext()) {
 				throw new IllegalStateException("relation '" + name + "': the row has more members than columns");
@@ -189,61 +195,9 @@ public interface Literal<R extends Schema<R>> extends Goal, Bounded, Postable {
 			return RelationN.of(namespace, name, columns.toArray(new Property<?>[0]));
 		}
 
-		/** The projection marker at the arg, or one level inside a some(): present, don't care. */
-		private static Optional<Projected<?>> marker(Unifiable<?> value) {
-			if (value instanceof Projected) {
-				return Optional.of((Projected<?>) value);
-			}
-			return value.asVal()
-					.flatMap(MiniKanren::asLOption)
-					.filter(option -> !option.isNone())
-					.map(LOption::getValue)
-					.filter(Projected.class::isInstance)
-					.map(inner -> (Projected<?>) inner);
-		}
-
-		/** The head a projection keeps: relation and arguments without the projected columns. */
-		private static final class Kept {
-			final Relation rel;
-			final Array<Unifiable<?>> args;
-
-			Kept(Relation rel, Array<Unifiable<?>> args) {
-				this.rel = rel;
-				this.args = args;
-			}
-		}
-
-		/**
-		 * A {@link Projected} column drops out of the head into a GENERATED
-		 * projection rule over the full literal — the tabled cell folds
-		 * duplicates (∃-projection is set semantics), the posted form makes
-		 * {@code exclude} an honest ¬∃, and inside the body the marker is an
-		 * ordinary fresh variable. A projected column marked ground()
-		 * refuses: an input cannot be projected away. Empty when nothing is
-		 * projected: the full literal is the literal.
-		 */
-		private Optional<Kept> kept() {
-			List<Property<?>> keptColumns = new ArrayList<>();
-			List<Unifiable<?>> keptValues = new ArrayList<>();
-			StringBuilder keptNames = new StringBuilder();
-			for (int i = 0; i < values.size(); i++) {
-				if (projectedHere.get(i)) {
-					if (columns.get(i).isGround()) {
-						throw new IllegalStateException("relation '" + name + "': column '"
-								+ columns.get(i).getName() + "' is ground — an input cannot be projected away");
-					}
-					continue;
-				}
-				keptColumns.add(columns.get(i));
-				keptValues.add(values.get(i));
-				keptNames.append(keptNames.length() == 0 ? "" : ",").append(columns.get(i).getName());
-			}
-			if (keptColumns.size() == values.size()) {
-				return Optional.empty();
-			}
-			return Optional.of(new Kept(
-					RelationN.of(namespace, name + "[" + keptNames + "]", keptColumns.toArray(new Property<?>[0])),
-					Array.ofAll(keptValues)));
+		/** The head without the projected columns, if any member carries a marker. */
+		private Optional<Projection.Kept> kept() {
+			return Projection.kept(namespace, name, columns, values, projectedHere);
 		}
 	}
 

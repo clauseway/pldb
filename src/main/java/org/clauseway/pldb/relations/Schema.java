@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.UnaryOperator;
 import lombok.Value;
+
 import org.clauseway.logic.unification.structures.Structural;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
@@ -21,7 +22,7 @@ import org.clauseway.logic.unification.terms.Unifiable;
  * flags. An instance is a row of the schema — a pattern with variables, a
  * probe, or a ground answer. That is all a relation needs from a type: a
  * literal over a row ({@code relation(ns, name).args(row)}) and
- * {@link Literal#select} derive from it. A row with no Java type is an
+ * {@code select()} derive from it. A row with no Java type is an
  * {@link Anonymous}, built column by column through {@link #builder()}.
  */
 public interface Schema<R extends Schema<R>> extends Structural<R> {

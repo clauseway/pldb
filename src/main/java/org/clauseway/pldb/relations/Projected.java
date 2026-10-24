@@ -31,7 +31,7 @@ public final class Projected<T> extends MagicVar<T> {
 	 * literals) read it as the plain variable it delegates to, so a
 	 * marker used as a join variable stays ONE variable.
 	 */
-	boolean claim() {
+	public boolean claim() {
 		return claimed.compareAndSet(false, true);
 	}
 

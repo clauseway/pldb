@@ -49,18 +49,6 @@ public class RelationN implements Relation {
 		return args;
 	}
 
-	public External<Schema.Anonymous> apply(AnswerSource source, Unifiable<?>... args) {
-		return relation(source, this, args);
-	}
-
-	public static External<Schema.Anonymous> relation(AnswerSource source, Relation rel, Unifiable<?>... args) {
-		return Literal.of(source, rel, Arrays.asList(args));
-	}
-
-	public static External<Schema.Anonymous> relation(AnswerProducer producer, Relation rel, Unifiable<?>... args) {
-		return Literal.of(producer, rel, Arrays.asList(args));
-	}
-
 	public Posting posted(AnswerSource source, Unifiable<?>... args) {
 		return posted(source, this, args);
 	}

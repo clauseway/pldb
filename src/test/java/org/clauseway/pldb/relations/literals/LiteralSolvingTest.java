@@ -1,4 +1,4 @@
-package org.clauseway.pldb.relations;
+package org.clauseway.pldb.relations.literals;
 
 // ABOUTME: Rule-backed literals: solving routes through the solve-scoped table,
 // ABOUTME: value-equal mints share entries, method recursion seals, no self handle.
@@ -20,6 +20,8 @@ import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.tabling.table.Table;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
+import org.clauseway.pldb.relations.Schema;
+
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.inmemory.AnswerStore;
 import org.junit.Test;

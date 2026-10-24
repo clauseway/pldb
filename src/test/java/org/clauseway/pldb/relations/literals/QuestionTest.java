@@ -1,7 +1,11 @@
-package org.clauseway.pldb.relations;
+package org.clauseway.pldb.relations.literals;
 
 // ABOUTME: Answers-as-rows receipts: each answer grounds every template, constants
 // ABOUTME: ride, clusters land whole, and a free cell rides wide for the doors to judge.
+
+import org.clauseway.pldb.relations.Relation;
+import org.clauseway.pldb.relations.Property;
+import org.clauseway.pldb.relations.Schema;
 
 import org.clauseway.pldb.relations.Answers;
 import org.clauseway.logic.solving.Answer;

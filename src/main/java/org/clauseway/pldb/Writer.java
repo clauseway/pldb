@@ -11,9 +11,9 @@ import java.util.stream.Collectors;
 import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.solving.Answer;
-import org.clauseway.pldb.relations.Question;
-import org.clauseway.pldb.relations.External;
-import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.literals.Question;
+import org.clauseway.pldb.relations.literals.External;
+import org.clauseway.pldb.relations.literals.Literal;
 import org.clauseway.pldb.relations.Schema;
 
 /**

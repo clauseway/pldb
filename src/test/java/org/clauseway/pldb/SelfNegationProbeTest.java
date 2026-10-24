@@ -7,7 +7,7 @@ import static org.clauseway.logic.unification.terms.LVar.lvar;
 
 import java.util.stream.Collectors;
 import org.clauseway.logic.unification.terms.Unifiable;
-import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.literals.Literal;
 import org.clauseway.pldb.relations.Schema;
 import org.junit.Test;
 

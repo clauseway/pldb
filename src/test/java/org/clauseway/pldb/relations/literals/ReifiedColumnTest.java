@@ -1,4 +1,4 @@
-package org.clauseway.pldb.relations;
+package org.clauseway.pldb.relations.literals;
 
 // ABOUTME: A literal reified to a column: flag gives true where it answers and false
 // ABOUTME: where it does not; option gives some(value) where it answers and none() where it does not.
@@ -6,14 +6,17 @@ package org.clauseway.pldb.relations;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
-import static org.clauseway.pldb.relations.Literal.flag;
-import static org.clauseway.pldb.relations.Literal.option;
+import static org.clauseway.pldb.relations.literals.Literal.flag;
+import static org.clauseway.pldb.relations.literals.Literal.option;
 import static org.clauseway.pldb.relations.Projected.projected;
 
 import java.util.stream.Collectors;
 import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.unification.structures.LOption;
 import org.clauseway.logic.unification.terms.Unifiable;
+import org.clauseway.pldb.relations.Schema;
+import org.clauseway.pldb.relations.Projected;
+
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.inmemory.AnswerStore;
 import org.junit.Test;

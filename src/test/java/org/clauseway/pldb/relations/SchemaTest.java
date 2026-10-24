@@ -12,6 +12,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.Value;
+import org.clauseway.pldb.relations.literals.External;
+
+import org.clauseway.pldb.relations.literals.Literal;
+
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;

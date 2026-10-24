@@ -1,4 +1,4 @@
-package org.clauseway.pldb.relations;
+package org.clauseway.pldb.relations.literals;
 
 // ABOUTME: The question front door: a goal plus result-row templates, answers as
 // ABOUTME: Answers WITH their guards — rows a caller reads, a persist lands, or a
@@ -24,6 +24,9 @@ import org.clauseway.logic.solving.Condition;
 import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
+import org.clauseway.pldb.relations.Relation;
+import org.clauseway.pldb.relations.Answers;
+
 import org.clauseway.vavr.collection.Array;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;

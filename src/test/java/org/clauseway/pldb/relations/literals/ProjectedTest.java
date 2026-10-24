@@ -1,4 +1,4 @@
-package org.clauseway.pldb.relations;
+package org.clauseway.pldb.relations.literals;
 
 // ABOUTME: The projected() marker: inline ∃-projection — set semantics over the
 // ABOUTME: kept columns, honest ¬∃ under exclude, a real join var inside bodies.
@@ -19,6 +19,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.clauseway.logic.unification.structures.LOption;
 import org.clauseway.logic.unification.terms.Unifiable;
+import org.clauseway.pldb.relations.Schema;
+import org.clauseway.pldb.relations.Projected;
+
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.inmemory.AnswerStore;
 import org.junit.Test;

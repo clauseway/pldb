@@ -1,4 +1,4 @@
-package org.clauseway.pldb.relations;
+package org.clauseway.pldb.relations.literals;
 
 // ABOUTME: The namespaced door: the class qualifies the name, so same-shaped
 // ABOUTME: relations from two vocabularies stay distinct everywhere identity keys.
@@ -10,6 +10,11 @@ import static org.clauseway.logic.unification.terms.LVar.lvar;
 import java.util.Arrays;
 import org.clauseway.logic.solving.Call;
 import org.clauseway.logic.unification.terms.Any;
+import org.clauseway.pldb.relations.Relation;
+import org.clauseway.pldb.relations.RelationN;
+import org.clauseway.pldb.relations.Schema;
+import org.clauseway.pldb.relations.Answers;
+
 import org.clauseway.pldb.inmemory.AnswerStore;
 import org.junit.Test;
 

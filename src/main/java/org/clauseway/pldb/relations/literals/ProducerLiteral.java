@@ -1,4 +1,4 @@
-package org.clauseway.pldb.relations;
+package org.clauseway.pldb.relations.literals;
 
 // ABOUTME: The literal over a producer: the async kind, emissions delivered as the cell grows and the seal
 // ABOUTME: ending the branch, imposed as a parking table constraint under exclude, estimated by the producer.
@@ -9,6 +9,9 @@ import org.clauseway.logic.constraints.Posting;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.solving.Call;
 import org.clauseway.logic.unification.terms.Unifiable;
+import org.clauseway.pldb.relations.Relation;
+import org.clauseway.pldb.relations.Schema;
+
 import org.clauseway.pldb.AnswerProducer;
 import org.clauseway.pldb.constraints.TableConstraints;
 import org.clauseway.vavr.collection.Array;

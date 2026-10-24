@@ -16,14 +16,15 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.inmemory.AnswerStore;
-import org.clauseway.pldb.relations.External;
-import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.literals.External;
+import org.clauseway.pldb.relations.literals.Literal;
 import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.relations.Property;
 import org.clauseway.pldb.relations.Relation;
@@ -118,7 +119,7 @@ public class CachingSqlFetchTest {
 		// the SQL it tried
 		RelationN orphan = RelationN.of("orphan", id);
 		try (CachingSqlFetch source = source()) {
-			assertThatThrownBy(() -> Query.of(orphan.apply(source, lvar())).solve(lvar()).count())
+			assertThatThrownBy(() -> Query.of(Literal.of(source, orphan, Collections.singletonList(lvar()))).solve(lvar()).count())
 					.isInstanceOf(IllegalStateException.class)
 					.hasMessageContaining("orphan");
 		}

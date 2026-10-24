@@ -1,9 +1,13 @@
-package org.clauseway.pldb.relations;
+package org.clauseway.pldb.relations.literals;
 
 // ABOUTME: The write face of a literal: one over an external relation, a relation a backend holds, which a
 // ABOUTME: transaction can assert and retract. A rule literal is not one, so a rule cannot be written, by type.
 
 import org.clauseway.logic.solving.Answer;
+import org.clauseway.pldb.relations.Relation;
+import org.clauseway.pldb.relations.Schema;
+import org.clauseway.pldb.relations.Answers;
+
 import org.clauseway.vavr.collection.Array;
 
 /**

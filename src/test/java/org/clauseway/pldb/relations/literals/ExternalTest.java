@@ -1,4 +1,4 @@
-package org.clauseway.pldb.relations;
+package org.clauseway.pldb.relations.literals;
 
 // ABOUTME: The write face by type: a literal over a source or a producer is External and has a fact to give;
 // ABOUTME: a literal a rule defines is not, so the write doors cannot take it.
@@ -10,6 +10,8 @@ import static org.clauseway.logic.unification.terms.LVar.lvar;
 
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.unification.terms.Unifiable;
+import org.clauseway.pldb.relations.Schema;
+
 import org.clauseway.pldb.AnswerProducer;
 import org.clauseway.pldb.inmemory.AnswerStore;
 import org.junit.Test;

@@ -1,4 +1,4 @@
-package org.clauseway.pldb.relations;
+package org.clauseway.pldb.relations.literals;
 
 // ABOUTME: The function-shaped relation surface: the builder mints relation and
 // ABOUTME: literal together, bare = exists, exclude converts, fact() terminal,
@@ -18,6 +18,10 @@ import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.solving.Call;
 import org.clauseway.logic.unification.terms.Any;
 import org.clauseway.logic.unification.terms.Unifiable;
+import org.clauseway.pldb.relations.Property;
+import org.clauseway.pldb.relations.Schema;
+import org.clauseway.pldb.relations.Answers;
+
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.inmemory.AnswerStore;
 import org.junit.Test;

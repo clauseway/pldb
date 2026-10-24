@@ -8,7 +8,7 @@ import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 import org.clauseway.logic.unification.terms.Unifiable;
-import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.literals.Literal;
 import org.clauseway.pldb.relations.Property;
 import org.clauseway.pldb.relations.Relation;
 import org.clauseway.vavr.collection.Array;

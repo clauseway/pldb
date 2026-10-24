@@ -1,4 +1,4 @@
-package org.clauseway.pldb.relations;
+package org.clauseway.pldb.relations.literals;
 
 // ABOUTME: The probe minted at apply for a literal over an external relation: the arguments walked, the call
 // ABOUTME: key reified at the one reification site, the answers delivered forked per condition conjunct.
@@ -18,6 +18,8 @@ import org.clauseway.logic.solving.Call;
 import org.clauseway.logic.solving.Residues;
 import org.clauseway.logic.unification.Substitutions;
 import org.clauseway.logic.unification.terms.Unifiable;
+import org.clauseway.pldb.relations.Relation;
+
 import org.clauseway.vavr.collection.Array;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)

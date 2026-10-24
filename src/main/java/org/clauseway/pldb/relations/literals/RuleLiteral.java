@@ -1,4 +1,4 @@
-package org.clauseway.pldb.relations;
+package org.clauseway.pldb.relations.literals;
 
 // ABOUTME: The literal a rule defines: read as an ordinary tabled call in the solve's table, where its
 // ABOUTME: recursion seals; imposed under exclude through a private table over the body; never written.
@@ -11,6 +11,9 @@ import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.solving.Call;
 import org.clauseway.logic.tabling.Tabling;
 import org.clauseway.logic.unification.terms.Unifiable;
+import org.clauseway.pldb.relations.Relation;
+import org.clauseway.pldb.relations.Schema;
+
 import org.clauseway.pldb.GoalProducer;
 import org.clauseway.pldb.constraints.TableConstraints;
 import org.clauseway.vavr.collection.Array;

@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.clauseway.logic.solving.Call;
 import org.clauseway.logic.solving.Answer;
-import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.literals.Literal;
 import org.clauseway.pldb.relations.Relation;
 
 /**

@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.function.Predicate;
 import org.clauseway.logic.solving.Call;
 import org.clauseway.logic.solving.Answer;
-import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.literals.Literal;
 import org.clauseway.pldb.relations.Relation;
 import org.clauseway.pldb.transaction.NativeSerialization;
 

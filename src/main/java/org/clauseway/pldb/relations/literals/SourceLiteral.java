@@ -1,4 +1,4 @@
-package org.clauseway.pldb.relations;
+package org.clauseway.pldb.relations.literals;
 
 // ABOUTME: The literal over a source: the sync kind, the source's answers to the probe enumerated inline,
 // ABOUTME: imposed as a table constraint under exclude, estimated by the source.
@@ -11,6 +11,9 @@ import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.solving.Call;
 import org.clauseway.logic.solving.Residues;
 import org.clauseway.logic.unification.terms.Unifiable;
+import org.clauseway.pldb.relations.Relation;
+import org.clauseway.pldb.relations.Schema;
+
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.constraints.TableConstraints;
 import org.clauseway.vavr.collection.Array;
