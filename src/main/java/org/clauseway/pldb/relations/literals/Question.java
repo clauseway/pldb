@@ -63,7 +63,7 @@ public class Question {
 	 * "some value". A wide cell refuses per answer: a row is ground.
 	 */
 	public static <S extends Schema<S>> Stream<S> select(Literal<S> literal) {
-		S row = literal.getSchema();
+		S row = literal.getRow();
 		List<Term<?>> members = StreamSupport.stream(row.members().spliterator(), false)
 				.collect(Collectors.<Term<?>> toList());
 		for (int i = 0; i < members.size(); i++) {
@@ -125,12 +125,12 @@ public class Question {
 	/** A template with a projected() column: the row shape a question lands in cannot leave a column out. */
 	private static void refuseProjected(Literal<?>[] schemas) {
 		for (Literal<?> schema : schemas) {
-			List<Term<?>> members = StreamSupport.stream(schema.getSchema().members().spliterator(), false)
+			List<Term<?>> members = StreamSupport.stream(schema.getRow().members().spliterator(), false)
 					.collect(Collectors.<Term<?>> toList());
 			for (int i = 0; i < members.size(); i++) {
 				if (members.get(i) instanceof Unifiable && Projection.marker((Unifiable<?>) members.get(i)).isPresent()) {
 					throw new IllegalStateException(schema.getRelation().getName() + ": template column '"
-							+ schema.getSchema().columns().get(i).getName() + "' is projected() — a projection belongs"
+							+ schema.getRow().columns().get(i).getName() + "' is projected() — a projection belongs"
 							+ " to a literal's definition; a template names every column it lands");
 				}
 			}

@@ -63,7 +63,7 @@ public interface Literal<S extends Schema<S>> extends Goal, Bounded, Postable {
 
 	Array<Unifiable<?>> getArgs();
 
-	S getSchema();
+	S getRow();
 
 	/** The kind's reading as a goal; {@link #apply} checks the ground columns first. */
 	Goal read();
@@ -166,7 +166,7 @@ public interface Literal<S extends Schema<S>> extends Goal, Bounded, Postable {
 		}
 
 		/** The row the literal is over: its columns are the head, its members the arguments. */
-		public <S1 extends Schema<S1>> Builder<S1> args(S1 row) {
+		public <T extends Schema<T>> Builder<T> args(T row) {
 			return new Builder<>(namespace, name, row);
 		}
 
