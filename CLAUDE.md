@@ -6,7 +6,7 @@ Java 8, vavr, lombok. Auto-loaded every session — read before changing code.
 
 ## Workflow rules (same as the logic repo)
 
-- TDD; `mvn test` must end `BUILD SUCCESS` (265 tests) before any commit/merge. The
+- TDD; `mvn test` must end `BUILD SUCCESS` (296 tests) before any commit/merge. The
   Postgres tests run under Testcontainers — Docker must be up; H2 covers the rest.
 - Branch per task off `develop`; `git add` explicit paths (never `-A`); a branch lands in
   `develop` through a pull request Tom merges, `develop` lands in `master` the same way
@@ -28,11 +28,17 @@ Java 8, vavr, lombok. Auto-loaded every session — read before changing code.
 - `org.clauseway.pldb` — the contracts. `AnswerSource` answers a `Call<Relation>` probe
   inline; `AnswerProducer` is the async kind (rows as a `Fiber`, `AnswerProducer.of` lifts a
   source); `GoalProducer` runs a rule through the solve's table; `Writer` asserts/retracts.
-- `relations` — the schema and the question. `Literal.relation(ns, name).arg(col, x)…`
-  then `.from(source)` / `.produced(producer)` / `.solving(goal)`; `Property<T>` is a typed
-  column (`indexed()`, `ground()`); `RelationN` the relation value;
-  `Question.select(goal, templates…)` lands answers as rows; `Answers` the row algebra;
+- `relations` — the schema and the question. `Schema<D>` is a logic `Mapper<D>` plus
+  `columns()`: a row type's fields are its keys (`Unifiable`), `map(Solution)` is the row as
+  Java reads it, `Query.select(row).stream()` streams the values; `Schema.builder().arg(name,
+  x)….build()` is an anonymous row (`Schema<Solution>`). `Property<T>` is a typed column
+  (`indexed()`, `ground()`); `RelationN` the relation value; `Answers` the row algebra;
   `MagicVar`/`Projected` are marker variables one consumer recognises.
+- `relations.literals` — `Literal.relation(ns, name).args(row)` then `.from(source)` /
+  `.produced(producer)` / `.solving(goal)`; `Literal<S>` is the read type, `External<S>` the
+  write face (`fact()`; a rule is not one); the kinds are package-private;
+  `Question.select(query, templates…)` lands answers as rows for the stores and the write
+  doors (`Writer.clearing`/`replacing` ride it).
 - `constraints` — the lookup AS a constraint. `TableConstraints.posted` parks a
   `TablePropagator` (sync) or `TableParkingPropagator` (async/rule); `Support` is the finite
   domain a free column narrows to; `labelo` enumerates.
