@@ -31,8 +31,8 @@ public class FootprintTest {
 						.arg("value", lvar())
 						.build())
 				.from(null)
-				.getRel();
-		Term<?>[] anys = new Term<?>[rel.getArgs().length];
+				.getRelation();
+		Term<?>[] anys = new Term<?>[rel.getProperties().length];
 		for (int i = 0; i < anys.length; i++) {
 			anys[i] = Any.of(i);
 		}

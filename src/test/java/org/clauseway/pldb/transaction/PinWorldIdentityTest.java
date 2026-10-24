@@ -33,8 +33,8 @@ public class PinWorldIdentityTest {
 	}
 
 	private static Call<Relation> probe() {
-		Relation relation = person(LVar.lvar(), LVar.lvar()).getRel();
-		Term<?>[] anys = new Term<?>[relation.getArgs().length];
+		Relation relation = person(LVar.lvar(), LVar.lvar()).getRelation();
+		Term<?>[] anys = new Term<?>[relation.getProperties().length];
 		for (int i = 0; i < anys.length; i++) {
 			anys[i] = Any.of(i);
 		}

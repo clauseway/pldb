@@ -62,7 +62,7 @@ public class SqlTheoryBatteryTest {
 	}
 
 	private static Relation personRel() {
-		return person(null, lvar(), lvar()).getRel();
+		return person(null, lvar(), lvar()).getRelation();
 	}
 
 	private static External<?> edge(AnswerSource db, Unifiable<Long> lo, Unifiable<Long> hi) {
@@ -75,7 +75,7 @@ public class SqlTheoryBatteryTest {
 	}
 
 	private static Relation edgeRel() {
-		return edge(null, lvar(), lvar()).getRel();
+		return edge(null, lvar(), lvar()).getRelation();
 	}
 
 	private static final Property<Long> id = Property.of("id");
@@ -101,7 +101,7 @@ public class SqlTheoryBatteryTest {
 	/** The whole reference relation, enumerated through the answers face. */
 	private static Stream<Answer<Relation>> allFacts(Relation relation) {
 		List<Term<?>> members = new ArrayList<>();
-		for (int i = 0; i < relation.getArgs().length; i++) {
+		for (int i = 0; i < relation.getProperties().length; i++) {
 			members.add(Any.of(i));
 		}
 		return StreamSupport.stream(reference.answers(

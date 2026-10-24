@@ -95,11 +95,11 @@ public class LiveSourceTest {
 	}
 
 	private static Call<Relation> probe(Literal<?> shape) {
-		Term<?>[] anys = new Term<?>[shape.getRel().getArgs().length];
+		Term<?>[] anys = new Term<?>[shape.getRelation().getProperties().length];
 		for (int i = 0; i < anys.length; i++) {
 			anys[i] = Any.of(i);
 		}
-		return Call.of(shape.getRel(), Answers.image(anys));
+		return Call.of(shape.getRelation(), Answers.image(anys));
 	}
 
 	private static List<String> names(Iterable<Answer<Relation>> answers) {

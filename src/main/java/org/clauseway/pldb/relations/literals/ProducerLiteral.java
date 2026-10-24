@@ -18,10 +18,10 @@ import org.clauseway.vavr.collection.Array;
 
 @Getter
 @RequiredArgsConstructor
-final class ProducerLiteral<R extends Schema<R>> implements External<R> {
-	private final Relation rel;
+final class ProducerLiteral<S extends Schema<S>> implements External<S> {
+	private final Relation relation;
 	private final Array<Unifiable<?>> args;
-	private final R row;
+	private final S schema;
 	private final AnswerProducer producer;
 
 	@Override
@@ -32,7 +32,7 @@ final class ProducerLiteral<R extends Schema<R>> implements External<R> {
 
 	@Override
 	public Posting posted() {
-		return TableConstraints.posted(producer, rel, args.toJavaList());
+		return TableConstraints.posted(producer, relation, args.toJavaList());
 	}
 
 	@Override
@@ -42,6 +42,6 @@ final class ProducerLiteral<R extends Schema<R>> implements External<R> {
 
 	@Override
 	public String toString() {
-		return rel.toString() + args;
+		return relation.toString() + args;
 	}
 }

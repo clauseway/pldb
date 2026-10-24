@@ -41,7 +41,7 @@ public class PropertyTest {
 						.arg("id", lvar()).indexed().ground()
 						.arg("tag", lvar())
 						.build())
-				.from(null).getRel();
+				.from(null).getRelation();
 
 		// the bare constant finds the flagged copy's column
 		assertThat(rel.indexOf(id)).contains(0);

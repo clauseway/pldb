@@ -45,7 +45,7 @@ public class RelationN implements Relation {
 	}
 
 	@Override
-	public Property<?>[] getArgs() {
+	public Property<?>[] getProperties() {
 		return args;
 	}
 

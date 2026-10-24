@@ -34,7 +34,7 @@ public class NamespacedRelationTest {
 						.arg("copy", lvar())
 						.build())
 				.from(null)
-				.getRel();
+				.getRelation();
 	}
 
 	private static Call<Relation> everything(Relation relation) {

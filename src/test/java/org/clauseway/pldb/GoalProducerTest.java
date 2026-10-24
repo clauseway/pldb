@@ -43,7 +43,7 @@ public class GoalProducerTest {
 	}
 
 	private static Relation personRel() {
-		return person((AnswerSource) null, lvar(), lvar()).getRel();
+		return person((AnswerSource) null, lvar(), lvar()).getRelation();
 	}
 
 	private final AnswerStore db = AnswerStore.empty()

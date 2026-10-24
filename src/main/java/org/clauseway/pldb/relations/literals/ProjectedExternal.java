@@ -19,7 +19,7 @@ final class ProjectedExternal<R extends Schema<R>> extends RuleLiteral<R> implem
 
 	@Override
 	public Answer<Relation> fact() {
-		throw new IllegalStateException("fact() over " + getRel().getName()
+		throw new IllegalStateException("fact() over " + getRelation().getName()
 				+ ": a projected column is not stored — a projected row is a question, not a fact");
 	}
 }

@@ -37,7 +37,7 @@ public class CachingAnswerSourceTest {
 					.arg("tag", lvar())
 					.build())
 			.from(null)
-			.getRel();
+			.getRelation();
 
 	private static Call<Relation> everything() {
 		return Call.of(GUARDED, Answers.image(Any.of(0), Any.of(1)));

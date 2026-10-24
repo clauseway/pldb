@@ -52,7 +52,7 @@ public class TableParkingPropagatorTest {
 	}
 
 	private static Relation rRel() {
-		return r(null, lvar(), lvar()).getRel();
+		return r(null, lvar(), lvar()).getRelation();
 	}
 
 	private static final Property<Integer> item = Property.of("item");

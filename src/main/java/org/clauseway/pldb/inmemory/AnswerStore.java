@@ -122,8 +122,8 @@ public class AnswerStore implements AnswerSource, Writer<AnswerStore> {
 
 	/** The relation's declared access pattern IS the index spec — plain scratch. */
 	private static Set<Integer> positions(Relation relation) {
-		return IntStream.range(0, relation.getArgs().length)
-				.filter(i -> relation.getArgs()[i].isIndexed())
+		return IntStream.range(0, relation.getProperties().length)
+				.filter(i -> relation.getProperties()[i].isIndexed())
 				.boxed()
 				.collect(Collectors.toSet());
 	}

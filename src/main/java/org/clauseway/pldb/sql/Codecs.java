@@ -60,8 +60,8 @@ public final class Codecs {
 	 * nothing. A doubly-bound column refuses.
 	 */
 	public Codecs withCodec(Literal<?> template) {
-		Relation relation = template.getRel();
-		Property<?>[] columns = relation.getArgs();
+		Relation relation = template.getRelation();
+		Property<?>[] columns = relation.getProperties();
 		Array<Unifiable<?>> args = template.getArgs();
 		boolean bound = false;
 		for (int i = 0; i < columns.length; i++) {

@@ -31,14 +31,15 @@ final class Lookup {
 				.flatMap(q -> {
 					Unifiable<?> anchor = lval(Tuple.ofAll(q.map(Unifiable::getObjectTerm).toJavaArray()));
 					return Residues.about(s, anchor)
-							.map(key -> dispatcher.apply(Call.of(lit.getRel(), key._1, key._2), anchor).apply(s));
+							.map(key -> dispatcher
+									.apply(Call.of(lit.getRelation(), key._1, key._2), anchor).apply(s));
 				}));
 	}
 
 	/** One answer, forked per condition conjunct, each restated at the anchor. */
 	static Goal deliver(Answer<Relation> answer, Unifiable<?> anchor) {
 		return answer.getCondition().conjuncts().toJavaStream()
-				.map(conjunct -> (Goal) Residues.restate(answer.getReified(), conjunct, anchor))
+				.map(conjunct -> Residues.restate(answer.getReified(), conjunct, anchor))
 				.reduce(Goal::or)
 				.orElseGet(Goal::failure);
 	}
@@ -48,7 +49,8 @@ final class Lookup {
 				.map(u -> (Unifiable<?>) s.walk(u))
 				.map(Stream::of)
 				.map(Fiber::done)
-				.reduce((acc, c) -> Fiber.zip(acc, c).map(t -> t.apply(Stream::concat)))
+				.reduce((acc, c) -> Fiber.zip(acc, c)
+						.map(t -> t.apply(Stream::concat)))
 				.orElseGet(() -> Fiber.done(Stream.empty()))
 				.map(q -> q.collect(Array.collector()));
 	}

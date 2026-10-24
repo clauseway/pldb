@@ -11,7 +11,7 @@ import org.clauseway.pldb.relations.Answers;
 import org.clauseway.vavr.collection.Array;
 
 /**
- * A literal over an external relation: the {@code from} and {@code
+ * A literal over a relation whose rows come from outside the engine: the {@code from} and {@code
  * produced} terminals mint one, the {@code solving} terminal does not.
  * The write doors take this type, so what can be asserted is decided by
  * the compiler: a rule has no row to store.
@@ -24,13 +24,13 @@ public interface External<R extends Schema<R>> extends Literal<R> {
 	 * question, not knowledge.
 	 */
 	default Answer<Relation> fact() {
-		Relation rel = getRel();
+		Relation rel = getRelation();
 		Array<Object> values = getArgs().zipWithIndex().map(t -> {
 			if (!t._1.isVal()) {
 				throw new IllegalStateException("fact() over " + rel.getName()
-						+ ": column '" + rel.getArgs()[t._2].getName() + "' is unbound");
+						+ ": column '" + rel.getProperties()[t._2].getName() + "' is unbound");
 			}
-			return (Object) t._1.get();
+			return t._1.get();
 		});
 		return Answers.answer(rel, values.toJavaList());
 	}

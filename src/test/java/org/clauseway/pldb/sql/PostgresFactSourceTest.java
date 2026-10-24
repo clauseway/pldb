@@ -59,7 +59,7 @@ public class PostgresFactSourceTest {
 	}
 
 	private static Relation personRel() {
-		return person(null, lvar(), lvar()).getRel();
+		return person(null, lvar(), lvar()).getRelation();
 	}
 
 	private static External<?> edge(AnswerSource db, Unifiable<Integer> src, Unifiable<Integer> dst) {
@@ -72,7 +72,7 @@ public class PostgresFactSourceTest {
 	}
 
 	private static Relation edgeRel() {
-		return edge(null, lvar(), lvar()).getRel();
+		return edge(null, lvar(), lvar()).getRelation();
 	}
 
 	private static final Property<Integer> id = Property.of("id");
@@ -158,7 +158,7 @@ public class PostgresFactSourceTest {
 	}
 
 	private static String createTable(Relation relation, Answer<Relation> sample) {
-		Property<?>[] columns = relation.getArgs();
+		Property<?>[] columns = relation.getProperties();
 		StringBuilder ddl = new StringBuilder("CREATE TABLE ")
 				.append(relation.getName()).append("(");
 		for (int i = 0; i < columns.length; i++) {

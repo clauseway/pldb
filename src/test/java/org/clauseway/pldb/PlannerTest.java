@@ -38,7 +38,7 @@ public class PlannerTest {
 	}
 
 	private static Relation parentRel() {
-		return parent(null, lvar(), lvar()).getRel();
+		return parent(null, lvar(), lvar()).getRelation();
 	}
 
 	private static final int N = 40;

@@ -75,7 +75,7 @@ public class RecordingChoiceTest {
 					.arg("name", lvar())
 					.build())
 			.from(AnswerStore.empty())
-			.getRel();
+			.getRelation();
 
 	private static Call<Relation> anyone() {
 		return Call.of(PERSON, Answers.image(lvar(), lvar()));

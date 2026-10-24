@@ -74,7 +74,7 @@ public interface Writer<S extends Writer<S>> {
 
 	/** The stored literal's row over no source: the shape its answers land in. */
 	static Literal<?> template(External<?> stored) {
-		return Literal.of((AnswerSource) null, stored.getRel(), stored.getArgs().toJavaList());
+		return Literal.of((AnswerSource) null, stored.getRelation(), stored.getArgs().toJavaList());
 	}
 
 	/** The question's answers in the template's shape, driven to exhaustion. */

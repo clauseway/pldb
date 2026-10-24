@@ -45,7 +45,7 @@ public class SqlPushdownTest {
 	}
 
 	private static Relation personRel() {
-		return person(null, lvar(), lvar()).getRel();
+		return person(null, lvar(), lvar()).getRelation();
 	}
 
 	private static final Property<Long> id = Property.of("id");

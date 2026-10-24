@@ -95,8 +95,8 @@ public class SchemaTest {
 		Unifiable<Integer> y = lvar();
 		Literal<Point> typed = point(null, new Point(x, y));
 		Literal<Schema.Anonymous> anonymous = point(null, x, y);
-		assertThat(typed.getRel()).isEqualTo(anonymous.getRel());
-		assertThat(typed.getRel().hashCode()).isEqualTo(anonymous.getRel().hashCode());
+		assertThat(typed.getRelation()).isEqualTo(anonymous.getRelation());
+		assertThat(typed.getRelation().hashCode()).isEqualTo(anonymous.getRelation().hashCode());
 		assertThat(typed.getArgs()).isEqualTo(anonymous.getArgs());
 	}
 
@@ -147,6 +147,6 @@ public class SchemaTest {
 		Point probe = Point.anyPoint().probe();
 		assertThat(probe.getX()).isInstanceOf(Projected.class);
 		assertThat(probe.getY()).isInstanceOf(Projected.class);
-		assertThat(point(null, probe).getRel().getArgs()).isEmpty();
+		assertThat(point(null, probe).getRelation().getProperties()).isEmpty();
 	}
 }

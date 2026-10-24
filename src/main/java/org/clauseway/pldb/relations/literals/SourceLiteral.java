@@ -20,10 +20,10 @@ import org.clauseway.vavr.collection.Array;
 
 @Getter
 @RequiredArgsConstructor
-final class SourceLiteral<R extends Schema<R>> implements External<R> {
-	private final Relation rel;
+final class SourceLiteral<S extends Schema<S>> implements External<S> {
+	private final Relation relation;
 	private final Array<Unifiable<?>> args;
-	private final R row;
+	private final S schema;
 	private final AnswerSource source;
 
 	@Override
@@ -38,7 +38,7 @@ final class SourceLiteral<R extends Schema<R>> implements External<R> {
 
 	@Override
 	public Posting posted() {
-		return TableConstraints.posted(source, rel, args.toJavaList());
+		return TableConstraints.posted(source, relation, args.toJavaList());
 	}
 
 	@Override
@@ -48,6 +48,6 @@ final class SourceLiteral<R extends Schema<R>> implements External<R> {
 
 	@Override
 	public String toString() {
-		return rel.toString() + args;
+		return relation.toString() + args;
 	}
 }

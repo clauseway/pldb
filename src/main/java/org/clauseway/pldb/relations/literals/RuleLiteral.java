@@ -25,20 +25,20 @@ import org.clauseway.vavr.collection.Array;
  */
 @Getter
 @RequiredArgsConstructor
-class RuleLiteral<R extends Schema<R>> implements Literal<R> {
-	private final Relation rel;
+class RuleLiteral<S extends Schema<S>> implements Literal<S> {
+	private final Relation relation;
 	private final Array<Unifiable<?>> args;
-	private final R row;
+	private final S schema;
 	private final Goal body;
 
 	@Override
 	public Goal read() {
-		return Tabling.call(rel, Tuple.ofAll(args.map(Unifiable::getObjectUnifiable).toJavaArray()), () -> body);
+		return Tabling.call(relation, Tuple.ofAll(args.map(Unifiable::getObjectUnifiable).toJavaArray()), () -> body);
 	}
 
 	@Override
 	public Posting posted() {
-		return TableConstraints.postedRule(rel, body, args.toJavaList());
+		return TableConstraints.postedRule(relation, body, args.toJavaList());
 	}
 
 	@Override
@@ -48,6 +48,6 @@ class RuleLiteral<R extends Schema<R>> implements Literal<R> {
 
 	@Override
 	public String toString() {
-		return rel.toString() + args;
+		return relation.toString() + args;
 	}
 }

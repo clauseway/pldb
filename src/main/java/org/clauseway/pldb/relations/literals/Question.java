@@ -106,7 +106,7 @@ public class Question {
 	private static Stream<Answer<Relation>> facts(Map<Unifiable<?>, Term<?>> bound,
 			Condition condition, Literal<?>[] schemas) {
 		return Arrays.stream(schemas)
-				.map(schema -> Answer.of(schema.getRel(),
+				.map(schema -> Answer.of(schema.getRelation(),
 						Answers.image(IntStream.range(0, schema.getArgs().length())
 								.mapToObj(i -> cell(schema, i, bound))
 								.collect(Collectors.<Term<?>> toList())),

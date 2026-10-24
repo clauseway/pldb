@@ -52,7 +52,7 @@ public class TableConstraintsTest {
 	}
 
 	private static Relation rRel() {
-		return r(null, lvar(), lvar()).getRel();
+		return r(null, lvar(), lvar()).getRelation();
 	}
 
 	private static External<?> s(AnswerSource db, Unifiable<String> label, Unifiable<Integer> price) {
@@ -65,7 +65,7 @@ public class TableConstraintsTest {
 	}
 
 	private static Relation sRel() {
-		return s(null, lvar(), lvar()).getRel();
+		return s(null, lvar(), lvar()).getRelation();
 	}
 
 	private static External<?> t(AnswerSource db, Unifiable<Integer> item, Unifiable<String> tag) {
@@ -78,7 +78,7 @@ public class TableConstraintsTest {
 	}
 
 	private static Relation tRel() {
-		return t(null, lvar(), lvar()).getRel();
+		return t(null, lvar(), lvar()).getRelation();
 	}
 
 	private static final Property<Integer> item = Property.of("item");

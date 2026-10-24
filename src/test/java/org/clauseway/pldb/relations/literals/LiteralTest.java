@@ -72,7 +72,7 @@ public class LiteralTest {
 	public void twoMintsOfOneDefinitionAreTheSameRelation() {
 		Unifiable<Integer> i = lvar();
 		Unifiable<String> n = lvar();
-		assertThat(person(db, i, n).getRel()).isEqualTo(person(db, lvar(), lvar()).getRel());
+		assertThat(person(db, i, n).getRelation()).isEqualTo(person(db, lvar(), lvar()).getRelation());
 	}
 
 	@Test
@@ -135,7 +135,7 @@ public class LiteralTest {
 						.arg("v", lvar())
 						.build())
 				.from(db);
-		Property<?>[] cols = lit.getRel().getArgs();
+		Property<?>[] cols = lit.getRelation().getProperties();
 		assertThat(cols[0].isIndexed()).isTrue();
 		assertThat(cols[0].isGround()).isTrue();
 		assertThat(cols[1].isIndexed()).isFalse();
@@ -194,7 +194,7 @@ public class LiteralTest {
 						Literal.relation(LiteralTest.class, "person").args(Schema.builder().arg("id", lval(2)).arg("name", lval("Alan")).build()).from(null)));
 		org.assertj.core.api.Assertions.assertThat(db.estimate(
 						Call.of(
-								Literal.relation(LiteralTest.class, "person").args(Schema.builder().arg("id", lval(1)).arg("name", lval("Ada")).build()).from(null).getRel(),
+								Literal.relation(LiteralTest.class, "person").args(Schema.builder().arg("id", lval(1)).arg("name", lval("Ada")).build()).from(null).getRelation(),
 								Answers.image(
 										Any.of(0), Any.of(1)))))
 				.isEqualTo(2);

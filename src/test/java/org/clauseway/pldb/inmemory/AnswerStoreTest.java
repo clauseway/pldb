@@ -44,7 +44,7 @@ public class AnswerStoreTest {
 					.arg("copy", lvar())
 					.build())
 			.from(null)
-			.getRel();
+			.getRelation();
 
 	private static Answer<Relation> row(Object member, Object copy) {
 		return Answers.answer(LOAN, Arrays.asList(member, copy));
@@ -280,7 +280,7 @@ public class AnswerStoreTest {
 					.arg("b", lvar()).indexed()
 					.build())
 			.from(null)
-			.getRel();
+			.getRelation();
 
 	private static Answer<Relation> pair(Object a, Object b) {
 		return Answers.answer(PAIR, Arrays.asList(a, b));
@@ -338,7 +338,7 @@ public class AnswerStoreTest {
 					.arg("copy", lvar())
 					.build())
 			.from(null)
-			.getRel();
+			.getRelation();
 
 	@Test
 	public void anUnflaggedRelationFullScansCorrectly() {
