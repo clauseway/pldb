@@ -228,9 +228,9 @@ public class Literal implements Goal, Bounded, Postable {
 
 		/**
 		 * The row's columns, its names over its members in order, flags as the
-		 * row declares them; the literal built from it is a {@link Rows} of the row's type.
+		 * row declares them; the literal built from it is a {@link Rows} of the row's schema.
 		 */
-		public <R extends Row<R>> Rows.Builder<R> rows(R row) {
+		public <R extends Schema<R>> Rows.Builder<R> rows(R row) {
 			Iterator<? extends Term<?>> members = row.members().iterator();
 			for (Property<?> column : row.columns()) {
 				if (!members.hasNext()) {

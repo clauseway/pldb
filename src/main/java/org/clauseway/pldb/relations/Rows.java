@@ -1,6 +1,6 @@
 package org.clauseway.pldb.relations;
 
-// ABOUTME: A literal built from a row: it keeps that row and selects its answers back as ground rows of it.
+// ABOUTME: A literal built from a row of a schema: it keeps that row and selects its answers back as ground rows of it.
 // ABOUTME: Only a literal built this way can be selected, so the row's type rides from the builder to the read.
 
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -21,13 +21,13 @@ import org.clauseway.pldb.AnswerProducer;
 import org.clauseway.pldb.AnswerSource;
 
 /**
- * A literal over a {@link Row}'s row. The head is the row's columns
+ * A literal over a row of a {@link Schema}. The head is the row's columns
  * applied over its members; the row rides along, outside the literal's
  * identity, and {@link #select} rebuilds each answer into it. A plain
  * literal has no select: only a literal that knows its row can answer
  * as rows of it.
  */
-public final class Rows<R extends Row<R>> extends Literal {
+public final class Rows<R extends Schema<R>> extends Literal {
 
 	private final R row;
 
@@ -69,7 +69,7 @@ public final class Rows<R extends Row<R>> extends Literal {
 	}
 
 	/** The builder after {@code rows(row)}: the names applied over the row's members, three ways to read. */
-	public static final class Builder<R extends Row<R>> {
+	public static final class Builder<R extends Schema<R>> {
 		private final Literal.Builder head;
 		private final R row;
 
