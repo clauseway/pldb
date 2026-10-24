@@ -25,7 +25,7 @@ import org.clauseway.vavr.collection.Array;
  */
 @Getter
 @RequiredArgsConstructor
-class RuleLiteral<S extends Schema<S>> implements Literal<S> {
+class RuleLiteral<S extends Schema<?>> implements Literal<S> {
 	private final Relation relation;
 	private final Array<Unifiable<?>> args;
 	private final S row;

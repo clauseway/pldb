@@ -11,7 +11,7 @@ import org.clauseway.pldb.relations.Schema;
 
 import org.clauseway.vavr.collection.Array;
 
-final class ProjectedExternal<R extends Schema<R>> extends RuleLiteral<R> implements External<R> {
+final class ProjectedExternal<R extends Schema<?>> extends RuleLiteral<R> implements External<R> {
 
 	ProjectedExternal(Relation rel, Array<Unifiable<?>> args, R row, Goal full) {
 		super(rel, args, row, full);

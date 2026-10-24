@@ -1,25 +1,25 @@
 package org.clauseway.pldb.relations;
 
-// ABOUTME: A schema is a signed value with column names: a literal is built from a row of it, typed by it, keeps
-// ABOUTME: the relation of one built from an anonymous row of the same columns, and selects ground rows back.
+// ABOUTME: A schema is a mapper with column names: a literal is built from a row of it, typed by it, keeps
+// ABOUTME: the relation of one built from an anonymous row of the same columns, and selects its values back.
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
+import static org.clauseway.pldb.relations.Projected.projected;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.Value;
 import org.clauseway.pldb.relations.literals.External;
 
 import org.clauseway.pldb.relations.literals.Literal;
-import org.clauseway.pldb.relations.literals.Question;
 
-import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.solving.Query;
-import org.clauseway.logic.unification.terms.Term;
+import org.clauseway.logic.solving.Solution;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.inmemory.AnswerStore;
@@ -27,21 +27,27 @@ import org.junit.Test;
 
 public class SchemaTest {
 
-	/** A point row: two columns, the first indexed. */
+	/** A point as Java reads it. */
 	@Value
-	static class Point implements Schema<Point> {
-		Term<Integer> x;
-		Term<Integer> y;
+	static class Coordinates {
+		int x;
+		int y;
+	}
+
+	/** A point row: two columns, the first indexed, mapped into coordinates. */
+	@Value
+	static class Point implements Schema<Coordinates> {
+		Unifiable<Integer> x;
+		Unifiable<Integer> y;
 
 		@Override
-		public Iterable<? extends Term<?>> members() {
+		public Iterable<? extends Unifiable<?>> keys() {
 			return Arrays.asList(x, y);
 		}
 
 		@Override
-		@SuppressWarnings("unchecked")
-		public Point withMembers(Term<?>[] members) {
-			return new Point((Term<Integer>) members[0], (Term<Integer>) members[1]);
+		public Coordinates map(Solution solution) {
+			return new Coordinates(solution.get(x).get(), solution.get(y).get());
 		}
 
 		@Override
@@ -74,13 +80,19 @@ public class SchemaTest {
 				point(null, new Point(lval(3), lval(4))));
 	}
 
+	private static <D> List<D> all(Stream<D> stream) {
+		try (Stream<D> rows = stream) {
+			return rows.collect(Collectors.toList());
+		}
+	}
+
 	@Test
 	public void anAnonymousRowNamesItsColumnsInOrderWithTheirFlags() {
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
 		Schema.Anonymous row = Schema.builder().arg("x", x).indexed().arg("y", y).build();
 		assertThat(row.columns()).containsExactly(Property.of("x").indexed(), Property.of("y"));
-		assertThat(row.getMembers()).containsExactly(x, y);
+		assertThat(row.getKeys()).containsExactly(x, y);
 	}
 
 	@Test
@@ -103,58 +115,61 @@ public class SchemaTest {
 	}
 
 	@Test
-	public void selectAnswersGroundRowsOfTheKind() {
+	public void selectMapsEveryAnswerIntoTheSchemasValue() {
 		Point any = Point.anyPoint();
-		List<Point> rows = Question.select(Query.of(point(twoPoints(), any)), any)
-				.sorted((a, b) -> a.getX().get().compareTo(b.getX().get()))
-				.collect(Collectors.toList());
-		assertThat(rows).containsExactly(new Point(lval(1), lval(2)), new Point(lval(3), lval(4)));
+		List<Coordinates> points = all(Query.of(point(twoPoints(), any)).select(any).stream());
+		assertThat(points).containsExactlyInAnyOrder(new Coordinates(1, 2), new Coordinates(3, 4));
 	}
 
 	@Test
-	public void selectOverAnAnonymousRowAnswersAnonymousRows() {
-		Literal<Schema.Anonymous> third = point(twoPoints(), lval(3), lvar());
-		List<Schema.Anonymous> rows = Question.select(Query.of(third), third.getRow())
-				.collect(Collectors.toList());
+	public void selectOverAnAnonymousRowAnswersSolutions() {
+		Unifiable<Integer> y = lvar();
+		Literal<Schema.Anonymous> third = point(twoPoints(), lval(3), y);
+		List<Solution> rows = all(Query.of(third).select(third.getRow()).stream());
 		assertThat(rows).hasSize(1);
-		assertThat(rows.get(0).getMembers()).containsExactly(lval(3), lval(4));
+		assertThat(rows.get(0).get(y).get()).isEqualTo(4);
 	}
 
 	@Test
 	public void aValueMemberNarrowsTheQuestionAndRidesTheAnswer() {
 		Point third = new Point(lval(3), lvar());
-		List<Point> rows = Question.select(Query.of(point(twoPoints(), third)), third)
-				.collect(Collectors.toList());
-		assertThat(rows).containsExactly(new Point(lval(3), lval(4)));
+		assertThat(all(Query.of(point(twoPoints(), third)).select(third).stream()))
+				.containsExactly(new Coordinates(3, 4));
 	}
 
 	/** The head is the row's columns over its members, so a body over the same row is over the head's variables. */
 	@Test
 	public void aRuleHeadAndItsBodyShareTheRow() {
 		Point origin = Point.anyPoint();
-		List<Point> rows = Question.select(Query.of(Literal.relation(SchemaTest.class, "origin").args(origin)
-				.solving(origin.getX().unifiable().unifies(0).and(origin.getY().unifiable().unifies(0)))), origin)
-				.collect(Collectors.toList());
-		assertThat(rows).containsExactly(new Point(lval(0), lval(0)));
+		Literal<Point> atOrigin = Literal.relation(SchemaTest.class, "origin").args(origin)
+				.solving(origin.getX().unifies(0).and(origin.getY().unifies(0)));
+		assertThat(all(Query.of(atOrigin).select(origin).stream())).containsExactly(new Coordinates(0, 0));
 	}
 
-	/** A free cell comes back as a fresh variable: the answer is a pattern again, and the Java boundary decides. */
+	/** A Java value has no place for an open cell: the solution is refused before the schema maps it. */
 	@Test
-	public void aWideAnswerSelectsAsAPattern() {
+	public void aWideAnswerIsRefusedBeforeMapping() {
 		Point any = Point.anyPoint();
-		Literal<Point> anyPoint = Literal.relation(SchemaTest.class, "anyPoint").args(any).solving(any.getX().unifiable().unifies(1));
-		List<Point> rows = Question.select(Query.of(anyPoint), any).collect(Collectors.toList());
-		assertThat(rows).hasSize(1);
-		assertThat(rows.get(0).getX()).isEqualTo(lval(1));
-		assertThat(rows.get(0).getY().asVar()).isPresent();
-		assertThat(rows.get(0).getY()).isNotSameAs(any.getY());
+		Literal<Point> anyPoint = Literal.relation(SchemaTest.class, "anyPoint").args(any)
+				.solving(any.getX().unifies(1));
+		assertThatThrownBy(() -> all(Query.of(anyPoint).select(any).stream()))
+				.isInstanceOf(IllegalStateException.class)
+				.hasMessageContaining("open")
+				.hasMessageContaining(any.getY().toString());
+	}
+
+	/** A projected() member is a literal-definition marker; selected, it is an open cell like any other. */
+	@Test
+	public void aProjectedMemberSelectsAsAnOpenCell() {
+		Point probe = new Point(lval(1), projected());
+		assertThatThrownBy(() -> all(Query.of(point(twoPoints(), probe)).select(probe).stream()))
+				.isInstanceOf(IllegalStateException.class)
+				.hasMessageContaining("open");
 	}
 
 	@Test
 	public void aProbeProjectsEveryColumnAway() {
-		Point probe = Point.anyPoint().probe();
-		assertThat(probe.getX()).isInstanceOf(Projected.class);
-		assertThat(probe.getY()).isInstanceOf(Projected.class);
+		Point probe = new Point(projected(), projected());
 		assertThat(point(null, probe).getRelation().getProperties()).isEmpty();
 	}
 }

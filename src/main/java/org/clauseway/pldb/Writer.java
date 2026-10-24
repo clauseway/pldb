@@ -69,7 +69,7 @@ public interface Writer<S extends Writer<S>> {
 	 * a derived cell the row does not share rides wide and the door refuses
 	 * it. A row that leaves and lands unchanged cancels to nothing.
 	 */
-	default <R extends Schema<R>> S replacing(External<R> stored, Literal<R> derived) {
+	default <R extends Schema<?>> S replacing(External<R> stored, Literal<R> derived) {
 		return clearing(stored).asserting(rows(derived, stored));
 	}
 

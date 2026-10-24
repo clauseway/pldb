@@ -18,7 +18,7 @@ import org.clauseway.vavr.collection.Array;
 
 @Getter
 @RequiredArgsConstructor
-final class ProducerLiteral<S extends Schema<S>> implements External<S> {
+final class ProducerLiteral<S extends Schema<?>> implements External<S> {
 	private final Relation relation;
 	private final Array<Unifiable<?>> args;
 	private final S row;

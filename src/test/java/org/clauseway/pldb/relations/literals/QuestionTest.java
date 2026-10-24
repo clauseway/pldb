@@ -162,16 +162,6 @@ public class QuestionTest {
 		assertThat(selected(question, loan(id, lval("c1")))).isEmpty();
 	}
 
-	/** A projection is a literal-definition marker: in a selected row it is a category error, refused before solving. */
-	@Test
-	public void selectRefusesAProjectedMemberBeforeSolving() {
-		Schema.Anonymous row = Schema.builder().arg("loanId", lvar()).arg("copy", projected()).build();
-		assertThatThrownBy(() -> Question.select(Query.of(Goal.success()), row))
-				.isInstanceOf(IllegalStateException.class)
-				.hasMessageContaining("copy")
-				.hasMessageContaining("projected");
-	}
-
 	/** The same marker in a template: the row shape a question lands in cannot leave a column out. */
 	@Test
 	public void aTemplateWithAProjectedColumnRefusesBeforeSolving() {

@@ -16,7 +16,7 @@ import org.clauseway.vavr.collection.Array;
  * The write doors take this type, so what can be asserted is decided by
  * the compiler: a rule has no row to store.
  */
-public interface External<R extends Schema<R>> extends Literal<R> {
+public interface External<R extends Schema<?>> extends Literal<R> {
 
 	/**
 	 * The literal as a stored row: every column must be a ground value.

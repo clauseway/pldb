@@ -1,6 +1,6 @@
 package org.clauseway.pldb.relations.literals;
 
-// ABOUTME: The projection a literal's builder applies: the projected() markers among a row's members, claimed
+// ABOUTME: The projection a literal's builder applies: the projected() markers among a row's keys, claimed
 // ABOUTME: by the first head they appear in, and the head that remains once those columns drop out of it.
 
 import java.util.ArrayList;

@@ -57,7 +57,7 @@ import org.clauseway.vavr.collection.Array;
  * answer into it: a literal answers as rows of its own schema and no other. The
  * kinds a transaction can write are {@link External}.
  */
-public interface Literal<S extends Schema<S>> extends Goal, Bounded, Postable {
+public interface Literal<S extends Schema<?>> extends Goal, Bounded, Postable {
 
 	Relation getRelation();
 
@@ -121,13 +121,13 @@ public interface Literal<S extends Schema<S>> extends Goal, Bounded, Postable {
 
 	/**
 	 * The front door: relation first, row next, backend last. The row's
-	 * columns name the head over the row's members, flags as the row
+	 * columns name the head over the row's keys, flags as the row
 	 * declares them, and the terminal picks the kind: {@link #from}
 	 * enumerates a source, {@link #produced} streams a producer,
 	 * {@link #solving} tables a rule in the solve. A half-built literal is
 	 * not a goal, so applying one is unrepresentable.
 	 */
-	final class Builder<S extends Schema<S>> {
+	final class Builder<S extends Schema<?>> {
 		private final String namespace;
 		private final String name;
 		private final S schema;
@@ -145,24 +145,24 @@ public interface Literal<S extends Schema<S>> extends Goal, Bounded, Postable {
 			this.namespace = namespace;
 			this.name = name;
 			this.schema = schema;
-			Iterator<? extends Term<?>> members = schema.members().iterator();
+			Iterator<? extends Unifiable<?>> keys = schema.keys().iterator();
 			for (Property<?> column : schema.columns()) {
-				if (!members.hasNext()) {
+				if (!keys.hasNext()) {
 					throw new IllegalStateException("relation '" + name + "': the schema names column '"
-							+ column.getName() + "' but has no member for it");
+							+ column.getName() + "' but has no key for it");
 				}
-				Unifiable<?> value = members.next().unifiable();
+				Unifiable<?> value = keys.next();
 				columns.add(column);
 				values.add(value);
 				projectedHere.add(Projection.marker(value).map(Projected::claim).orElse(false));
 			}
-			if (members.hasNext()) {
-				throw new IllegalStateException("relation '" + name + "': the row has more members than columns");
+			if (keys.hasNext()) {
+				throw new IllegalStateException("relation '" + name + "': the row has more keys than columns");
 			}
 		}
 
-		/** The row the literal is over: its columns are the head, its members the arguments. */
-		public <T extends Schema<T>> Builder<T> args(T row) {
+		/** The row the literal is over: its columns are the head, its keys the arguments. */
+		public <T extends Schema<?>> Builder<T> args(T row) {
 			return new Builder<>(namespace, name, row);
 		}
 

@@ -23,12 +23,8 @@ import org.clauseway.logic.goals.Exhaustion;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.solving.Condition;
 import org.clauseway.logic.solving.Query;
-import org.clauseway.logic.unification.MiniKanren;
-import org.clauseway.logic.unification.structures.Structural;
-import org.clauseway.logic.unification.terms.Reified;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
-import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
 import org.clauseway.pldb.relations.Relation;
 import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.relations.Answers;
@@ -58,37 +54,14 @@ public class Question {
 	 * caller constructs — the scheduler is deliberately not chosen here.
 	 */
 
-	/**
-	 * The query's answers as rows: the row is a pattern over variables the
-	 * query mentions, and each answer is that pattern rebuilt with them bound.
-	 * A free cell comes back as a fresh variable, so a wide answer is a
-	 * pattern again; the Java boundary decides what a free cell means. A
-	 * projected() member refuses before solving — a projection belongs to a
-	 * literal's definition, and a row has no cell for "some value".
-	 */
-	public static <S extends Structural<S>> Stream<S> select(Query query, S row) {
-		refuseProjected(row);
-		return query.solve(lval(row)).map(Question::pattern);
-	}
-
-	/** A ground answer as it is; a wide one with every reified name a fresh variable. */
-	private static <S> S pattern(Reified<S> answer) {
-		if (answer.isGround()) {
-			return answer.get();
-		}
-		return new BreadthFirstScheduler<>(MiniKanren.instantiate(answer)).get().get();
-	}
-
 	/** A projected() member in a row a question lands in: the marker belongs to a literal's definition. */
-	private static void refuseProjected(Structural<?> row) {
+	private static void refuseProjected(Schema<?> row) {
 		int position = 0;
-		for (Term<?> member : row.members()) {
-			if (Projection.marker(member).isPresent()) {
-				String column = row instanceof Schema
-						? "'" + ((Schema<?>) row).columns().get(position).getName() + "'"
-						: "at position " + position;
-				throw new IllegalStateException("member " + column + " is projected() — a projection belongs to a"
-						+ " literal's definition; a row a question lands in needs a variable or a value in every member");
+		for (Unifiable<?> key : row.keys()) {
+			if (Projection.marker(key).isPresent()) {
+				throw new IllegalStateException("member '" + row.columns().get(position).getName()
+						+ "' is projected() — a projection belongs to a literal's definition; a row a question"
+						+ " lands in needs a variable or a value in every member");
 			}
 			position++;
 		}
