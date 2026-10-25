@@ -17,7 +17,9 @@ import org.clauseway.logic.unification.terms.Unifiable;
  * A schema is a {@link Selector} that names its keys: one {@link Property}
  * per key, in order, carrying the column's name and flags. An instance is
  * a row of the schema — a pattern with variables, or a probe — and the
- * value it maps a solution into is the row as Java reads it. That is all a
+ * value it maps a solution into is the row as Java reads it. A typed row
+ * states both in one place: {@link #describe()} names its columns over
+ * its fields, and its keys and columns are read off that. That is all a
  * relation needs from a type: a literal over a row
  * ({@code relation(ns, name).args(row)}) zips the columns over the keys,
  * and {@code Query.select(row)} streams the values. A row with no Java
@@ -29,8 +31,18 @@ import org.clauseway.logic.unification.terms.Unifiable;
  */
 public interface Schema<D> extends Selector<D> {
 
+	/** This row with its type set aside: its columns named over its keys, in order. */
+	Anonymous describe();
+
+	@Override
+	default Iterable<? extends Unifiable<?>> keys() {
+		return describe().keys();
+	}
+
 	/** The columns, one per key, in key order. */
-	List<Property<?>> columns();
+	default List<Property<?>> columns() {
+		return describe().columns();
+	}
 
 	/** An anonymous row, one column at a time: the first column, then {@link Columns}. */
 	static Builder builder() {
@@ -63,6 +75,11 @@ public interface Schema<D> extends Selector<D> {
 	class Anonymous implements Schema<Solution> {
 		List<Property<?>> columns;
 		List<Unifiable<?>> keys;
+
+		@Override
+		public Anonymous describe() {
+			return this;
+		}
 
 		@Override
 		public Iterable<? extends Unifiable<?>> keys() {

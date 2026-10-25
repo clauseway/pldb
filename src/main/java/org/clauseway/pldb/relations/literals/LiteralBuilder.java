@@ -149,7 +149,7 @@ public interface LiteralBuilder {
 		}
 	}
 
-	/** A row in hand, its markers claimed: the columns zipped over the keys, awaiting the backend. */
+	/** A row in hand, its markers claimed: the columns over the keys, awaiting the backend. */
 	final class Builder<S extends Schema<?>> implements Backend<S> {
 		private final String namespace;
 		private final String name;
@@ -165,15 +165,8 @@ public interface LiteralBuilder {
 			this.projectedHere = projectedHere;
 			Iterator<? extends Unifiable<?>> keys = schema.keys().iterator();
 			for (Property<?> column : schema.columns()) {
-				if (!keys.hasNext()) {
-					throw new IllegalStateException("relation '" + name + "': the schema names column '"
-							+ column.getName() + "' but has no key for it");
-				}
 				columns.add(column);
 				values.add(keys.next());
-			}
-			if (keys.hasNext()) {
-				throw new IllegalStateException("relation '" + name + "': the row has more keys than columns");
 			}
 		}
 

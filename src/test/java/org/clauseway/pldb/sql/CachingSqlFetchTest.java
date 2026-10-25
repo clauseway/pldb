@@ -16,7 +16,6 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -28,7 +27,6 @@ import org.clauseway.pldb.relations.literals.Literal;
 import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.relations.Property;
 import org.clauseway.pldb.relations.Relation;
-import org.clauseway.pldb.relations.RelationN;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -117,9 +115,10 @@ public class CachingSqlFetchTest {
 		// the backend is the schema authority: no declared relation set —
 		// a missing table surfaces as the fetch's own loud failure, naming
 		// the SQL it tried
-		RelationN orphan = RelationN.of("orphan", id);
 		try (CachingSqlFetch source = source()) {
-			assertThatThrownBy(() -> Query.of(Literal.of(source, orphan, Collections.singletonList(lvar()))).solve(lvar()).count())
+			assertThatThrownBy(() -> Query.of(Literal.relation(CachingSqlFetchTest.class, "orphan")
+					.arg("id", lvar())
+					.from(source)).solve(lvar()).count())
 					.isInstanceOf(IllegalStateException.class)
 					.hasMessageContaining("orphan");
 		}

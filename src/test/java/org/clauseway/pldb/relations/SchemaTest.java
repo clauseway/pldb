@@ -9,7 +9,7 @@ import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
 import static org.clauseway.pldb.relations.Projected.projected;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -41,18 +41,13 @@ public class SchemaTest {
 		Unifiable<Integer> y;
 
 		@Override
-		public Iterable<? extends Unifiable<?>> keys() {
-			return Arrays.asList(x, y);
+		public Schema.Anonymous describe() {
+			return Schema.builder().arg("x", x).indexed().arg("y", y).build();
 		}
 
 		@Override
 		public Coordinates map(Solution solution) {
 			return new Coordinates(solution.get(x).get(), solution.get(y).get());
-		}
-
-		@Override
-		public List<Property<?>> columns() {
-			return Arrays.asList(Property.of("x").indexed(), Property.of("y"));
 		}
 
 		static Point anyPoint() {
@@ -84,6 +79,18 @@ public class SchemaTest {
 		try (Stream<D> rows = stream) {
 			return rows.collect(Collectors.toList());
 		}
+	}
+
+	/** A typed row's keys and columns are read off its description, in its order. */
+	@Test
+	public void aTypedRowsKeysAndColumnsAreItsDescription() {
+		Unifiable<Integer> x = lvar();
+		Unifiable<Integer> y = lvar();
+		Point row = new Point(x, y);
+		List<Unifiable<?>> keys = new ArrayList<>();
+		row.keys().forEach(keys::add);
+		assertThat(keys).containsExactly(x, y);
+		assertThat(row.columns()).containsExactly(Property.of("x").indexed(), Property.of("y"));
 	}
 
 	@Test

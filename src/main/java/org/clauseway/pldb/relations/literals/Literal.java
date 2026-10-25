@@ -11,9 +11,6 @@ import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
 import static org.clauseway.pldb.relations.Projected.projected;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.function.Function;
 import org.clauseway.functional.Nothing;
 import org.clauseway.functional.fibers.Cont;
@@ -30,8 +27,6 @@ import org.clauseway.logic.unification.structures.LOption;
 import org.clauseway.logic.unification.terms.Reified;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
-import org.clauseway.pldb.AnswerProducer;
-import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.relations.Property;
 import org.clauseway.pldb.relations.Relation;
 import org.clauseway.pldb.relations.Schema;
@@ -65,19 +60,6 @@ public interface Literal<S extends Schema<?>> extends Goal, Bounded, Postable {
 
 	/** The kind's answer estimate for a probe, for the optimizer. */
 	long estimate(Call<Relation> call);
-
-	static External<Schema.Anonymous> of(AnswerSource source, Relation rel, List<Unifiable<?>> args) {
-		return new SourceLiteral<>(rel, Array.ofAll(args), anonymous(rel, args), source);
-	}
-
-	static External<Schema.Anonymous> of(AnswerProducer producer, Relation rel, List<Unifiable<?>> args) {
-		return new ProducerLiteral<>(rel, Array.ofAll(args), anonymous(rel, args), producer);
-	}
-
-	/** The relation's columns over the arguments: the row a literal minted from a relation value keeps. */
-	static Schema.Anonymous anonymous(Relation rel, List<Unifiable<?>> args) {
-		return new Schema.Anonymous(Arrays.asList(rel.getProperties()), new ArrayList<>(args));
-	}
 
 	/**
 	 * The one door, namespaced: the class joins the relation's IDENTITY —
