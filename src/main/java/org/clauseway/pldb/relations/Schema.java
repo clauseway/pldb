@@ -22,7 +22,8 @@ import org.clauseway.logic.unification.terms.Unifiable;
  * ({@code relation(ns, name).args(row)}) zips the columns over the keys,
  * and {@code Query.select(row)} streams the values. A row with no Java
  * type is an {@link Anonymous}, built column by column through
- * {@link #builder()}, and maps a solution into itself.
+ * {@link #builder()} — each step offers only what is legal next — and
+ * maps a solution into itself.
  *
  * @param <D> the value a row of this schema maps a solution into
  */
@@ -31,9 +32,30 @@ public interface Schema<D> extends Selector<D> {
 	/** The columns, one per key, in key order. */
 	List<Property<?>> columns();
 
-	/** An anonymous row, one column at a time. */
+	/** An anonymous row, one column at a time: the first column, then {@link Columns}. */
 	static Builder builder() {
-		return new Builder();
+		return (column, value) -> new Building().arg(column, value);
+	}
+
+	/** The first step of an anonymous row: its first column. No flag is available before a column is named. */
+	interface Builder {
+		Columns arg(String column, Unifiable<?> value);
+	}
+
+	/** An anonymous row with at least one column: another column, a flag on the last one named, or the row. */
+	interface Columns extends Builder {
+
+		/** Marks the LAST declared column. */
+		Columns indexed();
+
+		/**
+		 * Marks the LAST declared column as an input: its argument must walk
+		 * to a ground value when the literal applies, refused loudly
+		 * otherwise.
+		 */
+		Columns ground();
+
+		Anonymous build();
 	}
 
 	/** A row of no Java type: its columns and its keys, both by position; a solution over it is its own value. */
@@ -58,46 +80,37 @@ public interface Schema<D> extends Selector<D> {
 		}
 	}
 
-	/**
-	 * The anonymous row's builder: one {@link #arg} per column, names stated
-	 * once, with {@link #indexed()} and {@link #ground()} as tail modifiers on
-	 * the last column named.
-	 */
-	final class Builder {
+	/** The anonymous row's columns and keys as they accumulate; only {@link #builder()} opens one. */
+	final class Building implements Columns {
 		private final List<Property<?>> columns = new ArrayList<>();
 		private final List<Unifiable<?>> keys = new ArrayList<>();
 
-		private Builder() {
+		private Building() {
 		}
 
-		public Builder arg(String column, Unifiable<?> value) {
+		@Override
+		public Columns arg(String column, Unifiable<?> value) {
 			columns.add(Property.of(column));
 			keys.add(value);
 			return this;
 		}
 
-		/** Marks the LAST declared column; refuses before any column. */
-		public Builder indexed() {
+		@Override
+		public Columns indexed() {
 			return modify(Property::indexed);
 		}
 
-		/**
-		 * Marks the LAST declared column as an input: its argument must walk
-		 * to a ground value when the literal applies, refused loudly
-		 * otherwise.
-		 */
-		public Builder ground() {
+		@Override
+		public Columns ground() {
 			return modify(Property::ground);
 		}
 
-		private Builder modify(UnaryOperator<Property<?>> flag) {
-			if (columns.isEmpty()) {
-				throw new IllegalStateException("a modifier needs a column — declare arg() first");
-			}
+		private Columns modify(UnaryOperator<Property<?>> flag) {
 			columns.set(columns.size() - 1, flag.apply(columns.get(columns.size() - 1)));
 			return this;
 		}
 
+		@Override
 		public Anonymous build() {
 			return new Anonymous(Collections.unmodifiableList(new ArrayList<>(columns)),
 					Collections.unmodifiableList(new ArrayList<>(keys)));

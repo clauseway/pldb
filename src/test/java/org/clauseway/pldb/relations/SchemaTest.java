@@ -95,13 +95,6 @@ public class SchemaTest {
 		assertThat(row.getKeys()).containsExactly(x, y);
 	}
 
-	@Test
-	public void aFlagBeforeAnyColumnRefuses() {
-		assertThatThrownBy(() -> Schema.builder().indexed())
-				.isInstanceOf(IllegalStateException.class)
-				.hasMessageContaining("column");
-	}
-
 	/** The relation and the arguments are what tabling and the stores key by; the row's type touches neither. */
 	@Test
 	public void aLiteralOverATypedRowHasTheRelationAndArgsOfOneOverAnAnonymousRow() {

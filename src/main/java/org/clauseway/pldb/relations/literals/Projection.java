@@ -53,6 +53,11 @@ final class Projection {
 				.map(inner -> (Projected<?>) inner);
 	}
 
+	/** Whether the value is a marker this head now owns: the first head a marker appears in claims it. */
+	static boolean claimed(Unifiable<?> value) {
+		return marker(value).map(Projected::claim).orElse(false);
+	}
+
 	/** The head without the projected columns; empty when nothing is projected and the full literal is the literal. */
 	static Optional<Kept> kept(String namespace, String name, List<Property<?>> columns, List<Unifiable<?>> values,
 			List<Boolean> projectedHere) {

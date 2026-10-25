@@ -18,12 +18,10 @@ import org.junit.Test;
 
 public class ExternalTest {
 
-	private static Literal.Builder<Schema.Anonymous> person(Unifiable<Integer> id, Unifiable<String> name) {
+	private static Literal.Backend<Schema.Anonymous> person(Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(ExternalTest.class, "person")
-				.schema(Schema.builder()
-						.arg("id", id).indexed()
-						.arg("name", name)
-						.build());
+				.arg("id", id).indexed()
+				.arg("name", name);
 	}
 
 	@Test

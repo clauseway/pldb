@@ -1,7 +1,7 @@
 package org.clauseway.pldb.relations.literals;
 
 // ABOUTME: A relation applied to a row — the ONE public read type, typed by the row's schema: a goal in a
-// ABOUTME: conjunction, a constraint under exclude, selected back as rows. Built through relation(ns, name).args(row).
+// ABOUTME: conjunction, a constraint under exclude, selected back as rows. Built through relation(ns, name), one legal step at a time.
 
 import static org.clauseway.logic.goals.Goal.defer;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
@@ -13,7 +13,6 @@ import static org.clauseway.pldb.relations.Projected.projected;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -35,7 +34,6 @@ import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerProducer;
 import org.clauseway.pldb.AnswerSource;
-import org.clauseway.pldb.relations.Projected;
 import org.clauseway.pldb.relations.Property;
 import org.clauseway.pldb.relations.Relation;
 import org.clauseway.pldb.relations.RelationN;
@@ -89,12 +87,12 @@ public interface Literal<S extends Schema<?>> extends Goal, Bounded, Postable {
 	 * two authors' vocabularies cannot collide in tabling, knowledge
 	 * identity, or the store — while the physical name stays the bare
 	 * string: tables, endpoints, and mark rows are the backend's world
-	 * and spell the name alone. The row starts empty; {@link Builder#schema}
-	 * sets it.
+	 * and spell the name alone. The row comes next: a typed one through
+	 * {@link Head#schema}, or an anonymous one named column by column
+	 * through {@link Head#arg}.
 	 */
-	static Builder<Schema.Anonymous> relation(Class<?> namespace, String name) {
-		return new Builder<>(namespace.getName(), name,
-				new Schema.Anonymous(Collections.emptyList(), Collections.emptyList()));
+	static Head relation(Class<?> namespace, String name) {
+		return new Named(namespace.getName(), name);
 	}
 
 	/**
@@ -120,62 +118,173 @@ public interface Literal<S extends Schema<?>> extends Goal, Bounded, Postable {
 	}
 
 	/**
-	 * The front door: relation first, row next, backend last. The row's
-	 * columns name the head over the row's keys, flags as the row
-	 * declares them, and the terminal picks the kind: {@link #from}
-	 * enumerates a source, {@link #produced} streams a producer,
-	 * {@link #solving} tables a rule in the solve. A half-built literal is
-	 * not a goal, so applying one is unrepresentable.
+	 * The front door, one legal step at a time: relation first, row next,
+	 * backend last. Each step's type offers only what may follow it, so a
+	 * flag before a column, a column after a typed row, or a literal with
+	 * no backend is unrepresentable rather than refused.
 	 */
-	final class Builder<S extends Schema<?>> {
+	interface Head {
+
+		/** The row the literal is over: its columns are the head, its keys the arguments. */
+		<T extends Schema<?>> Backend<T> schema(T row);
+
+		/** The first column of an anonymous row, named on the literal itself. */
+		Columns arg(String column, Unifiable<?> value);
+	}
+
+	/** An anonymous row on its literal: another column, a flag on the last one named, or the backend. */
+	interface Columns extends Backend<Schema.Anonymous> {
+
+		Columns arg(String column, Unifiable<?> value);
+
+		/** Marks the LAST declared column. */
+		Columns indexed();
+
+		/** Marks the LAST declared column as an input: free at application is a caller error. */
+		Columns ground();
+	}
+
+	/**
+	 * The last step picks the kind: {@link #from} enumerates a source,
+	 * {@link #produced} streams a producer, {@link #solving} tables a rule
+	 * in the solve. A half-built literal is not a goal, so applying one is
+	 * unrepresentable.
+	 */
+	interface Backend<S extends Schema<?>> {
+
+		External<S> from(AnswerSource source);
+
+		External<S> produced(AnswerProducer producer);
+
+		Literal<S> solving(Goal body);
+	}
+
+	/**
+	 * The relation named, its row not yet given. A row's markers are
+	 * claimed as the row arrives — the typed row whole, the anonymous one
+	 * column by column — and never at the terminal: the row is in hand
+	 * before the body expression is built, so the head owns a projection
+	 * and the body sees the marker as the one join variable it delegates
+	 * to.
+	 */
+	final class Named implements Head {
+		private final String namespace;
+		private final String name;
+
+		private Named(String namespace, String name) {
+			this.namespace = namespace;
+			this.name = name;
+		}
+
+		@Override
+		public <T extends Schema<?>> Backend<T> schema(T row) {
+			List<Boolean> projectedHere = new ArrayList<>();
+			for (Unifiable<?> key : row.keys()) {
+				projectedHere.add(Projection.claimed(key));
+			}
+			return new Builder<>(namespace, name, row, projectedHere);
+		}
+
+		@Override
+		public Columns arg(String column, Unifiable<?> value) {
+			return new Inline(namespace, name, column, value);
+		}
+	}
+
+	/** An anonymous row accumulating on its literal; the terminal builds the row and hands it on. */
+	final class Inline implements Columns {
+		private final String namespace;
+		private final String name;
+		private final List<Boolean> projectedHere = new ArrayList<>();
+		private Schema.Columns row;
+
+		private Inline(String namespace, String name, String column, Unifiable<?> value) {
+			this.namespace = namespace;
+			this.name = name;
+			this.row = Schema.builder().arg(column, value);
+			projectedHere.add(Projection.claimed(value));
+		}
+
+		@Override
+		public Columns arg(String column, Unifiable<?> value) {
+			row = row.arg(column, value);
+			projectedHere.add(Projection.claimed(value));
+			return this;
+		}
+
+		@Override
+		public Columns indexed() {
+			row = row.indexed();
+			return this;
+		}
+
+		@Override
+		public Columns ground() {
+			row = row.ground();
+			return this;
+		}
+
+		@Override
+		public External<Schema.Anonymous> from(AnswerSource source) {
+			return built().from(source);
+		}
+
+		@Override
+		public External<Schema.Anonymous> produced(AnswerProducer producer) {
+			return built().produced(producer);
+		}
+
+		@Override
+		public Literal<Schema.Anonymous> solving(Goal body) {
+			return built().solving(body);
+		}
+
+		private Builder<Schema.Anonymous> built() {
+			return new Builder<>(namespace, name, row.build(), projectedHere);
+		}
+	}
+
+	/** A row in hand, its markers claimed: the columns zipped over the keys, awaiting the backend. */
+	final class Builder<S extends Schema<?>> implements Backend<S> {
 		private final String namespace;
 		private final String name;
 		private final S schema;
 		private final List<Property<?>> columns = new ArrayList<>();
 		private final List<Unifiable<?>> values = new ArrayList<>();
-		private final List<Boolean> projectedHere = new ArrayList<>();
+		private final List<Boolean> projectedHere;
 
-		/**
-		 * The row is read, and its markers claimed, HERE rather than at the
-		 * terminal: the row is handed over before the body expression is
-		 * built, so the head owns a projection and the body sees the marker
-		 * as the one join variable it delegates to.
-		 */
-		private Builder(String namespace, String name, S schema) {
+		private Builder(String namespace, String name, S schema, List<Boolean> projectedHere) {
 			this.namespace = namespace;
 			this.name = name;
 			this.schema = schema;
+			this.projectedHere = projectedHere;
 			Iterator<? extends Unifiable<?>> keys = schema.keys().iterator();
 			for (Property<?> column : schema.columns()) {
 				if (!keys.hasNext()) {
 					throw new IllegalStateException("relation '" + name + "': the schema names column '"
 							+ column.getName() + "' but has no key for it");
 				}
-				Unifiable<?> value = keys.next();
 				columns.add(column);
-				values.add(value);
-				projectedHere.add(Projection.marker(value).map(Projected::claim).orElse(false));
+				values.add(keys.next());
 			}
 			if (keys.hasNext()) {
 				throw new IllegalStateException("relation '" + name + "': the row has more keys than columns");
 			}
 		}
 
-		/** The row the literal is over: its columns are the head, its keys the arguments. */
-		public <T extends Schema<?>> Builder<T> schema(T row) {
-			return new Builder<>(namespace, name, row);
-		}
-
+		@Override
 		public External<S> from(AnswerSource source) {
 			SourceLiteral<S> full = new SourceLiteral<>(relation(), Array.ofAll(values), schema, source);
 			return kept().<External<S>> map(kept -> new ProjectedExternal<>(kept.rel, kept.args, schema, full)).orElse(full);
 		}
 
+		@Override
 		public External<S> produced(AnswerProducer producer) {
 			ProducerLiteral<S> full = new ProducerLiteral<>(relation(), Array.ofAll(values), schema, producer);
 			return kept().<External<S>> map(kept -> new ProjectedExternal<>(kept.rel, kept.args, schema, full)).orElse(full);
 		}
 
+		@Override
 		public Literal<S> solving(Goal body) {
 			RuleLiteral<S> full = new RuleLiteral<>(relation(), Array.ofAll(values), schema, body);
 			return kept().<Literal<S>> map(kept -> new RuleLiteral<>(kept.rel, kept.args, schema, full)).orElse(full);

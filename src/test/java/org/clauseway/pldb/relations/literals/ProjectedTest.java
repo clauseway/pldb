@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.clauseway.logic.unification.structures.LOption;
 import org.clauseway.logic.unification.terms.Unifiable;
-import org.clauseway.pldb.relations.Schema;
 
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.inmemory.AnswerStore;
@@ -29,28 +28,22 @@ public class ProjectedTest {
 
 	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(ProjectedTest.class, "person")
-				.schema(Schema.builder()
-						.arg("id", id).indexed()
-						.arg("name", name)
-						.build())
+				.arg("id", id).indexed()
+				.arg("name", name)
 				.from(db);
 	}
 
 	private static External<?> edge(AnswerSource db, Unifiable<Integer> src, Unifiable<Integer> dst) {
 		return Literal.relation(ProjectedTest.class, "edge")
-				.schema(Schema.builder()
-						.arg("src", src).indexed()
-						.arg("dst", dst)
-						.build())
+				.arg("src", src).indexed()
+				.arg("dst", dst)
 				.from(db);
 	}
 
 	private static External<?> tagged(AnswerSource db, Unifiable<Integer> id, Unifiable<LOption<String>> tag) {
 		return Literal.relation(ProjectedTest.class, "tagged")
-				.schema(Schema.builder()
-						.arg("id", id).indexed()
-						.arg("tag", tag)
-						.build())
+				.arg("id", id).indexed()
+				.arg("tag", tag)
 				.from(db);
 	}
 
@@ -140,10 +133,8 @@ public class ProjectedTest {
 
 	private static Literal<?> linked(AnswerSource db, Unifiable<Integer> node, Unifiable<Integer> via) {
 		return Literal.relation(ProjectedTest.class, "linked")
-				.schema(Schema.builder()
-						.arg("node", node)
-						.arg("via", via)
-						.build())
+				.arg("node", node)
+				.arg("via", via)
 				.solving(edge(db, node, via));
 	}
 
@@ -153,10 +144,8 @@ public class ProjectedTest {
 	 */
 	private static Literal<?> reciprocal(AnswerSource db, Unifiable<Integer> node, Unifiable<Integer> via) {
 		return Literal.relation(ProjectedTest.class, "reciprocal")
-				.schema(Schema.builder()
-						.arg("node", node)
-						.arg("via", via)
-						.build())
+				.arg("node", node)
+				.arg("via", via)
 				.solving(edge(db, node, via).and(edge(db, via, node)));
 	}
 
@@ -172,10 +161,8 @@ public class ProjectedTest {
 	@Test
 	public void projectedOnAGroundColumnRefuses() {
 		assertThatThrownBy(() -> Literal.relation(ProjectedTest.class, "person")
-				.schema(Schema.builder()
-						.arg("id", projected()).ground()
-						.arg("name", lvar())
-						.build())
+				.arg("id", projected()).ground()
+				.arg("name", lvar())
 				.from(null))
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("id");
@@ -211,10 +198,8 @@ public class ProjectedTest {
 	private static Literal<?> shifted(AnswerSource db, Unifiable<Integer> src, Unifiable<Integer> shifted) {
 		Unifiable<Integer> dst = lvar();
 		return Literal.relation(ProjectedTest.class, "shifted")
-				.schema(Schema.builder()
-						.arg("src", src)
-						.arg("shifted", shifted)
-						.build())
+				.arg("src", src)
+				.arg("shifted", shifted)
 				.solving(edge(db, src, dst).and(Ints.addo(dst, lval(1), shifted)));
 	}
 }

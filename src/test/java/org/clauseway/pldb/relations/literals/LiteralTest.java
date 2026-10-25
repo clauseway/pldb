@@ -47,6 +47,21 @@ public class LiteralTest {
 		return Query.of(g).solve(out).map(Object::toString).sorted().collect(Collectors.toList());
 	}
 
+	/** The columns named on the literal itself are an anonymous row: same relation, args and columns as one built apart. */
+	@Test
+	public void theColumnsNamedOnTheLiteralAreItsAnonymousRow() {
+		Unifiable<Integer> id = lvar();
+		Unifiable<String> name = lvar();
+		External<Schema.Anonymous> inline = Literal.relation(LiteralTest.class, "person")
+				.arg("id", id).indexed()
+				.arg("name", name)
+				.from(db);
+		External<?> apart = person(db, id, name);
+		assertThat(inline.getRelation()).isEqualTo(apart.getRelation());
+		assertThat(inline.getArgs()).isEqualTo(apart.getArgs());
+		assertThat(inline.getRow().columns()).isEqualTo(apart.getRow().columns());
+	}
+
 	@Test
 	public void aBareLiteralEnumerates() {
 		Unifiable<Integer> i = lvar();
@@ -140,13 +155,6 @@ public class LiteralTest {
 		assertThat(cols[0].isGround()).isTrue();
 		assertThat(cols[1].isIndexed()).isFalse();
 		assertThat(cols[1].isGround()).isFalse();
-	}
-
-	@Test
-	public void aModifierWithoutAColumnRefuses() {
-		assertThatThrownBy(() -> Schema.builder().indexed())
-				.isInstanceOf(IllegalStateException.class)
-				.hasMessageContaining("column");
 	}
 
 	@Test
