@@ -8,12 +8,20 @@ Java 8, vavr, lombok. Auto-loaded every session — read before changing code.
 
 - TDD; `mvn test` must end `BUILD SUCCESS` (265 tests) before any commit/merge. The
   Postgres tests run under Testcontainers — Docker must be up; H2 covers the rest.
-- Branch per task; `git add` explicit paths (never `-A`); ff-merge to master; push only
-  when asked.
-- `logic` resolves from Central at the released version in the POM. To build against a
-  local logic change, point the dependency at logic's `-SNAPSHOT`, `mvn install` logic
-  (and `functional` beneath it if it moved), and restore the released version before
-  merging. `apps/library` consumes pldb the same way.
+- Branch per task off `develop`; `git add` explicit paths (never `-A`); a branch lands in
+  `develop` through a pull request Tom merges, `develop` lands in `master` the same way
+  and that merge IS the release; push only when asked.
+- Every merge to `develop` publishes the POM's `-SNAPSHOT` to the Central Portal's
+  snapshot repository (`snapshot.yml`); the merge to `master` releases the version minus
+  `-SNAPSHOT` once, by tag (`release.yml`). Central allows a handful of releases a month
+  across all three artifacts, so a release is a milestone Tom names, never a step to make
+  a merge legal. The first branch after a release bumps `develop`'s POM to the next
+  `-SNAPSHOT`.
+- `logic` resolves from Central. On `master` the POM names a released version; on
+  `develop` it may name logic's `-SNAPSHOT`, which logic's `develop` publishes and this
+  POM's `<repositories>` block resolves. The `develop` → `master` pull request restores
+  the released version. `mvn install` logic locally only for a change not yet merged to
+  its `develop`. `apps/cargo` and `apps/library` consume pldb the same way.
 
 ## Architecture by package
 
