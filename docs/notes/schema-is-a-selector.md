@@ -17,9 +17,11 @@
     solution through `decided()` before `map`. The solutions reading is
     the identity mapping; `stream()` is the one terminal.
   - (2) MET. `Schema<D> extends Selector<D>` adds `columns()`, one
-    `Property` per key in order; the literal builder zips columns over
-    keys (`relation(ns, name).args(row)`); `Schema.Anonymous` is a
-    `Schema<Solution>`. Not a `Structural`; no `withMembers`, no default
+    `Property` per key in order; a typed row states both in one
+    `describe()` chain and `keys()`/`columns()` are read off it; the
+    literal builder takes the row (`relation(ns, name).schema(row)`), or
+    names an anonymous row's columns on the literal (`.arg(name, x)…`);
+    `Schema.Anonymous` is a `Schema<Solution>` that describes itself. Not a `Structural`; no `withMembers`, no default
     `probe()` — a probe is a constructor call with `projected()` per
     column.
   - (3) MET. The port: fields `Unifiable<T>`, rule bodies unify the

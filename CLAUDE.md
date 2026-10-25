@@ -29,13 +29,17 @@ Java 8, vavr, lombok. Auto-loaded every session — read before changing code.
   inline; `AnswerProducer` is the async kind (rows as a `Fiber`, `AnswerProducer.of` lifts a
   source); `GoalProducer` runs a rule through the solve's table; `Writer` asserts/retracts.
 - `relations` — the schema and the question. `Schema<D>` is a logic `Selector<D>` plus
-  `columns()`: a row type's fields are its keys (`Unifiable`), `map(Solution)` is the row as
-  Java reads it, `Query.select(row).stream()` streams the values; `Schema.builder().arg(name,
-  x)….build()` is an anonymous row (`Schema<Solution>`). `Property<T>` is a typed column
+  `columns()`: a row type's fields are its keys (`Unifiable`), `describe()` names its columns
+  over them in one chain (`keys()` and `columns()` are read off it), `map(Solution)` is the row
+  as Java reads it, `Query.select(row).stream()` streams the values; `Schema.builder().arg(name,
+  x)….build()` is an anonymous row (`Schema<Solution>`), each step typed to offer only what
+  may follow it. `Property<T>` is a typed column
   (`indexed()`, `ground()`); `RelationN` the relation value; `Answers` the row algebra;
   `MagicVar`/`Projected` are marker variables one consumer recognises.
-- `relations.literals` — `Literal.relation(ns, name).args(row)` then `.from(source)` /
-  `.produced(producer)` / `.solving(goal)`; `Literal<S>` is the read type, `External<S>` the
+- `relations.literals` — `Literal.relation(ns, name)` opens a `LiteralBuilder`: `.schema(row)`
+  for a typed row, or `.arg(name, x)` chains naming an anonymous row on the literal
+  (`Columns`); then `.from(source)` / `.produced(producer)` / `.solving(goal)` (`Backend<S>`).
+  A flag before a column or a literal without a backend does not compile. `Literal<S>` is the read type, `External<S>` the
   write face (`fact()`; a rule is not one); the kinds are package-private;
   `Question.select(query, templates…)` lands answers as rows for the stores and the write
   doors (`Writer.clearing`/`replacing` ride it).
