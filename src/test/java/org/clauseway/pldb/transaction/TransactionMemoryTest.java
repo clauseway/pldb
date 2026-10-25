@@ -28,7 +28,7 @@ public class TransactionMemoryTest {
 
 	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(TransactionMemoryTest.class, "person")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("id", id).indexed()
 						.arg("name", name)
 						.build())
@@ -37,7 +37,7 @@ public class TransactionMemoryTest {
 
 	private static External<?> book(AnswerSource db, Unifiable<String> isbn, Unifiable<String> title) {
 		return Literal.relation(TransactionMemoryTest.class, "book")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("isbn", isbn).indexed()
 						.arg("title", title)
 						.build())
@@ -149,7 +149,7 @@ public class TransactionMemoryTest {
 
 	private static External<?> loanOf(AnswerSource db, Unifiable<Integer> id, Unifiable<String> copy) {
 		return Literal.relation(TransactionMemoryTest.class, "loan")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("loanId", id).indexed()
 						.arg("copy", copy)
 						.build())
@@ -158,7 +158,7 @@ public class TransactionMemoryTest {
 
 	private static External<?> returnedOf(AnswerSource db, Unifiable<Integer> id) {
 		return Literal.relation(TransactionMemoryTest.class, "returned")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("loanId", id).indexed()
 						.build())
 				.from(db);

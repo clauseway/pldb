@@ -31,7 +31,7 @@ public class LiteralTest {
 	/** The function-shaped definition: one method, names once, no relation constant. */
 	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(LiteralTest.class, "person")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("id", id).indexed()
 						.arg("name", name)
 						.build())
@@ -110,7 +110,7 @@ public class LiteralTest {
 			Unifiable<String> c7, Unifiable<String> c8, Unifiable<String> c9,
 			Unifiable<String> c10, Unifiable<String> c11) {
 		return Literal.relation(LiteralTest.class, "wide")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("k", k).indexed()
 						.arg("c1", c1)
 						.arg("c2", c2)
@@ -130,7 +130,7 @@ public class LiteralTest {
 	@Test
 	public void tailModifiersComposeOnTheLastColumn() {
 		External<?> lit = Literal.relation(LiteralTest.class, "flags")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("k", lvar()).indexed().ground()
 						.arg("v", lvar())
 						.build())
@@ -152,7 +152,7 @@ public class LiteralTest {
 	@Test
 	public void aGroundColumnRefusesAnUnboundArgAtApplication() {
 		External<?> lit = Literal.relation(LiteralTest.class, "strict")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("k", lvar()).ground()
 						.build())
 				.from(db);
@@ -165,7 +165,7 @@ public class LiteralTest {
 	public void aGroundColumnAdmitsABoundArg() {
 		Unifiable<Integer> k = lvar();
 		Literal<?> lit = Literal.relation(LiteralTest.class, "strictOk")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("k", k).ground()
 						.build())
 				.solving(k.unifies(5));
@@ -175,7 +175,7 @@ public class LiteralTest {
 	@Test
 	public void aDuplicateColumnRefusesByName() {
 		assertThatThrownBy(() -> Literal.relation(LiteralTest.class, "dup")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("k", lvar())
 						.arg("k", lvar())
 						.build())
@@ -190,11 +190,11 @@ public class LiteralTest {
 		// hole refusal arrives with the relation and column named
 		org.clauseway.pldb.inmemory.AnswerStore db = org.clauseway.pldb.inmemory.AnswerStore.empty()
 				.asserting(Arrays.asList(
-						Literal.relation(LiteralTest.class, "person").args(Schema.builder().arg("id", lval(1)).arg("name", lval("Ada")).build()).from(null),
-						Literal.relation(LiteralTest.class, "person").args(Schema.builder().arg("id", lval(2)).arg("name", lval("Alan")).build()).from(null)));
+						Literal.relation(LiteralTest.class, "person").schema(Schema.builder().arg("id", lval(1)).arg("name", lval("Ada")).build()).from(null),
+						Literal.relation(LiteralTest.class, "person").schema(Schema.builder().arg("id", lval(2)).arg("name", lval("Alan")).build()).from(null)));
 		org.assertj.core.api.Assertions.assertThat(db.estimate(
 						Call.of(
-								Literal.relation(LiteralTest.class, "person").args(Schema.builder().arg("id", lval(1)).arg("name", lval("Ada")).build()).from(null).getRelation(),
+								Literal.relation(LiteralTest.class, "person").schema(Schema.builder().arg("id", lval(1)).arg("name", lval("Ada")).build()).from(null).getRelation(),
 								Answers.image(
 										Any.of(0), Any.of(1)))))
 				.isEqualTo(2);

@@ -37,7 +37,7 @@ public class CachingSqlFetchTest {
 
 	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(CachingSqlFetchTest.class, "person")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("id", id).indexed()
 						.arg("name", name)
 						.build())

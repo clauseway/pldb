@@ -25,7 +25,7 @@ public class PinWorldIdentityTest {
 
 	private static External<?> person(Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(PinWorldIdentityTest.class, "person")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("id", id).indexed()
 						.arg("name", name)
 						.build())
@@ -43,7 +43,7 @@ public class PinWorldIdentityTest {
 
 	private static External<?> loan(Unifiable<Integer> id, Unifiable<String> copy) {
 		return Literal.relation(PinWorldIdentityTest.class, "loan")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("id", id).indexed()
 						.arg("copy", copy)
 						.build())
@@ -82,7 +82,7 @@ public class PinWorldIdentityTest {
 	private static final class Elsewhere {
 		private static External<?> person(Unifiable<Integer> id, Unifiable<String> name) {
 			return Literal.relation(Elsewhere.class, "person")
-					.args(Schema.builder()
+					.schema(Schema.builder()
 							.arg("id", id).indexed()
 							.arg("name", name)
 							.build())

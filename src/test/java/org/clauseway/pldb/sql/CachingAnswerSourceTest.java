@@ -32,7 +32,7 @@ import org.junit.Test;
 public class CachingAnswerSourceTest {
 
 	private static final Relation GUARDED = Literal.relation(CachingAnswerSourceTest.class, "guarded")
-			.args(Schema.builder()
+			.schema(Schema.builder()
 					.arg("id", lvar()).indexed()
 					.arg("tag", lvar())
 					.build())

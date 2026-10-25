@@ -54,7 +54,7 @@ public class SqlTheoryBatteryTest {
 
 	private static External<?> person(AnswerSource db, Unifiable<Long> id, Unifiable<String> name) {
 		return Literal.relation(SqlTheoryBatteryTest.class, "person")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("id", id).indexed()
 						.arg("name", name)
 						.build())
@@ -67,7 +67,7 @@ public class SqlTheoryBatteryTest {
 
 	private static External<?> edge(AnswerSource db, Unifiable<Long> lo, Unifiable<Long> hi) {
 		return Literal.relation(SqlTheoryBatteryTest.class, "edge")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("lo", lo).indexed()
 						.arg("hi", hi).indexed()
 						.build())

@@ -36,7 +36,7 @@ public class TransactionPredicateTest {
 	}
 
 	private static External<?> orphan(AnswerSource db, Unifiable<Integer> id) {
-		return Literal.relation(TransactionPredicateTest.class, "orphan").args(Schema.builder().arg("id", id).build()).from(db);
+		return Literal.relation(TransactionPredicateTest.class, "orphan").schema(Schema.builder().arg("id", id).build()).from(db);
 	}
 
 	/** No orphan table exists, so the flush inside commit fails for real. */

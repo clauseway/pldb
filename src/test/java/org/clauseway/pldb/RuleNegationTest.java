@@ -27,7 +27,7 @@ public class RuleNegationTest {
 
 	private static Literal<?> p(Unifiable<Integer> i, Unifiable<String> t) {
 		return Literal.relation(RuleNegationTest.class, "p")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("item", i)
 						.arg("tag", t)
 						.build())
@@ -55,7 +55,7 @@ public class RuleNegationTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<String> y = lvar();
 		Literal<?> wide = Literal.relation(RuleNegationTest.class, "wide")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("item", x)
 						.arg("tag", y)
 						.build())
@@ -64,7 +64,7 @@ public class RuleNegationTest {
 		Unifiable<Integer> x2 = lvar();
 		Unifiable<String> y2 = lvar();
 		Literal<?> wide2 = Literal.relation(RuleNegationTest.class, "wide")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("item", x2)
 						.arg("tag", y2)
 						.build())
@@ -78,7 +78,7 @@ public class RuleNegationTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<String> y = lvar();
 		Literal<?> guarded = Literal.relation(RuleNegationTest.class, "guarded")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("item", x)
 						.arg("tag", y)
 						.build())
@@ -87,7 +87,7 @@ public class RuleNegationTest {
 		Unifiable<Integer> x2 = lvar();
 		Unifiable<String> y2 = lvar();
 		Literal<?> guarded2 = Literal.relation(RuleNegationTest.class, "guarded")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("item", x2)
 						.arg("tag", y2)
 						.build())
@@ -161,7 +161,7 @@ public class RuleNegationTest {
 		Unifiable<String> x = lvar();
 		Unifiable<String> y = lvar();
 		Literal<?> diagonal = Literal.relation(RuleNegationTest.class, "diag")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("l", x)
 						.arg("r", y)
 						.build())
@@ -170,7 +170,7 @@ public class RuleNegationTest {
 		Unifiable<String> x2 = lvar();
 		Unifiable<String> y2 = lvar();
 		Literal<?> diagonal2 = Literal.relation(RuleNegationTest.class, "diag")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("l", x2)
 						.arg("r", y2)
 						.build())
@@ -194,7 +194,7 @@ public class RuleNegationTest {
 	public void negatedAnyIsUnconditionalFailure() {
 		Unifiable<Integer> x = lvar();
 		Literal<?> tautology = Literal.relation(RuleNegationTest.class, "taut")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("item", x)
 						.build())
 				.solving(Goal.success());
@@ -203,7 +203,7 @@ public class RuleNegationTest {
 
 	private static External<?> edge(AnswerSource db, Unifiable<Integer> src, Unifiable<Integer> dst) {
 		return Literal.relation(RuleNegationTest.class, "edge")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("src", src).indexed()
 						.arg("dst", dst).indexed()
 						.build())
@@ -212,7 +212,7 @@ public class RuleNegationTest {
 
 	private static Literal<?> reach(AnswerSource db, Unifiable<Integer> x, Unifiable<Integer> y) {
 		return Literal.relation(RuleNegationTest.class, "reach")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("from", x)
 						.arg("to", y)
 						.build())

@@ -70,7 +70,7 @@ public class RecordingChoiceTest {
 	}
 
 	private static final Relation PERSON = Literal.relation(RecordingChoiceTest.class, "person")
-			.args(Schema.builder()
+			.schema(Schema.builder()
 					.arg("id", lvar()).indexed()
 					.arg("name", lvar())
 					.build())

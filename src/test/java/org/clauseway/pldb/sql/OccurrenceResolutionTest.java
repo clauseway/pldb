@@ -47,7 +47,7 @@ public class OccurrenceResolutionTest {
 
 	private static External<?> pair(AnswerSource db, Unifiable<Long> a, Unifiable<Long> b) {
 		return Literal.relation(OccurrenceResolutionTest.class, "pair")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("a", a)
 						.arg("b", b)
 						.build())

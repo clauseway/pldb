@@ -44,7 +44,7 @@ public class TableParkingPropagatorTest {
 
 	private static External<?> r(AnswerSource db, Unifiable<Integer> item, Unifiable<String> tag) {
 		return Literal.relation(TableParkingPropagatorTest.class, "r")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("item", item).indexed()
 						.arg("tag", tag).indexed()
 						.build())
@@ -67,7 +67,7 @@ public class TableParkingPropagatorTest {
 	/** The reference relation as a rule: the body is the db lookup over the heads. */
 	private static Posting posted(Unifiable<Integer> i, Unifiable<String> t) {
 		return Literal.relation(TableParkingPropagatorTest.class, "rr")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("item", i)
 						.arg("tag", t)
 						.build())
@@ -123,7 +123,7 @@ public class TableParkingPropagatorTest {
 	/** A rule ignoring its tag: one row under the guard item ≠ 2. */
 	private static Posting guardedPosted(Unifiable<Integer> i, Unifiable<String> t) {
 		return Literal.relation(TableParkingPropagatorTest.class, "guardedR")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("item", i)
 						.arg("tag", t)
 						.build())
@@ -161,7 +161,7 @@ public class TableParkingPropagatorTest {
 
 	private static Posting twoGuardsPosted(Unifiable<Integer> i, Unifiable<String> t) {
 		return Literal.relation(TableParkingPropagatorTest.class, "twoGuardsR")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("item", i)
 						.arg("tag", t)
 						.build())
@@ -181,7 +181,7 @@ public class TableParkingPropagatorTest {
 
 	private static Posting widePosted(Unifiable<Integer> i, Unifiable<String> t) {
 		return Literal.relation(TableParkingPropagatorTest.class, "wideR")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("item", i)
 						.arg("tag", t)
 						.build())
@@ -201,7 +201,7 @@ public class TableParkingPropagatorTest {
 
 	private static Posting diagonalPosted(Unifiable<String> l, Unifiable<String> r) {
 		return Literal.relation(TableParkingPropagatorTest.class, "diagR")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("l", l)
 						.arg("r", r)
 						.build())
@@ -216,7 +216,7 @@ public class TableParkingPropagatorTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<String> y = lvar();
 		Posting tautology = Literal.relation(TableParkingPropagatorTest.class, "tautR")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("item", x)
 						.arg("tag", y)
 						.build())
@@ -253,7 +253,7 @@ public class TableParkingPropagatorTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<String> t = lvar();
 		Posting mixed = Literal.relation(TableParkingPropagatorTest.class, "mixedR")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("item", x)
 						.arg("tag", t)
 						.build())
@@ -269,7 +269,7 @@ public class TableParkingPropagatorTest {
 		Unifiable<Integer> i = lvar();
 		Unifiable<String> y = lvar();
 		Posting guarded = Literal.relation(TableParkingPropagatorTest.class, "condR")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("item", i)
 						.arg("tag", y)
 						.build())
@@ -312,7 +312,7 @@ public class TableParkingPropagatorTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<String> y = lvar();
 		Posting mixed = Literal.relation(TableParkingPropagatorTest.class, "mixedTopR")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("item", x)
 						.arg("tag", y)
 						.build())

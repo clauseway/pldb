@@ -3,7 +3,6 @@ package org.clauseway.pldb.sql;
 // ABOUTME: Region-grain receipts: disjoint regions of ONE relation commit across
 // ABOUTME: each other, an insert into a pinned region bounces, no column refuses.
 
-import org.clauseway.functional.fibers.schedulers.ForkJoinScheduler;
 import org.clauseway.logic.solving.Query;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -84,7 +83,7 @@ public class VersionedWatermarkTest {
 
 	private static External<?> loan(AnswerSource db, Unifiable<String> member, Unifiable<String> copy) {
 		return Literal.relation(VersionedWatermarkTest.class, "loan")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("member", member).indexed()
 						.arg("copy", copy)
 						.build())
@@ -93,7 +92,7 @@ public class VersionedWatermarkTest {
 
 	private static External<?> book(AnswerSource db, Unifiable<String> isbn, Unifiable<String> title) {
 		return Literal.relation(VersionedWatermarkTest.class, "book")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("isbn", isbn).indexed()
 						.arg("title", title)
 						.build())
@@ -245,7 +244,7 @@ public class VersionedWatermarkTest {
 
 	private static External<?> invoice(AnswerSource db, Unifiable<String> member, Unifiable<Long> day) {
 		return Literal.relation(VersionedWatermarkTest.class, "invoice")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("member", member)
 						.arg("due", day)
 						.build())

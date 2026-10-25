@@ -29,7 +29,7 @@ public class NamespacedRelationTest {
 
 	private static Relation loan(Class<?> namespace) {
 		return Literal.relation(namespace, "loan")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("member", lvar()).indexed()
 						.arg("copy", lvar())
 						.build())

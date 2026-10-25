@@ -25,7 +25,7 @@ public class OptionCellTest {
 
 	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<LOption<String>> name) {
 		return Literal.relation(OptionCellTest.class, "person")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("id", id).indexed()
 						.arg("name", name)
 						.build())
@@ -35,7 +35,7 @@ public class OptionCellTest {
 	/** tag INDEXED: a None cell must key its bucket. */
 	private static External<?> tagged(AnswerSource db, Unifiable<Integer> id, Unifiable<LOption<String>> tag) {
 		return Literal.relation(OptionCellTest.class, "tagged")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("id", id).indexed()
 						.arg("tag", tag).indexed()
 						.build())

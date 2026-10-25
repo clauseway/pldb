@@ -20,7 +20,7 @@ public class ExternalTest {
 
 	private static Literal.Builder<Schema.Anonymous> person(Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(ExternalTest.class, "person")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("id", id).indexed()
 						.arg("name", name)
 						.build());

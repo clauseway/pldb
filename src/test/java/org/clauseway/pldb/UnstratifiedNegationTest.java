@@ -20,7 +20,7 @@ public class UnstratifiedNegationTest {
 	/** p(x) :- x=1, NOT p(x) — negation through its own recursion. */
 	private static Literal<?> selfNeg(Unifiable<Integer> x) {
 		return Literal.relation(UnstratifiedNegationTest.class, "selfNeg")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("x", x)
 						.build())
 				.solving(x.unifies(1).and(defer(() -> exclude(selfNeg(x)))));

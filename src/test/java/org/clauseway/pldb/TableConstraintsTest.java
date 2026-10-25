@@ -44,7 +44,7 @@ public class TableConstraintsTest {
 
 	private static External<?> r(AnswerSource db, Unifiable<Integer> item, Unifiable<String> tag) {
 		return Literal.relation(TableConstraintsTest.class, "r")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("item", item).indexed()
 						.arg("tag", tag).indexed()
 						.build())
@@ -57,7 +57,7 @@ public class TableConstraintsTest {
 
 	private static External<?> s(AnswerSource db, Unifiable<String> label, Unifiable<Integer> price) {
 		return Literal.relation(TableConstraintsTest.class, "s")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("label", label).indexed()
 						.arg("price", price).indexed()
 						.build())
@@ -70,7 +70,7 @@ public class TableConstraintsTest {
 
 	private static External<?> t(AnswerSource db, Unifiable<Integer> item, Unifiable<String> tag) {
 		return Literal.relation(TableConstraintsTest.class, "t")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("item", item).indexed()
 						.arg("tag", tag).indexed()
 						.build())

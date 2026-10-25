@@ -39,7 +39,7 @@ import org.junit.Test;
 public class AnswerStoreTest {
 
 	private static final Relation LOAN = Literal.relation(AnswerStoreTest.class, "loan")
-			.args(Schema.builder()
+			.schema(Schema.builder()
 					.arg("member", lvar()).indexed()
 					.arg("copy", lvar())
 					.build())
@@ -75,7 +75,7 @@ public class AnswerStoreTest {
 
 	private static External<?> loanFact(String member, String copy) {
 		return Literal.relation(AnswerStoreTest.class, "loan")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("member", lval(member)).indexed()
 						.arg("copy", lval(copy))
 						.build())
@@ -275,7 +275,7 @@ public class AnswerStoreTest {
 	}
 
 	private static final Relation PAIR = Literal.relation(AnswerStoreTest.class, "pair")
-			.args(Schema.builder()
+			.schema(Schema.builder()
 					.arg("a", lvar()).indexed()
 					.arg("b", lvar()).indexed()
 					.build())
@@ -333,7 +333,7 @@ public class AnswerStoreTest {
 	}
 
 	private static final Relation FLAGLESS = Literal.relation(AnswerStoreTest.class, "flagless")
-			.args(Schema.builder()
+			.schema(Schema.builder()
 					.arg("member", lvar())
 					.arg("copy", lvar())
 					.build())

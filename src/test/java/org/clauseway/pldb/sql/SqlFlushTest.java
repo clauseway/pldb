@@ -48,11 +48,11 @@ public class SqlFlushTest {
 	}
 
 	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
-		return Literal.relation(SqlFlushTest.class, "person").args(Schema.builder().arg("id", id).indexed().arg("name", name).build()).from(db);
+		return Literal.relation(SqlFlushTest.class, "person").schema(Schema.builder().arg("id", id).indexed().arg("name", name).build()).from(db);
 	}
 
 	private static External<?> visited(AnswerSource db, Unifiable<Object> city) {
-		return Literal.relation(SqlFlushTest.class, "visited").args(Schema.builder().arg("city", city).build()).from(db);
+		return Literal.relation(SqlFlushTest.class, "visited").schema(Schema.builder().arg("city", city).build()).from(db);
 	}
 
 	private List<String> namesReadBack() throws Exception {

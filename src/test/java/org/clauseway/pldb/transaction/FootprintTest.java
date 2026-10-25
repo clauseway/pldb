@@ -26,7 +26,7 @@ public class FootprintTest {
 
 	private static Call<Relation> region(String relation) {
 		Relation rel = Literal.relation(FootprintTest.class, relation)
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("id", lvar())
 						.arg("value", lvar())
 						.build())

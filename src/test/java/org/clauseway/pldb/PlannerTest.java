@@ -30,7 +30,7 @@ public class PlannerTest {
 
 	private static External<?> parent(AnswerSource db, Unifiable<Integer> parentId, Unifiable<Integer> childId) {
 		return Literal.relation(PlannerTest.class, "parentP")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("parentId", parentId).indexed()
 						.arg("childId", childId).indexed()
 						.build())

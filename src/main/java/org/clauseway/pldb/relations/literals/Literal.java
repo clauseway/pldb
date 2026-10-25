@@ -89,7 +89,7 @@ public interface Literal<S extends Schema<?>> extends Goal, Bounded, Postable {
 	 * two authors' vocabularies cannot collide in tabling, knowledge
 	 * identity, or the store — while the physical name stays the bare
 	 * string: tables, endpoints, and mark rows are the backend's world
-	 * and spell the name alone. The row starts empty; {@link Builder#args}
+	 * and spell the name alone. The row starts empty; {@link Builder#schema}
 	 * sets it.
 	 */
 	static Builder<Schema.Anonymous> relation(Class<?> namespace, String name) {
@@ -162,7 +162,7 @@ public interface Literal<S extends Schema<?>> extends Goal, Bounded, Postable {
 		}
 
 		/** The row the literal is over: its columns are the head, its keys the arguments. */
-		public <T extends Schema<?>> Builder<T> args(T row) {
+		public <T extends Schema<?>> Builder<T> schema(T row) {
 			return new Builder<>(namespace, name, row);
 		}
 

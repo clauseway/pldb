@@ -30,7 +30,7 @@ public class LiteralSolvingTest {
 
 	private static External<?> edge(AnswerSource db, Unifiable<Integer> src, Unifiable<Integer> dst) {
 		return Literal.relation(LiteralSolvingTest.class, "edge")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("src", src).indexed()
 						.arg("dst", dst).indexed()
 						.build())
@@ -47,7 +47,7 @@ public class LiteralSolvingTest {
 	/** The residence arc's target: recursion by calling the METHOD. */
 	private static Literal<?> reach(AnswerSource db, Unifiable<Integer> x, Unifiable<Integer> y) {
 		return Literal.relation(LiteralSolvingTest.class, "reach")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("from", x)
 						.arg("to", y)
 						.build())
@@ -68,7 +68,7 @@ public class LiteralSolvingTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
 		Literal<?> direct = Literal.relation(LiteralSolvingTest.class, "direct")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("from", x)
 						.arg("to", y)
 						.build())
@@ -98,7 +98,7 @@ public class LiteralSolvingTest {
 	private static Literal<?> counted(AnswerSource db, AtomicInteger productions,
 			Unifiable<Integer> x, Unifiable<Integer> y) {
 		return Literal.relation(LiteralSolvingTest.class, "counted")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("from", x)
 						.arg("to", y)
 						.build())
@@ -197,7 +197,7 @@ public class LiteralSolvingTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
 		Literal<?> viaRule = Literal.relation(LiteralSolvingTest.class, "viaRule")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("from", x)
 						.arg("to", y)
 						.build())

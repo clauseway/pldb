@@ -56,7 +56,7 @@ public class CodecTest {
 
 	private static External<?> loan(AnswerSource db, Unifiable<Integer> id, Unifiable<LocalDate> due) {
 		return Literal.relation(CodecTest.class, "loan")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("id", id).indexed()
 						.arg("due", due)
 						.build())
@@ -69,7 +69,7 @@ public class CodecTest {
 	 */
 	private static External<?> event(AnswerSource db, Unifiable<LocalDate> at, Unifiable<LocalDate> logged) {
 		return Literal.relation(CodecTest.class, "event")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("at", at).indexed()
 						.arg("logged", logged)
 						.build())
@@ -149,7 +149,7 @@ public class CodecTest {
 	@Test
 	public void aStructuralValueKeepsTheModellingRefusal() {
 		External<?> bad = Literal.relation(CodecTest.class, "loan")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("id", lval(1)).indexed()
 						.arg("due", lval((Object) Arrays.asList(1, 2)))
 						.build())
@@ -167,7 +167,7 @@ public class CodecTest {
 		}
 		try (CachingSqlFetch source = CachingSqlFetch.pinned("h2", connection)) {
 			Unifiable<String> name = lvar();
-			Query.of(Literal.relation(CodecTest.class, "person").args(Schema.builder().arg("id", lvar()).indexed().arg("name", name).build()).from(source)).solve(name).collect(Collectors.toList());
+			Query.of(Literal.relation(CodecTest.class, "person").schema(Schema.builder().arg("id", lvar()).indexed().arg("name", name).build()).from(source)).solve(name).collect(Collectors.toList());
 			assertThatThrownBy(() -> source.withCodec(loan(null, lvar(), AS_DATE.arg())))
 					.isInstanceOf(IllegalStateException.class)
 					.hasMessageContaining("before first use");

@@ -35,11 +35,11 @@ import org.junit.Test;
 public class GoalProducerTest {
 
 	private static External<?> person(AnswerSource db, Unifiable<Long> id, Unifiable<String> name) {
-		return Literal.relation(GoalProducerTest.class, "person").args(Schema.builder().arg("id", id).arg("name", name).build()).from(db);
+		return Literal.relation(GoalProducerTest.class, "person").schema(Schema.builder().arg("id", id).arg("name", name).build()).from(db);
 	}
 
 	private static External<?> person(AnswerProducer p, Unifiable<Long> id, Unifiable<String> name) {
-		return Literal.relation(GoalProducerTest.class, "person").args(Schema.builder().arg("id", id).arg("name", name).build()).produced(p);
+		return Literal.relation(GoalProducerTest.class, "person").schema(Schema.builder().arg("id", id).arg("name", name).build()).produced(p);
 	}
 
 	private static Relation personRel() {

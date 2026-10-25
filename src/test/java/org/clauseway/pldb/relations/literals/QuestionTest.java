@@ -29,7 +29,7 @@ public class QuestionTest {
 
 	private static External<?> loan(Unifiable<Integer> id, Unifiable<String> copy) {
 		return Literal.relation(QuestionTest.class, "loan")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("loanId", id).indexed()
 						.arg("copy", copy)
 						.build())
@@ -38,7 +38,7 @@ public class QuestionTest {
 
 	private static External<?> returned(Unifiable<Integer> id) {
 		return Literal.relation(QuestionTest.class, "returned")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("loanId", id).indexed()
 						.build())
 				.from(null);

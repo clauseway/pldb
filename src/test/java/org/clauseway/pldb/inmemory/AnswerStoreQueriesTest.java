@@ -37,7 +37,7 @@ public class AnswerStoreQueriesTest {
 
 	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name, Unifiable<String> surname, Unifiable<Gender> gender) {
 		return Literal.relation(AnswerStoreQueriesTest.class, "person")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("id", id).indexed()
 						.arg("name", name).indexed()
 						.arg("surname", surname)
@@ -48,7 +48,7 @@ public class AnswerStoreQueriesTest {
 
 	private static External<?> parent(AnswerSource db, Unifiable<Integer> parentId, Unifiable<Integer> childId) {
 		return Literal.relation(AnswerStoreQueriesTest.class, "parent")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("parentId", parentId).indexed()
 						.arg("childId", childId).indexed()
 						.build())

@@ -15,7 +15,6 @@ import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.unification.structures.LOption;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.relations.Schema;
-import org.clauseway.pldb.relations.Projected;
 
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.inmemory.AnswerStore;
@@ -25,7 +24,7 @@ public class ReifiedColumnTest {
 
 	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(ReifiedColumnTest.class, "person")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("id", id).indexed()
 						.arg("name", name)
 						.build())
@@ -79,7 +78,7 @@ public class ReifiedColumnTest {
 		Unifiable<Boolean> known = lvar();
 		Unifiable<LOption<String>> name = lvar();
 		Literal<?> card = Literal.relation(ReifiedColumnTest.class, "card")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("id", id)
 						.arg("known", known)
 						.arg("name", name)

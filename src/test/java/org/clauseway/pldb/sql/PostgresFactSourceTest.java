@@ -51,7 +51,7 @@ public class PostgresFactSourceTest {
 
 	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(PostgresFactSourceTest.class, "person")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("id", id).indexed()
 						.arg("name", name)
 						.build())
@@ -64,7 +64,7 @@ public class PostgresFactSourceTest {
 
 	private static External<?> edge(AnswerSource db, Unifiable<Integer> src, Unifiable<Integer> dst) {
 		return Literal.relation(PostgresFactSourceTest.class, "edge")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("src", src).indexed()
 						.arg("dst", dst).indexed()
 						.build())
@@ -211,7 +211,7 @@ public class PostgresFactSourceTest {
 	 */
 	private static Literal<?> reach(AnswerSource backing, Unifiable<Integer> x, Unifiable<Integer> y) {
 		return Literal.relation(PostgresFactSourceTest.class, "reachable")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("src", x)
 						.arg("dst", y)
 						.build())

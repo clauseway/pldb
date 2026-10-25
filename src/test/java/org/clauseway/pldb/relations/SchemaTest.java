@@ -61,13 +61,13 @@ public class SchemaTest {
 	}
 
 	private static External<Point> point(AnswerSource db, Point row) {
-		return Literal.relation(SchemaTest.class, "point").args(row).from(db);
+		return Literal.relation(SchemaTest.class, "point").schema(row).from(db);
 	}
 
 	/** The same relation over an anonymous row: the columns spelled by name, flags on the last one named. */
 	private static External<Schema.Anonymous> point(AnswerSource db, Unifiable<Integer> x, Unifiable<Integer> y) {
 		return Literal.relation(SchemaTest.class, "point")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 								.arg("x", x).indexed()
 								.arg("y", y)
 								.build())
@@ -141,7 +141,7 @@ public class SchemaTest {
 	@Test
 	public void aRuleHeadAndItsBodyShareTheRow() {
 		Point origin = Point.anyPoint();
-		Literal<Point> atOrigin = Literal.relation(SchemaTest.class, "origin").args(origin)
+		Literal<Point> atOrigin = Literal.relation(SchemaTest.class, "origin").schema(origin)
 				.solving(origin.getX().unifies(0).and(origin.getY().unifies(0)));
 		assertThat(all(Query.of(atOrigin).select(origin).stream())).containsExactly(new Coordinates(0, 0));
 	}
@@ -150,7 +150,7 @@ public class SchemaTest {
 	@Test
 	public void aWideAnswerIsRefusedBeforeMapping() {
 		Point any = Point.anyPoint();
-		Literal<Point> anyPoint = Literal.relation(SchemaTest.class, "anyPoint").args(any)
+		Literal<Point> anyPoint = Literal.relation(SchemaTest.class, "anyPoint").schema(any)
 				.solving(any.getX().unifies(1));
 		assertThatThrownBy(() -> all(Query.of(anyPoint).select(any).stream()))
 				.isInstanceOf(IllegalStateException.class)

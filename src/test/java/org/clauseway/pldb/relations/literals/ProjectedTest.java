@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 import org.clauseway.logic.unification.structures.LOption;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.relations.Schema;
-import org.clauseway.pldb.relations.Projected;
 
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.inmemory.AnswerStore;
@@ -30,7 +29,7 @@ public class ProjectedTest {
 
 	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(ProjectedTest.class, "person")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("id", id).indexed()
 						.arg("name", name)
 						.build())
@@ -39,7 +38,7 @@ public class ProjectedTest {
 
 	private static External<?> edge(AnswerSource db, Unifiable<Integer> src, Unifiable<Integer> dst) {
 		return Literal.relation(ProjectedTest.class, "edge")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("src", src).indexed()
 						.arg("dst", dst)
 						.build())
@@ -48,7 +47,7 @@ public class ProjectedTest {
 
 	private static External<?> tagged(AnswerSource db, Unifiable<Integer> id, Unifiable<LOption<String>> tag) {
 		return Literal.relation(ProjectedTest.class, "tagged")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("id", id).indexed()
 						.arg("tag", tag)
 						.build())
@@ -141,7 +140,7 @@ public class ProjectedTest {
 
 	private static Literal<?> linked(AnswerSource db, Unifiable<Integer> node, Unifiable<Integer> via) {
 		return Literal.relation(ProjectedTest.class, "linked")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("node", node)
 						.arg("via", via)
 						.build())
@@ -154,7 +153,7 @@ public class ProjectedTest {
 	 */
 	private static Literal<?> reciprocal(AnswerSource db, Unifiable<Integer> node, Unifiable<Integer> via) {
 		return Literal.relation(ProjectedTest.class, "reciprocal")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("node", node)
 						.arg("via", via)
 						.build())
@@ -173,7 +172,7 @@ public class ProjectedTest {
 	@Test
 	public void projectedOnAGroundColumnRefuses() {
 		assertThatThrownBy(() -> Literal.relation(ProjectedTest.class, "person")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("id", projected()).ground()
 						.arg("name", lvar())
 						.build())
@@ -212,7 +211,7 @@ public class ProjectedTest {
 	private static Literal<?> shifted(AnswerSource db, Unifiable<Integer> src, Unifiable<Integer> shifted) {
 		Unifiable<Integer> dst = lvar();
 		return Literal.relation(ProjectedTest.class, "shifted")
-				.args(Schema.builder()
+				.schema(Schema.builder()
 						.arg("src", src)
 						.arg("shifted", shifted)
 						.build())
