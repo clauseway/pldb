@@ -154,7 +154,7 @@ public class SchemaTest {
 				.solving(any.getX().unifies(1));
 		assertThatThrownBy(() -> all(Query.of(anyPoint).select(any).stream()))
 				.isInstanceOf(IllegalStateException.class)
-				.hasMessageContaining("open")
+				.hasMessageContaining("not decided")
 				.hasMessageContaining(any.getY().toString());
 	}
 
@@ -164,7 +164,7 @@ public class SchemaTest {
 		Point probe = new Point(lval(1), projected());
 		assertThatThrownBy(() -> all(Query.of(point(twoPoints(), probe)).select(probe).stream()))
 				.isInstanceOf(IllegalStateException.class)
-				.hasMessageContaining("open");
+				.hasMessageContaining("not decided");
 	}
 
 	@Test
