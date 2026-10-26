@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 import lombok.Value;
 
 import org.clauseway.logic.solving.Selector;
@@ -42,6 +43,14 @@ public interface Schema<D> extends Selector<D> {
 	/** The columns, one per key, in key order. */
 	default List<Property<?>> columns() {
 		return describe().columns();
+	}
+
+	/** A solution shows the keys by their column names. */
+	@Override
+	default Iterable<String> names() {
+		return columns().stream()
+				.map(Property::getName)
+				.collect(Collectors.toList());
 	}
 
 	/** An anonymous row, one column at a time: the first column, then {@link Columns}. */

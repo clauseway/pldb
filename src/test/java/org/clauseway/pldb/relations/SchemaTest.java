@@ -146,7 +146,7 @@ public class SchemaTest {
 		assertThat(all(Query.of(atOrigin).select(origin).stream())).containsExactly(new Coordinates(0, 0));
 	}
 
-	/** A Java value has no place for an open cell: the solution is refused before the schema maps it. */
+	/** A Java value has no place for an open cell: the solution is refused before the schema maps it, shown by column. */
 	@Test
 	public void aWideAnswerIsRefusedBeforeMapping() {
 		Point any = Point.anyPoint();
@@ -154,8 +154,8 @@ public class SchemaTest {
 				.solving(any.getX().unifies(1));
 		assertThatThrownBy(() -> all(Query.of(anyPoint).select(any).stream()))
 				.isInstanceOf(IllegalStateException.class)
-				.hasMessageContaining("not decided")
-				.hasMessageContaining(any.getY().toString());
+				.hasMessageContaining("not decided at [y]")
+				.hasMessageContaining("(x: {1}, y: _.");
 	}
 
 	/** A projected() member is a literal-definition marker; selected, it is an open cell like any other. */
