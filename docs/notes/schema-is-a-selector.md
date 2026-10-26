@@ -15,7 +15,7 @@
   - (1) MET. `Selector<D>` in logic's `solving`: `keys()`, `names()`
     (what a solution shows the keys by; a Schema answers its columns) and
     `map(Solution)`; `Query.select(selector)` → `Selection<D>`, each
-    solution through `decided()` before `map`, whose refusal renders the
+    solution through `ground()` before `map`, whose refusal renders the
     solution whole, `(name: cell, …) : residuals`. The solutions reading is
     the identity mapping; `stream()` is the one terminal.
   - (2) MET. `Schema<D> extends Selector<D>` adds `columns()`, one
