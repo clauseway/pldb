@@ -19,7 +19,7 @@ import org.clauseway.pldb.relations.literals.External;
 import org.clauseway.pldb.relations.literals.Literal;
 
 import org.clauseway.logic.solving.Query;
-import org.clauseway.logic.solving.Solution;
+import org.clauseway.logic.solving.Row;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.inmemory.AnswerStore;
@@ -46,8 +46,8 @@ public class SchemaTest {
 		}
 
 		@Override
-		public Coordinates map(Solution solution) {
-			return new Coordinates(solution.get(x).get(), solution.get(y).get());
+		public Coordinates map(Row row) {
+			return new Coordinates(row.get(x).get(), row.get(y).get());
 		}
 
 		static Point anyPoint() {
@@ -125,7 +125,7 @@ public class SchemaTest {
 	public void selectOverAnAnonymousRowAnswersSolutions() {
 		Unifiable<Integer> y = lvar();
 		Literal<Schema.Anonymous> third = point(twoPoints(), lval(3), y);
-		List<Solution> rows = all(Query.of(third).select(third.getRow()).stream());
+		List<Row> rows = all(Query.of(third).select(third.getRow()).stream());
 		assertThat(rows).hasSize(1);
 		assertThat(rows.get(0).get(y).get()).isEqualTo(4);
 	}
@@ -146,7 +146,7 @@ public class SchemaTest {
 		assertThat(all(Query.of(atOrigin).select(origin).stream())).containsExactly(new Coordinates(0, 0));
 	}
 
-	/** A Java value has no place for an open cell: the solution is refused before the schema maps it, shown by column. */
+	/** A Java value has no place for an open cell: the row is refused before the schema maps it, shown by column. */
 	@Test
 	public void aWideAnswerIsRefusedBeforeMapping() {
 		Point any = Point.anyPoint();

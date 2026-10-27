@@ -11,14 +11,14 @@ import java.util.stream.Collectors;
 import lombok.Value;
 
 import org.clauseway.logic.solving.Selector;
-import org.clauseway.logic.solving.Solution;
+import org.clauseway.logic.solving.Row;
 import org.clauseway.logic.unification.terms.Unifiable;
 
 /**
  * A schema is a {@link Selector} that names its keys: one {@link Property}
  * per key, in order, carrying the column's name and flags. An instance is
  * a row of the schema — a pattern with variables, or a probe — and the
- * value it maps a solution into is the row as Java reads it. A typed row
+ * value it maps a row into is the row as Java reads it. A typed row
  * states both in one place: {@link #describe()} names its columns over
  * its fields, and its keys and columns are read off that. That is all a
  * relation needs from a type: a literal over a row
@@ -26,9 +26,9 @@ import org.clauseway.logic.unification.terms.Unifiable;
  * and {@code Query.select(row)} streams the values. A row with no Java
  * type is an {@link Anonymous}, built column by column through
  * {@link #builder()} — each step offers only what is legal next — and
- * maps a solution into itself.
+ * maps a row into itself.
  *
- * @param <D> the value a row of this schema maps a solution into
+ * @param <D> the value a row of this schema maps a row into
  */
 public interface Schema<D> extends Selector<D> {
 
@@ -45,7 +45,7 @@ public interface Schema<D> extends Selector<D> {
 		return describe().columns();
 	}
 
-	/** A solution shows the keys by their column names. */
+	/** A row shows the keys by their column names. */
 	@Override
 	default Iterable<String> names() {
 		return columns().stream()
@@ -79,9 +79,9 @@ public interface Schema<D> extends Selector<D> {
 		Anonymous build();
 	}
 
-	/** A row of no Java type: its columns and its keys, both by position; a solution over it is its own value. */
+	/** A row of no Java type: its columns and its keys, both by position; a row over it is its own value. */
 	@Value
-	class Anonymous implements Schema<Solution> {
+	class Anonymous implements Schema<Row> {
 		List<Property<?>> columns;
 		List<Unifiable<?>> keys;
 
@@ -96,8 +96,8 @@ public interface Schema<D> extends Selector<D> {
 		}
 
 		@Override
-		public Solution map(Solution solution) {
-			return solution;
+		public Row map(Row row) {
+			return row;
 		}
 
 		@Override

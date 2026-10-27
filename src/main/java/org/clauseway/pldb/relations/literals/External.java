@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 import org.clauseway.logic.solving.Answer;
 import org.clauseway.logic.solving.Selector;
-import org.clauseway.logic.solving.Solution;
+import org.clauseway.logic.solving.Row;
 import org.clauseway.logic.unification.terms.Reified;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.relations.Property;
@@ -44,9 +44,9 @@ public interface External<R extends Schema<?>> extends Literal<R> {
 
 	/**
 	 * The literal as the reading of a question's solutions into its facts: a
-	 * {@link Selector} over the literal's columns, mapping every solution to
-	 * one row of the relation under the solution's condition. A constant
-	 * column rides into each fact; a column the solution leaves free is
+	 * {@link Selector} over the literal's columns, mapping every row to
+	 * one row of the relation under the row's condition. A constant
+	 * column rides into each fact; a column the row leaves free is
 	 * refused by the select before it maps. A {@code projected()} column has
 	 * left the relation, so a literal with one has no facts to land.
 	 */
@@ -74,10 +74,10 @@ public interface External<R extends Schema<?>> extends Literal<R> {
 			}
 
 			@Override
-			public Answer<Relation> map(Solution solution) {
+			public Answer<Relation> map(Row row) {
 				return Answer.of(rel,
-						Answers.image(args.<Reified<?>> map(solution::get).toJavaList()),
-						solution.getCondition());
+						Answers.image(args.<Reified<?>> map(row::get).toJavaList()),
+						row.getCondition());
 			}
 		};
 	}
