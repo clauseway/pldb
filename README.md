@@ -203,28 +203,32 @@ its own reads at commit — the stateless-endpoint contract (GET returns
 pinned answers, POST carries the premise, 409 means re-read) shipped
 function-level as the library's `LibraryServer`.
 
-## The question door
+## Landing a selection
 
-A query is a goal plus result-row templates — the schema functions
-again, naming which answer values land in which columns:
+A stored literal reads a query's solutions as its facts: `facts()` is a
+selector over its columns, and the write doors take what the selection
+streams — the schema functions again, naming which solution values land
+in which columns:
 
 ```java
 Unifiable<Integer> id = lvar();
 Unifiable<Integer> copy = lvar();
-Fiber<List<Answer>> closed = Question.select(
-        loan(tx, id, copy, lvar(), lvar()).and(returned(tx, id)),
-        loan(null, id, copy, lvar(), lvar()),   // the templates: one row
-        returned(null, id));                    // per schema, per answer
-List<Answer> rows = new BreadthFirstScheduler<>(closed).get();
+Query closed = Query.of(loan(tx, id, copy, lvar(), lvar()).and(returned(tx, id)));
+tx = tx.retracting(closed.select(loan(null, id, copy, lvar(), lvar()).facts()))
+       .retracting(closed.select(returned(null, id).facts()));
 ```
 
-The result is a `Fiber` — the caller constructs the engine, breadth-
-first or ForkJoin or a chaos seed. Rows arrive with their derivation's
-`Condition`: an answer proven under an undischarged guard is delivered
-CAVEATED, not dropped — the write doors refuse it until the caller
-decides (`unconditional()` is the explicit strengthening). Feeding a
-selection to `retracting` is the whole DELETE..SELECT story with the
-engine as the SELECT.
+The query's own driver runs the selection — breadth-first by default,
+`on(driver)` for another, depth-first under a trace — and a cell the
+solution leaves free is refused as not ground before it lands. Rows
+arrive with their derivation's `Condition`: an answer proven under an
+undischarged guard is delivered CAVEATED, not dropped — the write doors
+refuse it until the caller decides (`unconditional()` is the explicit
+strengthening). Feeding a selection to `retracting` is the whole
+DELETE..SELECT story with the engine as the SELECT, and
+`replacing(stored, derived)` is the refresh of a stored derivation:
+what the stored literal answers leaves, what the derived query answers
+lands.
 
 The proof is a capability the source declares **by type**, and which
 proof a transaction stands on is the client's call: `Transaction.over`

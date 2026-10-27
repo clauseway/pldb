@@ -8,13 +8,13 @@
   `HandlingEvent`) with their reads through `Query.select(row)`;
   negative witness — the two designs this replaces, each green and each
   wrong for a stated reason (lineage).
-- **imports**: Selector, Solution, Selection, Schema, External, Literal,
+- **imports**: Selector, Row, Selection, Schema, External, Literal,
   Term / Unifiable / Reified, structural contract, a don't-care column
   is `projected()` (glossary; all ratified).
 - **obligations**:
   - (1) MET. `Selector<D>` in logic's `solving`: `keys()`, `names()`
     (what a solution shows the keys by; a Schema answers its columns) and
-    `map(Solution)`; `Query.select(selector)` → `Selection<D>`, each
+    `map(Row)`; `Query.select(selector)` → `Selection<D>`, each
     solution through `ground()` before `map`, whose refusal renders the
     solution whole, `(name: cell, …) : residuals`. The solutions reading is
     the identity mapping; `stream()` is the one terminal.
@@ -23,11 +23,11 @@
     `describe()` chain and `keys()`/`columns()` are read off it; the
     literal builder takes the row (`relation(ns, name).schema(row)`), or
     names an anonymous row's columns on the literal (`.arg(name, x)…`);
-    `Schema.Anonymous` is a `Schema<Solution>` that describes itself. Not a `Structural`; no `withMembers`, no default
+    `Schema.Anonymous` is a `Schema<Row>` that describes itself. Not a `Structural`; no `withMembers`, no default
     `probe()` — a probe is a constructor call with `projected()` per
     column.
   - (3) MET. The port: fields `Unifiable<T>`, rule bodies unify the
-    fields directly, `map(Solution)` reads each cell by its field,
+    fields directly, `map(Row)` reads each cell by its field,
     reads are `Query.of(row.stored(db)).select(row).stream()`. The two
     rows whose Java value drops the ordinal (`Leg`, `HandlingActivity`)
     map to `Tuple2<Integer, Dto>` so the reads can sort by it.
@@ -53,7 +53,7 @@ Java has no such distinction — a field is a field — and every attempt
 to give a row type one field type that serves both ends was a lie in one
 direction. The resolution is that the field is the variable, and the
 variable is already both: it enters the goal as itself and it reads the
-answer as the key of a `Solution`. A schema is therefore a selector, the
+answer as the key of a `Row`. A schema is therefore a selector, the
 variables a row is built from and the mapping of one solution over them
 into the row as Java reads it, plus the one thing the literal head needs
 that the engine does not, the columns' names and flags in key order.
@@ -97,6 +97,6 @@ twenty cast lines across the port's six row types. The human's reading
 that ended it: `Structural` is the honest term tier and should keep
 `Term`; a schema is the Java interop layer, it should not be a
 Structural at all, and the merged type Java needs already exists in the
-engine as the variable read through a `Solution`. Promoted to logic as
+engine as the variable read through a `Row`. Promoted to logic as
 `Selector` because it is the whole of the Java interop story, and more
 important than `Structural` itself.
