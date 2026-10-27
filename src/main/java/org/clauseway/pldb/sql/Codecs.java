@@ -68,7 +68,9 @@ public final class Codecs {
 			if (!(args.get(i) instanceof Codec.Arg)) {
 				continue;
 			}
-			Codec<?> codec = ((Codec.Arg<?>) args.get(i)).getCodec();
+			Codec.Arg<?> marker = (Codec.Arg<?>) args.get(i);
+			marker.claim();
+			Codec<?> codec = marker.getCodec();
 			Map<String, Codec<?>> perColumn = byColumn.computeIfAbsent(relation.getName(), name -> new HashMap<>());
 			if (perColumn.putIfAbsent(columns[i].getName(), codec) != null) {
 				throw new IllegalStateException(relation.getName() + ": column '"

@@ -184,6 +184,16 @@ public class ProjectedTest {
 				.collect(Collectors.toList())).containsExactly("{1}");
 	}
 
+	/** A marker no literal claimed is a mistake, not a variable: the first walk refuses it by what it is. */
+	@Test
+	public void aMarkerOutsideALiteralRefusesAtTheFirstWalk() {
+		Unifiable<Integer> x = lvar();
+		assertThatThrownBy(() -> Query.of(x.unifies(projected())).solve(x).collect(Collectors.toList()))
+				.isInstanceOf(IllegalStateException.class)
+				.hasMessageContaining("projected()")
+				.hasMessageContaining("literal");
+	}
+
 	/** A projected column the body constrains arithmetically: the marker is a variable to the finite domain too. */
 	@Test
 	public void aProjectedColumnMayMeetArithmeticInTheBody() {

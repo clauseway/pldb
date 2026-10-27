@@ -131,6 +131,16 @@ public class CodecTest {
 		}
 	}
 
+	/** A codec marker rides a template into withCodec; met by a solve instead, it refuses by what it is. */
+	@Test
+	public void aCodecMarkerOutsideWithCodecRefusesAtTheFirstWalk() {
+		Unifiable<LocalDate> due = lvar();
+		assertThatThrownBy(() -> Query.of(due.unifies(AS_DATE.arg())).solve(due).collect(Collectors.toList()))
+				.isInstanceOf(IllegalStateException.class)
+				.hasMessageContaining("codec")
+				.hasMessageContaining("withCodec");
+	}
+
 	@Test
 	public void anUnregisteredTypeRefusesAtTheFlushByColumn() {
 		assertThatThrownBy(() -> SqlFlush.over(connection).flush(Arrays.asList(
