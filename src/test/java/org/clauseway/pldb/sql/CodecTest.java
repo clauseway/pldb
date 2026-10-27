@@ -22,7 +22,8 @@ import java.util.stream.Collectors;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
-import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.literals.External;
+import org.clauseway.pldb.relations.literals.Literal;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,7 +53,7 @@ public class CodecTest {
 		connection.close();
 	}
 
-	private static Literal loan(AnswerSource db, Unifiable<Integer> id, Unifiable<LocalDate> due) {
+	private static External<?> loan(AnswerSource db, Unifiable<Integer> id, Unifiable<LocalDate> due) {
 		return Literal.relation(CodecTest.class, "loan")
 				.arg("id", id).indexed()
 				.arg("due", due)
@@ -63,7 +64,7 @@ public class CodecTest {
 	 * One Java type, TWO wire encodings in one relation — the codec is a
 	 * property of the COLUMN, addressed through the defining method.
 	 */
-	private static Literal event(AnswerSource db, Unifiable<LocalDate> at, Unifiable<LocalDate> logged) {
+	private static External<?> event(AnswerSource db, Unifiable<LocalDate> at, Unifiable<LocalDate> logged) {
 		return Literal.relation(CodecTest.class, "event")
 				.arg("at", at).indexed()
 				.arg("logged", logged)
@@ -130,6 +131,16 @@ public class CodecTest {
 		}
 	}
 
+	/** A codec marker rides a template into withCodec; met by a solve instead, it refuses by what it is. */
+	@Test
+	public void aCodecMarkerOutsideWithCodecRefusesAtTheFirstWalk() {
+		Unifiable<LocalDate> due = lvar();
+		assertThatThrownBy(() -> Query.of(due.unifies(AS_DATE.arg())).solve(due).collect(Collectors.toList()))
+				.isInstanceOf(IllegalStateException.class)
+				.hasMessageContaining("codec")
+				.hasMessageContaining("withCodec");
+	}
+
 	@Test
 	public void anUnregisteredTypeRefusesAtTheFlushByColumn() {
 		assertThatThrownBy(() -> SqlFlush.over(connection).flush(Arrays.asList(
@@ -142,7 +153,7 @@ public class CodecTest {
 
 	@Test
 	public void aStructuralValueKeepsTheModellingRefusal() {
-		Literal bad = Literal.relation(CodecTest.class, "loan")
+		External<?> bad = Literal.relation(CodecTest.class, "loan")
 				.arg("id", lval(1)).indexed()
 				.arg("due", lval((Object) Arrays.asList(1, 2)))
 				.from(null);

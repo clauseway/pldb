@@ -24,7 +24,7 @@ import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.GoalProducer;
 import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Answers;
-import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.literals.Literal;
 import org.clauseway.pldb.relations.Relation;
 import org.junit.Test;
 
@@ -34,7 +34,7 @@ public class CachingAnswerSourceTest {
 			.arg("id", lvar()).indexed()
 			.arg("tag", lvar())
 			.from(null)
-			.getRel();
+			.getRelation();
 
 	private static Call<Relation> everything() {
 		return Call.of(GUARDED, Answers.image(Any.of(0), Any.of(1)));

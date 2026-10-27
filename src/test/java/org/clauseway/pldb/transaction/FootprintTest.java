@@ -12,7 +12,7 @@ import org.clauseway.logic.solving.Call;
 import org.clauseway.logic.unification.terms.Any;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.pldb.relations.Answers;
-import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.literals.Literal;
 import org.clauseway.pldb.relations.Relation;
 import org.junit.Test;
 
@@ -28,8 +28,8 @@ public class FootprintTest {
 				.arg("id", lvar())
 				.arg("value", lvar())
 				.from(null)
-				.getRel();
-		Term<?>[] anys = new Term<?>[rel.getArgs().length];
+				.getRelation();
+		Term<?>[] anys = new Term<?>[rel.getProperties().length];
 		for (int i = 0; i < anys.length; i++) {
 			anys[i] = Any.of(i);
 		}

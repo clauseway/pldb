@@ -1,4 +1,4 @@
-package org.clauseway.pldb.relations;
+package org.clauseway.pldb.relations.literals;
 
 // ABOUTME: The projected() marker: inline ∃-projection — set semantics over the
 // ABOUTME: kept columns, honest ¬∃ under exclude, a real join var inside bodies.
@@ -13,31 +13,34 @@ import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
 import static org.clauseway.pldb.relations.Projected.projected;
 
+import org.clauseway.logic.finitedomain.Ints;
+
 import java.util.List;
 import java.util.stream.Collectors;
 import org.clauseway.logic.unification.structures.LOption;
 import org.clauseway.logic.unification.terms.Unifiable;
+
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.inmemory.AnswerStore;
 import org.junit.Test;
 
 public class ProjectedTest {
 
-	private static Literal person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
+	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(ProjectedTest.class, "person")
 				.arg("id", id).indexed()
 				.arg("name", name)
 				.from(db);
 	}
 
-	private static Literal edge(AnswerSource db, Unifiable<Integer> src, Unifiable<Integer> dst) {
+	private static External<?> edge(AnswerSource db, Unifiable<Integer> src, Unifiable<Integer> dst) {
 		return Literal.relation(ProjectedTest.class, "edge")
 				.arg("src", src).indexed()
 				.arg("dst", dst)
 				.from(db);
 	}
 
-	private static Literal tagged(AnswerSource db, Unifiable<Integer> id, Unifiable<LOption<String>> tag) {
+	private static External<?> tagged(AnswerSource db, Unifiable<Integer> id, Unifiable<LOption<String>> tag) {
 		return Literal.relation(ProjectedTest.class, "tagged")
 				.arg("id", id).indexed()
 				.arg("tag", tag)
@@ -128,7 +131,7 @@ public class ProjectedTest {
 				.collect(Collectors.toList())).containsExactly("{9}");
 	}
 
-	private static Literal linked(AnswerSource db, Unifiable<Integer> node, Unifiable<Integer> via) {
+	private static Literal<?> linked(AnswerSource db, Unifiable<Integer> node, Unifiable<Integer> via) {
 		return Literal.relation(ProjectedTest.class, "linked")
 				.arg("node", node)
 				.arg("via", via)
@@ -139,7 +142,7 @@ public class ProjectedTest {
 	 * The marker is a JOIN variable in the body: used twice, the projection
 	 * must not sever the join — that is the leak that broke availableCopy.
 	 */
-	private static Literal reciprocal(AnswerSource db, Unifiable<Integer> node, Unifiable<Integer> via) {
+	private static Literal<?> reciprocal(AnswerSource db, Unifiable<Integer> node, Unifiable<Integer> via) {
 		return Literal.relation(ProjectedTest.class, "reciprocal")
 				.arg("node", node)
 				.arg("via", via)
@@ -163,5 +166,50 @@ public class ProjectedTest {
 				.from(null))
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("id");
+	}
+
+	/**
+	 * The receipt the projected() convention rests on: a free lvar in a
+	 * don't-care column is NOT a projection under exclude. The engine cannot
+	 * tell it from a variable a sibling will bind later, so the nogood never
+	 * fires and the branch survives — person 1 exists, and the query says it
+	 * does not.
+	 */
+	@Test
+	public void aFreeVariableUnderExcludeIsNotAProjection() {
+		Unifiable<Integer> x = lvar();
+		assertThat(Query.of(x.unifies(1)
+				.and(exclude(person(db(), x, lvar())))).solve(x)
+				.map(Object::toString)
+				.collect(Collectors.toList())).containsExactly("{1}");
+	}
+
+	/** A marker no literal claimed is a mistake, not a variable: the first walk refuses it by what it is. */
+	@Test
+	public void aMarkerOutsideALiteralRefusesAtTheFirstWalk() {
+		Unifiable<Integer> x = lvar();
+		assertThatThrownBy(() -> Query.of(x.unifies(projected())).solve(x).collect(Collectors.toList()))
+				.isInstanceOf(IllegalStateException.class)
+				.hasMessageContaining("projected()")
+				.hasMessageContaining("literal");
+	}
+
+	/** A projected column the body constrains arithmetically: the marker is a variable to the finite domain too. */
+	@Test
+	public void aProjectedColumnMayMeetArithmeticInTheBody() {
+		Unifiable<Integer> src = lvar();
+		List<String> sources = Query.of(shifted(db(), src, projected())).solve(src)
+				.map(Object::toString)
+				.sorted()
+				.collect(Collectors.toList());
+		assertThat(sources).containsExactly("{1}", "{2}");
+	}
+
+	private static Literal<?> shifted(AnswerSource db, Unifiable<Integer> src, Unifiable<Integer> shifted) {
+		Unifiable<Integer> dst = lvar();
+		return Literal.relation(ProjectedTest.class, "shifted")
+				.arg("src", src)
+				.arg("shifted", shifted)
+				.solving(edge(db, src, dst).and(Ints.addo(dst, lval(1), shifted)));
 	}
 }

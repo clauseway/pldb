@@ -25,7 +25,8 @@ import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Answers;
-import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.literals.External;
+import org.clauseway.pldb.relations.literals.Literal;
 import org.clauseway.pldb.relations.Relation;
 import org.clauseway.pldb.transaction.Transaction;
 import org.junit.After;
@@ -74,26 +75,26 @@ public class LiveSourceTest {
 		}
 	}
 
-	private static Literal person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
+	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(LiveSourceTest.class, "person")
 				.arg("id", id).indexed()
 				.arg("name", name)
 				.from(db);
 	}
 
-	private static Literal book(AnswerSource db, Unifiable<String> isbn, Unifiable<String> title) {
+	private static External<?> book(AnswerSource db, Unifiable<String> isbn, Unifiable<String> title) {
 		return Literal.relation(LiveSourceTest.class, "book")
 				.arg("isbn", isbn).indexed()
 				.arg("title", title)
 				.from(db);
 	}
 
-	private static Call<Relation> probe(Literal shape) {
-		Term<?>[] anys = new Term<?>[shape.getRel().getArgs().length];
+	private static Call<Relation> probe(Literal<?> shape) {
+		Term<?>[] anys = new Term<?>[shape.getRelation().getProperties().length];
 		for (int i = 0; i < anys.length; i++) {
 			anys[i] = Any.of(i);
 		}
-		return Call.of(shape.getRel(), Answers.image(anys));
+		return Call.of(shape.getRelation(), Answers.image(anys));
 	}
 
 	private static List<String> names(Iterable<Answer<Relation>> answers) {

@@ -3,7 +3,6 @@ package org.clauseway.pldb.sql;
 // ABOUTME: Region-grain receipts: disjoint regions of ONE relation commit across
 // ABOUTME: each other, an insert into a pinned region bounces, no column refuses.
 
-import org.clauseway.functional.fibers.schedulers.ForkJoinScheduler;
 import org.clauseway.logic.solving.Query;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -23,7 +22,8 @@ import org.clauseway.logic.finitedomain.Longs;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
-import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.literals.External;
+import org.clauseway.pldb.relations.literals.Literal;
 import org.clauseway.pldb.transaction.Transaction;
 import org.junit.After;
 import org.junit.Before;
@@ -80,14 +80,14 @@ public class VersionedWatermarkTest {
 				VersionedWatermark.over(SqlFetch.live(id, connection()), this::connection));
 	}
 
-	private static Literal loan(AnswerSource db, Unifiable<String> member, Unifiable<String> copy) {
+	private static External<?> loan(AnswerSource db, Unifiable<String> member, Unifiable<String> copy) {
 		return Literal.relation(VersionedWatermarkTest.class, "loan")
 				.arg("member", member).indexed()
 				.arg("copy", copy)
 				.from(db);
 	}
 
-	private static Literal book(AnswerSource db, Unifiable<String> isbn, Unifiable<String> title) {
+	private static External<?> book(AnswerSource db, Unifiable<String> isbn, Unifiable<String> title) {
 		return Literal.relation(VersionedWatermarkTest.class, "book")
 				.arg("isbn", isbn).indexed()
 				.arg("title", title)
@@ -237,7 +237,7 @@ public class VersionedWatermarkTest {
 		}
 	}
 
-	private static Literal invoice(AnswerSource db, Unifiable<String> member, Unifiable<Long> day) {
+	private static External<?> invoice(AnswerSource db, Unifiable<String> member, Unifiable<Long> day) {
 		return Literal.relation(VersionedWatermarkTest.class, "invoice")
 				.arg("member", member)
 				.arg("due", day)

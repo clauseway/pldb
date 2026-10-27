@@ -24,7 +24,8 @@ import org.clauseway.logic.finitedomain.Longs;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.inmemory.AnswerStore;
-import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.literals.External;
+import org.clauseway.pldb.relations.literals.Literal;
 import org.clauseway.pldb.relations.Property;
 import org.clauseway.pldb.relations.Relation;
 import org.junit.After;
@@ -33,7 +34,7 @@ import org.junit.Test;
 
 public class SqlPushdownTest {
 
-	private static Literal person(AnswerSource db, Unifiable<Long> id, Unifiable<String> name) {
+	private static External<?> person(AnswerSource db, Unifiable<Long> id, Unifiable<String> name) {
 		return Literal.relation(SqlPushdownTest.class, "person")
 				.arg("id", id).indexed()
 				.arg("name", name)
@@ -41,7 +42,7 @@ public class SqlPushdownTest {
 	}
 
 	private static Relation personRel() {
-		return person(null, lvar(), lvar()).getRel();
+		return person(null, lvar(), lvar()).getRelation();
 	}
 
 	private static final Property<Long> id = Property.of("id");

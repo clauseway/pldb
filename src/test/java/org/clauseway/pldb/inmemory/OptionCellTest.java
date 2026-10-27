@@ -16,12 +16,13 @@ import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.unification.structures.LOption;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
-import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.literals.External;
+import org.clauseway.pldb.relations.literals.Literal;
 import org.junit.Test;
 
 public class OptionCellTest {
 
-	private static Literal person(AnswerSource db, Unifiable<Integer> id, Unifiable<LOption<String>> name) {
+	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<LOption<String>> name) {
 		return Literal.relation(OptionCellTest.class, "person")
 				.arg("id", id).indexed()
 				.arg("name", name)
@@ -29,7 +30,7 @@ public class OptionCellTest {
 	}
 
 	/** tag INDEXED: a None cell must key its bucket. */
-	private static Literal tagged(AnswerSource db, Unifiable<Integer> id, Unifiable<LOption<String>> tag) {
+	private static External<?> tagged(AnswerSource db, Unifiable<Integer> id, Unifiable<LOption<String>> tag) {
 		return Literal.relation(OptionCellTest.class, "tagged")
 				.arg("id", id).indexed()
 				.arg("tag", tag).indexed()
@@ -66,7 +67,7 @@ public class OptionCellTest {
 	public void aSomeProbeBindsTheValueAndSkipsTheAbsentRows() {
 		Unifiable<Integer> id = lvar();
 		Unifiable<String> name = lvar();
-		assertThat(Query.of(person(db(), id, some(name))).select(id, name).rows()
+		assertThat(Query.of(person(db(), id, some(name))).select(id, name).stream()
 				.map(row -> row.get(id).get() + ":" + row.get(name).get())
 				.collect(Collectors.toList())).containsExactly("1:Ada");
 		assertThat(Query.of(person(db(), id, some(lval("Ada")))).solve(id)

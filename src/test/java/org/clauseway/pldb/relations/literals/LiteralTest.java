@@ -1,4 +1,4 @@
-package org.clauseway.pldb.relations;
+package org.clauseway.pldb.relations.literals;
 
 // ABOUTME: The function-shaped relation surface: the builder mints relation and
 // ABOUTME: literal together, bare = exists, exclude converts, fact() terminal,
@@ -18,6 +18,10 @@ import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.solving.Call;
 import org.clauseway.logic.unification.terms.Any;
 import org.clauseway.logic.unification.terms.Unifiable;
+import org.clauseway.pldb.relations.Property;
+import org.clauseway.pldb.relations.Schema;
+import org.clauseway.pldb.relations.Answers;
+
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.inmemory.AnswerStore;
 import org.junit.Test;
@@ -25,10 +29,12 @@ import org.junit.Test;
 public class LiteralTest {
 
 	/** The function-shaped definition: one method, names once, no relation constant. */
-	private static Literal person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
+	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(LiteralTest.class, "person")
-				.arg("id", id).indexed()
-				.arg("name", name)
+				.schema(Schema.builder()
+						.arg("id", id).indexed()
+						.arg("name", name)
+						.build())
 				.from(db);
 	}
 
@@ -39,6 +45,21 @@ public class LiteralTest {
 
 	private static List<String> answers(Goal g, Unifiable<?> out) {
 		return Query.of(g).solve(out).map(Object::toString).sorted().collect(Collectors.toList());
+	}
+
+	/** The columns named on the literal itself are an anonymous row: same relation, args and columns as one built apart. */
+	@Test
+	public void theColumnsNamedOnTheLiteralAreItsAnonymousRow() {
+		Unifiable<Integer> id = lvar();
+		Unifiable<String> name = lvar();
+		External<Schema.Anonymous> inline = Literal.relation(LiteralTest.class, "person")
+				.arg("id", id).indexed()
+				.arg("name", name)
+				.from(db);
+		External<?> apart = person(db, id, name);
+		assertThat(inline.getRelation()).isEqualTo(apart.getRelation());
+		assertThat(inline.getArgs()).isEqualTo(apart.getArgs());
+		assertThat(inline.getRow().columns()).isEqualTo(apart.getRow().columns());
 	}
 
 	@Test
@@ -66,7 +87,7 @@ public class LiteralTest {
 	public void twoMintsOfOneDefinitionAreTheSameRelation() {
 		Unifiable<Integer> i = lvar();
 		Unifiable<String> n = lvar();
-		assertThat(person(db, i, n).getRel()).isEqualTo(person(db, lvar(), lvar()).getRel());
+		assertThat(person(db, i, n).getRelation()).isEqualTo(person(db, lvar(), lvar()).getRelation());
 	}
 
 	@Test
@@ -84,7 +105,7 @@ public class LiteralTest {
 	public void arityOutrunsTheTupleCap() {
 		// twelve columns: past vavr's 8-arity wall, through fact and query
 		Unifiable<Integer> key = lvar();
-		Literal wideProbe = wide(null, lval(7),
+		Literal<?> wideProbe = wide(null, lval(7),
 				lvar(), lvar(), lvar(), lvar(), lvar(), lvar(),
 				lvar(), lvar(), lvar(), lvar(), lvar());
 		AnswerStore wideDb = AnswerStore.empty()
@@ -98,7 +119,7 @@ public class LiteralTest {
 				lvar(), lvar(), lvar(), lvar(), last), last)).containsExactly("{k}");
 	}
 
-	private static Literal wide(AnswerSource db, Unifiable<Integer> k,
+	private static External<?> wide(AnswerSource db, Unifiable<Integer> k,
 			Unifiable<String> c1, Unifiable<String> c2, Unifiable<String> c3,
 			Unifiable<String> c4, Unifiable<String> c5, Unifiable<String> c6,
 			Unifiable<String> c7, Unifiable<String> c8, Unifiable<String> c9,
@@ -121,11 +142,11 @@ public class LiteralTest {
 
 	@Test
 	public void tailModifiersComposeOnTheLastColumn() {
-		Literal lit = Literal.relation(LiteralTest.class, "flags")
+		External<?> lit = Literal.relation(LiteralTest.class, "flags")
 				.arg("k", lvar()).indexed().ground()
 				.arg("v", lvar())
 				.from(db);
-		Property<?>[] cols = lit.getRel().getArgs();
+		Property<?>[] cols = lit.getRelation().getProperties();
 		assertThat(cols[0].isIndexed()).isTrue();
 		assertThat(cols[0].isGround()).isTrue();
 		assertThat(cols[1].isIndexed()).isFalse();
@@ -133,15 +154,8 @@ public class LiteralTest {
 	}
 
 	@Test
-	public void aModifierWithoutAColumnRefuses() {
-		assertThatThrownBy(() -> Literal.relation(LiteralTest.class, "early").indexed())
-				.isInstanceOf(IllegalStateException.class)
-				.hasMessageContaining("early");
-	}
-
-	@Test
 	public void aGroundColumnRefusesAnUnboundArgAtApplication() {
-		Literal lit = Literal.relation(LiteralTest.class, "strict")
+		External<?> lit = Literal.relation(LiteralTest.class, "strict")
 				.arg("k", lvar()).ground()
 				.from(db);
 		assertThatThrownBy(() -> Query.of(lit).solve(lvar()).collect(Collectors.toList()))
@@ -152,7 +166,7 @@ public class LiteralTest {
 	@Test
 	public void aGroundColumnAdmitsABoundArg() {
 		Unifiable<Integer> k = lvar();
-		Literal lit = Literal.relation(LiteralTest.class, "strictOk")
+		Literal<?> lit = Literal.relation(LiteralTest.class, "strictOk")
 				.arg("k", k).ground()
 				.solving(k.unifies(5));
 		assertThat(answers(k.unifies(5).and(lit), k)).containsExactly("{5}");
@@ -178,7 +192,7 @@ public class LiteralTest {
 						Literal.relation(LiteralTest.class, "person").arg("id", lval(2)).arg("name", lval("Alan")).from(null)));
 		org.assertj.core.api.Assertions.assertThat(db.estimate(
 						Call.of(
-								Literal.relation(LiteralTest.class, "person").arg("id", lval(1)).arg("name", lval("Ada")).from(null).getRel(),
+								Literal.relation(LiteralTest.class, "person").arg("id", lval(1)).arg("name", lval("Ada")).from(null).getRelation(),
 								Answers.image(
 										Any.of(0), Any.of(1)))))
 				.isEqualTo(2);

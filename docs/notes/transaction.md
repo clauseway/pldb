@@ -56,7 +56,11 @@ the snapshot's own, which its backend both stabilizes and certifies.
   staged delta, read as one source — the value semantics of an
   immutable store over a base that is merely shared. Appends mint new
   values; ancestors and siblings stay true; same-key answers ⊕-fold in
-  a JoinMap cell. `staged()` is the flush list.
+  a JoinMap cell. `staged()` is the flush list. The delta is a signed
+  set: retracting a fact this transaction staged, or asserting one it
+  staged to remove, cancels it rather than refusing — replacing a value
+  within the transaction that staged it leaves only the replacement, and
+  only what remains against the base is flushed.
 - **`Pin`**: an opaque region-version token — minted by a source,
   meaningful only handed back to it. Nothing else ever interprets one.
 - **`Footprint`**: the regions a transaction read, each with the pin

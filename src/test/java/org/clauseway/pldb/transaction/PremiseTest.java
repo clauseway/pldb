@@ -14,19 +14,20 @@ import java.util.stream.Collectors;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.inmemory.SharedDatabase;
-import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.literals.External;
+import org.clauseway.pldb.relations.literals.Literal;
 import org.junit.Test;
 
 public class PremiseTest {
 
-	private static Literal person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
+	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(PremiseTest.class, "person")
 				.arg("id", id).indexed()
 				.arg("name", name)
 				.from(db);
 	}
 
-	private static Literal book(AnswerSource db, Unifiable<String> isbn, Unifiable<String> title) {
+	private static External<?> book(AnswerSource db, Unifiable<String> isbn, Unifiable<String> title) {
 		return Literal.relation(PremiseTest.class, "book")
 				.arg("isbn", isbn).indexed()
 				.arg("title", title)

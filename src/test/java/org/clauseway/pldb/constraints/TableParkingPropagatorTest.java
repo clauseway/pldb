@@ -33,14 +33,15 @@ import org.clauseway.pldb.GoalProducer;
 import org.clauseway.pldb.inmemory.AnswerStore;
 import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Answers;
-import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.literals.External;
+import org.clauseway.pldb.relations.literals.Literal;
 import org.clauseway.pldb.relations.Property;
 import org.clauseway.pldb.relations.Relation;
 import org.junit.Test;
 
 public class TableParkingPropagatorTest {
 
-	private static Literal r(AnswerSource db, Unifiable<Integer> item, Unifiable<String> tag) {
+	private static External<?> r(AnswerSource db, Unifiable<Integer> item, Unifiable<String> tag) {
 		return Literal.relation(TableParkingPropagatorTest.class, "r")
 				.arg("item", item).indexed()
 				.arg("tag", tag).indexed()
@@ -48,7 +49,7 @@ public class TableParkingPropagatorTest {
 	}
 
 	private static Relation rRel() {
-		return r(null, lvar(), lvar()).getRel();
+		return r(null, lvar(), lvar()).getRelation();
 	}
 
 	private static final Property<Integer> item = Property.of("item");

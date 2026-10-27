@@ -23,7 +23,8 @@ import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.unification.structures.LOption;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
-import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.literals.External;
+import org.clauseway.pldb.relations.literals.Literal;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,7 +50,7 @@ public class OptionalColumnTest {
 	}
 
 	/** The column's type says it may be absent; the codec says how NULL crosses the wire. */
-	private static Literal person(AnswerSource db, Unifiable<Integer> id, Unifiable<LOption<String>> name) {
+	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<LOption<String>> name) {
 		return Literal.relation(OptionalColumnTest.class, "person")
 				.arg("id", id).indexed()
 				.arg("name", name)
@@ -88,7 +89,7 @@ public class OptionalColumnTest {
 		try (CachingSqlFetch source = source()) {
 			Unifiable<Integer> id = lvar();
 			Unifiable<String> name = lvar();
-			assertThat(Query.of(person(source, id, some(name))).select(id, name).rows()
+			assertThat(Query.of(person(source, id, some(name))).select(id, name).stream()
 					.map(row -> row.get(id).get() + ":" + row.get(name).get())
 					.collect(Collectors.toList())).containsExactly("1:Ada");
 		}
@@ -152,7 +153,7 @@ public class OptionalColumnTest {
 	}
 
 	/** A column with no optional codec: a NULL cell still refuses by relation and column. */
-	private static Literal strict(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
+	private static External<?> strict(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(OptionalColumnTest.class, "person")
 				.arg("id", id).indexed()
 				.arg("name", name)

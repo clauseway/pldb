@@ -22,17 +22,17 @@ import java.util.stream.Collectors;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.inmemory.AnswerStore;
-import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.literals.External;
+import org.clauseway.pldb.relations.literals.Literal;
 import org.clauseway.pldb.relations.Property;
 import org.clauseway.pldb.relations.Relation;
-import org.clauseway.pldb.relations.RelationN;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public class CachingSqlFetchTest {
 
-	private static Literal person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
+	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(CachingSqlFetchTest.class, "person")
 				.arg("id", id).indexed()
 				.arg("name", name)
@@ -40,7 +40,7 @@ public class CachingSqlFetchTest {
 	}
 
 	private static Relation personRel() {
-		return person(null, lvar(), lvar()).getRel();
+		return person(null, lvar(), lvar()).getRelation();
 	}
 
 	private static final Property<Integer> id = Property.of("id");
@@ -112,9 +112,10 @@ public class CachingSqlFetchTest {
 		// the backend is the schema authority: no declared relation set —
 		// a missing table surfaces as the fetch's own loud failure, naming
 		// the SQL it tried
-		RelationN orphan = RelationN.of("orphan", id);
 		try (CachingSqlFetch source = source()) {
-			assertThatThrownBy(() -> Query.of(orphan.apply(source, lvar())).solve(lvar()).count())
+			assertThatThrownBy(() -> Query.of(Literal.relation(CachingSqlFetchTest.class, "orphan")
+					.arg("id", lvar())
+					.from(source)).solve(lvar()).count())
 					.isInstanceOf(IllegalStateException.class)
 					.hasMessageContaining("orphan");
 		}

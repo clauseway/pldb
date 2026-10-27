@@ -3,8 +3,10 @@ package org.clauseway.pldb.transaction;
 // ABOUTME: A frozen base plus a private SIGNED delta — staged assertions and staged
 // ABOUTME: retractions — read as one source with the value semantics of a store.
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -31,10 +33,12 @@ import org.clauseway.vavr.collection.Array;
  * and every write mints a new value — ancestors keep answering as
  * before, siblings fork legally. The two staged lists (order preserved)
  * are what a commit face lands; until then the base never learns of
- * either. A fact staged both ways refuses with {@link IllegalStateException}:
- * the transaction has not decided what it believes. The DOMAIN's
- * no-delete doctrine lives above this type, at the facades that choose
- * not to expose the retracting door.
+ * either. The delta is a signed set: a write that meets its own opposite
+ * — retracting a fact this value staged, asserting one it staged to
+ * remove — cancels it, so replacing a fact within the transaction that
+ * staged it leaves only the replacement, and what remains is the delta
+ * against the base. The DOMAIN's no-delete doctrine lives above this type,
+ * at the facades that choose not to expose the retracting door.
  */
 @Value
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
@@ -51,27 +55,46 @@ class WriteBuffer implements AnswerSource {
 	}
 
 	public WriteBuffer asserting(List<Answer<Relation>> rows) {
-		refuseCollision(removals, rows);
-		return new WriteBuffer(base, insertions.asserting(rows), removals,
-				stagedAssertions.appendAll(rows), stagedRetractions);
+		Map<Relation, Set<Reified<?>>> cancelled = staged(removals, rows);
+		return new WriteBuffer(base,
+				insertions.asserting(except(rows, cancelled)),
+				removals.retracting(among(rows, cancelled)),
+				stagedAssertions.appendAll(except(rows, cancelled)),
+				stagedRetractions.filter(row -> !among(row, cancelled)));
 	}
 
 	public WriteBuffer retracting(List<Answer<Relation>> rows) {
-		refuseCollision(insertions, rows);
-		return new WriteBuffer(base, insertions, removals.asserting(rows),
-				stagedAssertions, stagedRetractions.appendAll(rows));
+		Map<Relation, Set<Reified<?>>> cancelled = staged(insertions, rows);
+		return new WriteBuffer(base,
+				insertions.retracting(among(rows, cancelled)),
+				removals.asserting(except(rows, cancelled)),
+				stagedAssertions.filter(row -> !among(row, cancelled)),
+				stagedRetractions.appendAll(except(rows, cancelled)));
 	}
 
-	/** A fact staged with the opposite polarity refuses the write whole. */
-	private static void refuseCollision(AnswerStore opposite, List<Answer<Relation>> rows) {
-		for (Answer<Relation> row : rows) {
-			if (opposite.answers(Call.of(row.getRelation(), row.getReified()))
-					.iterator().hasNext()) {
-				throw new IllegalStateException("the fact " + row.getRelation().getName()
-						+ row.getReified() + " is staged with the opposite polarity —"
-						+ " this transaction has not decided what it believes");
-			}
-		}
+	/**
+	 * The rows the opposite side already holds — the writes that cancel
+	 * instead of landing — keyed as the store keys a fact: by relation and
+	 * whole image, never by the {@link Answer} value, whose guard is not
+	 * part of membership.
+	 */
+	private static Map<Relation, Set<Reified<?>>> staged(AnswerStore opposite, List<Answer<Relation>> rows) {
+		return rows.stream()
+				.filter(row -> opposite.answers(Call.of(row.getRelation(), row.getReified())).iterator().hasNext())
+				.collect(Collectors.groupingBy(Answer::getRelation,
+						Collectors.mapping(Answer::getReified, Collectors.toSet())));
+	}
+
+	private static boolean among(Answer<Relation> row, Map<Relation, Set<Reified<?>>> keys) {
+		return keys.getOrDefault(row.getRelation(), Collections.emptySet()).contains(row.getReified());
+	}
+
+	private static List<Answer<Relation>> among(List<Answer<Relation>> rows, Map<Relation, Set<Reified<?>>> keys) {
+		return rows.stream().filter(row -> among(row, keys)).collect(Collectors.toList());
+	}
+
+	private static List<Answer<Relation>> except(List<Answer<Relation>> rows, Map<Relation, Set<Reified<?>>> keys) {
+		return rows.stream().filter(row -> !among(row, keys)).collect(Collectors.toList());
 	}
 
 	/** The rows this value's lineage staged to land, in staging order. */

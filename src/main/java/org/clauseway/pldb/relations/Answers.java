@@ -98,7 +98,7 @@ public final class Answers {
 		for (int i = 0; i < cells.size(); i++) {
 			if (!cells.get(i).isVal()) {
 				throw new IllegalStateException(row.getRelation().getName() + "."
-						+ row.getRelation().getArgs()[i].getName()
+						+ row.getRelation().getProperties()[i].getName()
 						+ " is not ground — a write lands whole rows only");
 			}
 		}

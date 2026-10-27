@@ -26,22 +26,23 @@ import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.inmemory.AnswerStore;
 import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Answers;
-import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.literals.External;
+import org.clauseway.pldb.relations.literals.Literal;
 import org.clauseway.pldb.relations.Relation;
 import org.junit.Test;
 
 public class GoalProducerTest {
 
-	private static Literal person(AnswerSource db, Unifiable<Long> id, Unifiable<String> name) {
+	private static External<?> person(AnswerSource db, Unifiable<Long> id, Unifiable<String> name) {
 		return Literal.relation(GoalProducerTest.class, "person").arg("id", id).arg("name", name).from(db);
 	}
 
-	private static Literal person(AnswerProducer p, Unifiable<Long> id, Unifiable<String> name) {
+	private static External<?> person(AnswerProducer p, Unifiable<Long> id, Unifiable<String> name) {
 		return Literal.relation(GoalProducerTest.class, "person").arg("id", id).arg("name", name).produced(p);
 	}
 
 	private static Relation personRel() {
-		return person((AnswerSource) null, lvar(), lvar()).getRel();
+		return person((AnswerSource) null, lvar(), lvar()).getRelation();
 	}
 
 	private final AnswerStore db = AnswerStore.empty()
