@@ -20,7 +20,6 @@ import org.clauseway.logic.goals.Knowledge;
 import org.clauseway.logic.tabling.table.Table;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
-import org.clauseway.pldb.relations.Schema;
 
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.inmemory.AnswerStore;
@@ -30,10 +29,8 @@ public class LiteralSolvingTest {
 
 	private static External<?> edge(AnswerSource db, Unifiable<Integer> src, Unifiable<Integer> dst) {
 		return Literal.relation(LiteralSolvingTest.class, "edge")
-				.schema(Schema.builder()
-						.arg("src", src).indexed()
-						.arg("dst", dst).indexed()
-						.build())
+				.arg("src", src).indexed()
+				.arg("dst", dst).indexed()
 				.from(db);
 	}
 
@@ -47,10 +44,8 @@ public class LiteralSolvingTest {
 	/** The residence arc's target: recursion by calling the METHOD. */
 	private static Literal<?> reach(AnswerSource db, Unifiable<Integer> x, Unifiable<Integer> y) {
 		return Literal.relation(LiteralSolvingTest.class, "reach")
-				.schema(Schema.builder()
-						.arg("from", x)
-						.arg("to", y)
-						.build())
+				.arg("from", x)
+				.arg("to", y)
 				.solving(edge(db, x, y)
 						.or(defer(() -> {
 							Unifiable<Integer> z = lvar();
@@ -68,10 +63,8 @@ public class LiteralSolvingTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
 		Literal<?> direct = Literal.relation(LiteralSolvingTest.class, "direct")
-				.schema(Schema.builder()
-						.arg("from", x)
-						.arg("to", y)
-						.build())
+				.arg("from", x)
+				.arg("to", y)
 				.solving(edge(db, x, y));
 		assertThat(answers(x.unifies(1).and(direct), y)).containsExactlyInAnyOrder("{2}", "{3}");
 	}
@@ -98,10 +91,8 @@ public class LiteralSolvingTest {
 	private static Literal<?> counted(AnswerSource db, AtomicInteger productions,
 			Unifiable<Integer> x, Unifiable<Integer> y) {
 		return Literal.relation(LiteralSolvingTest.class, "counted")
-				.schema(Schema.builder()
-						.arg("from", x)
-						.arg("to", y)
-						.build())
+				.arg("from", x)
+				.arg("to", y)
 				.solving(defer(() -> {
 					productions.incrementAndGet();
 					return edge(db, x, y);
@@ -197,10 +188,8 @@ public class LiteralSolvingTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<Integer> y = lvar();
 		Literal<?> viaRule = Literal.relation(LiteralSolvingTest.class, "viaRule")
-				.schema(Schema.builder()
-						.arg("from", x)
-						.arg("to", y)
-						.build())
+				.arg("from", x)
+				.arg("to", y)
 				.solving(edge(db, x, y));
 		assertThat(answers(x.unifies(1).and(viaRule), y))
 				.containsExactlyInAnyOrder("{2}", "{3}")

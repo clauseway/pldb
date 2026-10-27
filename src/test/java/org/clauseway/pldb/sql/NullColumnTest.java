@@ -16,7 +16,6 @@ import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.relations.literals.External;
 import org.clauseway.pldb.relations.literals.Literal;
-import org.clauseway.pldb.relations.Schema;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,10 +40,8 @@ public class NullColumnTest {
 
 	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(NullColumnTest.class, "person")
-				.schema(Schema.builder()
-						.arg("id", id).indexed()
-						.arg("name", name)
-						.build())
+				.arg("id", id).indexed()
+				.arg("name", name)
 				.from(db);
 	}
 

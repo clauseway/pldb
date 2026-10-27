@@ -17,14 +17,13 @@ import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.inmemory.AnswerStore;
 import org.clauseway.pldb.relations.literals.External;
 import org.clauseway.pldb.relations.literals.Literal;
-import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.AnswerSource;
 import org.junit.Test;
 
 public class WriteBufferTest {
 
 	private static External<?> person(AnswerSource db, Unifiable<Long> id, Unifiable<String> name) {
-		return Literal.relation(WriteBufferTest.class, "person").schema(Schema.builder().arg("id", id).indexed().arg("name", name).build()).from(db);
+		return Literal.relation(WriteBufferTest.class, "person").arg("id", id).indexed().arg("name", name).from(db);
 	}
 
 	private static AnswerSource base() {

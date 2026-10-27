@@ -32,17 +32,14 @@ import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Answers;
 import org.clauseway.pldb.relations.literals.External;
 import org.clauseway.pldb.relations.literals.Literal;
-import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.relations.Relation;
 import org.junit.Test;
 
 public class AnswerStoreTest {
 
 	private static final Relation LOAN = Literal.relation(AnswerStoreTest.class, "loan")
-			.schema(Schema.builder()
-					.arg("member", lvar()).indexed()
-					.arg("copy", lvar())
-					.build())
+			.arg("member", lvar()).indexed()
+			.arg("copy", lvar())
 			.from(null)
 			.getRelation();
 
@@ -75,10 +72,8 @@ public class AnswerStoreTest {
 
 	private static External<?> loanFact(String member, String copy) {
 		return Literal.relation(AnswerStoreTest.class, "loan")
-				.schema(Schema.builder()
-						.arg("member", lval(member)).indexed()
-						.arg("copy", lval(copy))
-						.build())
+				.arg("member", lval(member)).indexed()
+				.arg("copy", lval(copy))
 				.from(null);
 	}
 
@@ -275,10 +270,8 @@ public class AnswerStoreTest {
 	}
 
 	private static final Relation PAIR = Literal.relation(AnswerStoreTest.class, "pair")
-			.schema(Schema.builder()
-					.arg("a", lvar()).indexed()
-					.arg("b", lvar()).indexed()
-					.build())
+			.arg("a", lvar()).indexed()
+			.arg("b", lvar()).indexed()
 			.from(null)
 			.getRelation();
 
@@ -333,10 +326,8 @@ public class AnswerStoreTest {
 	}
 
 	private static final Relation FLAGLESS = Literal.relation(AnswerStoreTest.class, "flagless")
-			.schema(Schema.builder()
-					.arg("member", lvar())
-					.arg("copy", lvar())
-					.build())
+			.arg("member", lvar())
+			.arg("copy", lvar())
 			.from(null)
 			.getRelation();
 

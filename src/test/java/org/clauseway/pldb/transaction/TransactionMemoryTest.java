@@ -20,7 +20,6 @@ import org.clauseway.pldb.inmemory.SharedDatabase;
 import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.literals.External;
 import org.clauseway.pldb.relations.literals.Literal;
-import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.relations.literals.Question;
 import org.junit.Test;
 
@@ -28,19 +27,15 @@ public class TransactionMemoryTest {
 
 	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(TransactionMemoryTest.class, "person")
-				.schema(Schema.builder()
-						.arg("id", id).indexed()
-						.arg("name", name)
-						.build())
+				.arg("id", id).indexed()
+				.arg("name", name)
 				.from(db);
 	}
 
 	private static External<?> book(AnswerSource db, Unifiable<String> isbn, Unifiable<String> title) {
 		return Literal.relation(TransactionMemoryTest.class, "book")
-				.schema(Schema.builder()
-						.arg("isbn", isbn).indexed()
-						.arg("title", title)
-						.build())
+				.arg("isbn", isbn).indexed()
+				.arg("title", title)
 				.from(db);
 	}
 
@@ -149,18 +144,14 @@ public class TransactionMemoryTest {
 
 	private static External<?> loanOf(AnswerSource db, Unifiable<Integer> id, Unifiable<String> copy) {
 		return Literal.relation(TransactionMemoryTest.class, "loan")
-				.schema(Schema.builder()
-						.arg("loanId", id).indexed()
-						.arg("copy", copy)
-						.build())
+				.arg("loanId", id).indexed()
+				.arg("copy", copy)
 				.from(db);
 	}
 
 	private static External<?> returnedOf(AnswerSource db, Unifiable<Integer> id) {
 		return Literal.relation(TransactionMemoryTest.class, "returned")
-				.schema(Schema.builder()
-						.arg("loanId", id).indexed()
-						.build())
+				.arg("loanId", id).indexed()
 				.from(db);
 	}
 

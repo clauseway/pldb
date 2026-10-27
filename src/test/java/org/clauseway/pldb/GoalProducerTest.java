@@ -28,18 +28,17 @@ import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Answers;
 import org.clauseway.pldb.relations.literals.External;
 import org.clauseway.pldb.relations.literals.Literal;
-import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.relations.Relation;
 import org.junit.Test;
 
 public class GoalProducerTest {
 
 	private static External<?> person(AnswerSource db, Unifiable<Long> id, Unifiable<String> name) {
-		return Literal.relation(GoalProducerTest.class, "person").schema(Schema.builder().arg("id", id).arg("name", name).build()).from(db);
+		return Literal.relation(GoalProducerTest.class, "person").arg("id", id).arg("name", name).from(db);
 	}
 
 	private static External<?> person(AnswerProducer p, Unifiable<Long> id, Unifiable<String> name) {
-		return Literal.relation(GoalProducerTest.class, "person").schema(Schema.builder().arg("id", id).arg("name", name).build()).produced(p);
+		return Literal.relation(GoalProducerTest.class, "person").arg("id", id).arg("name", name).produced(p);
 	}
 
 	private static Relation personRel() {

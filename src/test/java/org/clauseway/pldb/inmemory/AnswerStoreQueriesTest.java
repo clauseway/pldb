@@ -30,28 +30,23 @@ import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.relations.literals.External;
 import org.clauseway.pldb.relations.literals.Literal;
-import org.clauseway.pldb.relations.Schema;
 import org.junit.Test;
 
 public class AnswerStoreQueriesTest {
 
 	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name, Unifiable<String> surname, Unifiable<Gender> gender) {
 		return Literal.relation(AnswerStoreQueriesTest.class, "person")
-				.schema(Schema.builder()
-						.arg("id", id).indexed()
-						.arg("name", name).indexed()
-						.arg("surname", surname)
-						.arg("gender", gender)
-						.build())
+				.arg("id", id).indexed()
+				.arg("name", name).indexed()
+				.arg("surname", surname)
+				.arg("gender", gender)
 				.from(db);
 	}
 
 	private static External<?> parent(AnswerSource db, Unifiable<Integer> parentId, Unifiable<Integer> childId) {
 		return Literal.relation(AnswerStoreQueriesTest.class, "parent")
-				.schema(Schema.builder()
-						.arg("parentId", parentId).indexed()
-						.arg("childId", childId).indexed()
-						.build())
+				.arg("parentId", parentId).indexed()
+				.arg("childId", childId).indexed()
 				.from(db);
 	}
 

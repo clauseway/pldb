@@ -8,7 +8,6 @@ import static org.clauseway.logic.unification.terms.LVar.lvar;
 import java.util.stream.Collectors;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.relations.literals.Literal;
-import org.clauseway.pldb.relations.Schema;
 import org.junit.Test;
 
 public class SelfNegationProbeTest {
@@ -16,9 +15,7 @@ public class SelfNegationProbeTest {
 	/** p(x) :- x=1, NOT p(x) — the recursion deferred, so the engine meets it. */
 	private static Literal<?> selfNeg(Unifiable<Integer> x) {
 		return Literal.relation(SelfNegationProbeTest.class, "selfNeg")
-				.schema(Schema.builder()
-						.arg("x", x)
-						.build())
+				.arg("x", x)
 				.solving(x.unifies(1).and(defer(() -> exclude(selfNeg(x)))));
 	}
 

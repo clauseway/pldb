@@ -37,10 +37,8 @@ public class PropertyTest {
 	public void lookupIdentityIsTheNameRegardlessOfFlags() {
 		Property<Integer> id = Property.of("id");
 		Relation rel = Literal.relation(PropertyTest.class, "r")
-				.schema(Schema.builder()
-						.arg("id", lvar()).indexed().ground()
-						.arg("tag", lvar())
-						.build())
+				.arg("id", lvar()).indexed().ground()
+				.arg("tag", lvar())
 				.from(null).getRelation();
 
 		// the bare constant finds the flagged copy's column
@@ -52,10 +50,8 @@ public class PropertyTest {
 	@Test
 	public void flaggedCopiesOfOneNameAreStillDuplicatesInARelation() {
 		assertThatThrownBy(() -> Literal.relation(PropertyTest.class, "r")
-				.schema(Schema.builder()
-						.arg("id", lvar()).indexed()
-						.arg("id", lvar()).ground()
-						.build())
+				.arg("id", lvar()).indexed()
+				.arg("id", lvar()).ground()
 				.from(null))
 				.isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("Duplicated");

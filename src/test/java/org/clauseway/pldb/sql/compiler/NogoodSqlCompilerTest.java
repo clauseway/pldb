@@ -31,7 +31,6 @@ import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.constraints.TableConstraints;
 import org.clauseway.pldb.inmemory.AnswerStore;
 import org.clauseway.pldb.relations.literals.Literal;
-import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.relations.Property;
 import org.clauseway.pldb.relations.Relation;
 import org.clauseway.pldb.sql.SqlCompiler;
@@ -94,7 +93,7 @@ public class NogoodSqlCompilerTest {
 		// a literal of a family with no compiler (the posted table): pushing
 		// the REST of the disjunction would strengthen — whole or not at all
 		Property<Long> id = Property.of("id");
-		Relation r = Literal.relation(NogoodSqlCompilerTest.class, "r").schema(Schema.builder().arg("id", lvar()).build()).from(null).getRelation();
+		Relation r = Literal.relation(NogoodSqlCompilerTest.class, "r").arg("id", lvar()).from(null).getRelation();
 		Posting posted = TableConstraints.posted(AnswerStore.empty(), r, Collections.singletonList(x));
 		assertThat(compiled(exclude(Posting.all(x.unifies(2L), posted)))).isEmpty();
 	}
@@ -147,7 +146,7 @@ public class NogoodSqlCompilerTest {
 		// oneUncompilableLiteralRefusesTheWholeConjunct forbids. Negation
 		// flips the direction ONCE, at the conjunct boundary.
 		Property<Long> id = Property.of("id");
-		Relation r = Literal.relation(NogoodSqlCompilerTest.class, "r").schema(Schema.builder().arg("id", lvar()).build()).from(null).getRelation();
+		Relation r = Literal.relation(NogoodSqlCompilerTest.class, "r").arg("id", lvar()).from(null).getRelation();
 		Posting posted = TableConstraints.posted(AnswerStore.empty(), r, Collections.singletonList(x));
 		Nogood refused = (Nogood) ((Posting.Activation) exclude(posted)).getItem();
 		Optional<SqlPredicate> partial = compiler().compile(first.combine(refused), this::column);

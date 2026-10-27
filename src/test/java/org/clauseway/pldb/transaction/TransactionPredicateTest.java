@@ -15,7 +15,6 @@ import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.relations.literals.External;
 import org.clauseway.pldb.relations.literals.Literal;
-import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.sql.SerializableSource;
 import org.junit.After;
 import org.junit.Before;
@@ -36,7 +35,7 @@ public class TransactionPredicateTest {
 	}
 
 	private static External<?> orphan(AnswerSource db, Unifiable<Integer> id) {
-		return Literal.relation(TransactionPredicateTest.class, "orphan").schema(Schema.builder().arg("id", id).build()).from(db);
+		return Literal.relation(TransactionPredicateTest.class, "orphan").arg("id", id).from(db);
 	}
 
 	/** No orphan table exists, so the flush inside commit fails for real. */

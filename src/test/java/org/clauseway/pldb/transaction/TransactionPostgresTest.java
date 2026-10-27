@@ -21,7 +21,6 @@ import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.relations.literals.External;
 import org.clauseway.pldb.relations.literals.Literal;
-import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.sql.SerializableSource;
 import org.junit.AfterClass;
 import org.junit.Assume;
@@ -68,10 +67,8 @@ public class TransactionPostgresTest {
 
 	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(TransactionPostgresTest.class, "person")
-				.schema(Schema.builder()
-						.arg("id", id).indexed()
-						.arg("name", name)
-						.build())
+				.arg("id", id).indexed()
+				.arg("name", name)
 				.from(db);
 	}
 

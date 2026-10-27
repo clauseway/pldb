@@ -21,7 +21,6 @@ import org.clauseway.pldb.inmemory.AnswerStore;
 import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.literals.External;
 import org.clauseway.pldb.relations.literals.Literal;
-import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.relations.Property;
 import org.clauseway.pldb.relations.Relation;
 import org.junit.Test;
@@ -30,10 +29,8 @@ public class PlannerTest {
 
 	private static External<?> parent(AnswerSource db, Unifiable<Integer> parentId, Unifiable<Integer> childId) {
 		return Literal.relation(PlannerTest.class, "parentP")
-				.schema(Schema.builder()
-						.arg("parentId", parentId).indexed()
-						.arg("childId", childId).indexed()
-						.build())
+				.arg("parentId", parentId).indexed()
+				.arg("childId", childId).indexed()
 				.from(db);
 	}
 

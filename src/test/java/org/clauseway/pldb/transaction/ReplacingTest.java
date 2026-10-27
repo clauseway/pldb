@@ -23,20 +23,16 @@ public class ReplacingTest {
 
 	private static External<Schema.Anonymous> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(ReplacingTest.class, "person")
-				.schema(Schema.builder()
-						.arg("id", id).indexed()
-						.arg("name", name)
-						.build())
+				.arg("id", id).indexed()
+				.arg("name", name)
 				.from(db);
 	}
 
 	/** The person's name with a title: the derived face, in the stored relation's shape. */
 	private static Literal<Schema.Anonymous> titled(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(ReplacingTest.class, "titled")
-				.schema(Schema.builder()
-						.arg("id", id)
-						.arg("name", name)
-						.build())
+				.arg("id", id)
+				.arg("name", name)
 				.solving(person(db, id, projected()).and(name.unifies("Dr. Ada")));
 	}
 

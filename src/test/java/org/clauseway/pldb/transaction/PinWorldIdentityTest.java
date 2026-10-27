@@ -17,7 +17,6 @@ import org.clauseway.pldb.inmemory.SharedDatabase;
 import org.clauseway.pldb.relations.Answers;
 import org.clauseway.pldb.relations.literals.External;
 import org.clauseway.pldb.relations.literals.Literal;
-import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.relations.Relation;
 import org.junit.Test;
 
@@ -25,10 +24,8 @@ public class PinWorldIdentityTest {
 
 	private static External<?> person(Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(PinWorldIdentityTest.class, "person")
-				.schema(Schema.builder()
-						.arg("id", id).indexed()
-						.arg("name", name)
-						.build())
+				.arg("id", id).indexed()
+				.arg("name", name)
 				.from(null);
 	}
 
@@ -43,10 +40,8 @@ public class PinWorldIdentityTest {
 
 	private static External<?> loan(Unifiable<Integer> id, Unifiable<String> copy) {
 		return Literal.relation(PinWorldIdentityTest.class, "loan")
-				.schema(Schema.builder()
-						.arg("id", id).indexed()
-						.arg("copy", copy)
-						.build())
+				.arg("id", id).indexed()
+				.arg("copy", copy)
 				.from(null);
 	}
 
@@ -82,10 +77,8 @@ public class PinWorldIdentityTest {
 	private static final class Elsewhere {
 		private static External<?> person(Unifiable<Integer> id, Unifiable<String> name) {
 			return Literal.relation(Elsewhere.class, "person")
-					.schema(Schema.builder()
-							.arg("id", id).indexed()
-							.arg("name", name)
-							.build())
+					.arg("id", id).indexed()
+					.arg("name", name)
 					.from(null);
 		}
 	}

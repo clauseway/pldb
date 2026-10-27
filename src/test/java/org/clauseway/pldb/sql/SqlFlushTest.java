@@ -24,7 +24,6 @@ import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.relations.literals.External;
 import org.clauseway.pldb.relations.literals.Literal;
-import org.clauseway.pldb.relations.Schema;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,11 +47,11 @@ public class SqlFlushTest {
 	}
 
 	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
-		return Literal.relation(SqlFlushTest.class, "person").schema(Schema.builder().arg("id", id).indexed().arg("name", name).build()).from(db);
+		return Literal.relation(SqlFlushTest.class, "person").arg("id", id).indexed().arg("name", name).from(db);
 	}
 
 	private static External<?> visited(AnswerSource db, Unifiable<Object> city) {
-		return Literal.relation(SqlFlushTest.class, "visited").schema(Schema.builder().arg("city", city).build()).from(db);
+		return Literal.relation(SqlFlushTest.class, "visited").arg("city", city).from(db);
 	}
 
 	private List<String> namesReadBack() throws Exception {

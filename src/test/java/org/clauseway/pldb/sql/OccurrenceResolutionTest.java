@@ -22,7 +22,6 @@ import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.relations.literals.External;
 import org.clauseway.pldb.relations.literals.Literal;
-import org.clauseway.pldb.relations.Schema;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,10 +46,8 @@ public class OccurrenceResolutionTest {
 
 	private static External<?> pair(AnswerSource db, Unifiable<Long> a, Unifiable<Long> b) {
 		return Literal.relation(OccurrenceResolutionTest.class, "pair")
-				.schema(Schema.builder()
-						.arg("a", a)
-						.arg("b", b)
-						.build())
+				.arg("a", a)
+				.arg("b", b)
 				.from(db);
 	}
 

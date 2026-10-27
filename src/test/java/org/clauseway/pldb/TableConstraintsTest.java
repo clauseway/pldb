@@ -28,7 +28,6 @@ import org.clauseway.pldb.inmemory.AnswerStore;
 import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.literals.External;
 import org.clauseway.pldb.relations.literals.Literal;
-import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.relations.Property;
 import org.clauseway.pldb.relations.Relation;
 import org.junit.Test;
@@ -44,10 +43,8 @@ public class TableConstraintsTest {
 
 	private static External<?> r(AnswerSource db, Unifiable<Integer> item, Unifiable<String> tag) {
 		return Literal.relation(TableConstraintsTest.class, "r")
-				.schema(Schema.builder()
-						.arg("item", item).indexed()
-						.arg("tag", tag).indexed()
-						.build())
+				.arg("item", item).indexed()
+				.arg("tag", tag).indexed()
 				.from(db);
 	}
 
@@ -57,10 +54,8 @@ public class TableConstraintsTest {
 
 	private static External<?> s(AnswerSource db, Unifiable<String> label, Unifiable<Integer> price) {
 		return Literal.relation(TableConstraintsTest.class, "s")
-				.schema(Schema.builder()
-						.arg("label", label).indexed()
-						.arg("price", price).indexed()
-						.build())
+				.arg("label", label).indexed()
+				.arg("price", price).indexed()
 				.from(db);
 	}
 
@@ -70,10 +65,8 @@ public class TableConstraintsTest {
 
 	private static External<?> t(AnswerSource db, Unifiable<Integer> item, Unifiable<String> tag) {
 		return Literal.relation(TableConstraintsTest.class, "t")
-				.schema(Schema.builder()
-						.arg("item", item).indexed()
-						.arg("tag", tag).indexed()
-						.build())
+				.arg("item", item).indexed()
+				.arg("tag", tag).indexed()
 				.from(db);
 	}
 

@@ -20,17 +20,14 @@ import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.inmemory.AnswerStore;
 import org.clauseway.pldb.relations.literals.External;
 import org.clauseway.pldb.relations.literals.Literal;
-import org.clauseway.pldb.relations.Schema;
 import org.junit.Test;
 
 public class RuleNegationTest {
 
 	private static Literal<?> p(Unifiable<Integer> i, Unifiable<String> t) {
 		return Literal.relation(RuleNegationTest.class, "p")
-				.schema(Schema.builder()
-						.arg("item", i)
-						.arg("tag", t)
-						.build())
+				.arg("item", i)
+				.arg("tag", t)
 				.solving(i.unifies(1).and(t.unifies("a"))
 						.or(i.unifies(2).and(t.unifies("b"))));
 	}
@@ -55,19 +52,15 @@ public class RuleNegationTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<String> y = lvar();
 		Literal<?> wide = Literal.relation(RuleNegationTest.class, "wide")
-				.schema(Schema.builder()
-						.arg("item", x)
-						.arg("tag", y)
-						.build())
+				.arg("item", x)
+				.arg("tag", y)
 				.solving(x.unifies(1));
 		assertThat(answers(exclude(wide).and(x.unifies(1)).and(y.unifies("z")), x)).isEmpty();
 		Unifiable<Integer> x2 = lvar();
 		Unifiable<String> y2 = lvar();
 		Literal<?> wide2 = Literal.relation(RuleNegationTest.class, "wide")
-				.schema(Schema.builder()
-						.arg("item", x2)
-						.arg("tag", y2)
-						.build())
+				.arg("item", x2)
+				.arg("tag", y2)
 				.solving(x2.unifies(1));
 		assertThat(answers(exclude(wide2).and(x2.unifies(2)).and(y2.unifies("z")), x2))
 				.containsExactly("{2}");
@@ -78,19 +71,15 @@ public class RuleNegationTest {
 		Unifiable<Integer> x = lvar();
 		Unifiable<String> y = lvar();
 		Literal<?> guarded = Literal.relation(RuleNegationTest.class, "guarded")
-				.schema(Schema.builder()
-						.arg("item", x)
-						.arg("tag", y)
-						.build())
+				.arg("item", x)
+				.arg("tag", y)
 				.solving(x.unifies(1).and(exclude(y.unifies("q"))));
 		assertThat(answers(exclude(guarded).and(x.unifies(1)).and(y.unifies("z")), x)).isEmpty();
 		Unifiable<Integer> x2 = lvar();
 		Unifiable<String> y2 = lvar();
 		Literal<?> guarded2 = Literal.relation(RuleNegationTest.class, "guarded")
-				.schema(Schema.builder()
-						.arg("item", x2)
-						.arg("tag", y2)
-						.build())
+				.arg("item", x2)
+				.arg("tag", y2)
 				.solving(x2.unifies(1).and(exclude(y2.unifies("q"))));
 		assertThat(answers(exclude(guarded2).and(x2.unifies(1)).and(y2.unifies("q")), x2))
 				.containsExactly("{1}");
@@ -161,19 +150,15 @@ public class RuleNegationTest {
 		Unifiable<String> x = lvar();
 		Unifiable<String> y = lvar();
 		Literal<?> diagonal = Literal.relation(RuleNegationTest.class, "diag")
-				.schema(Schema.builder()
-						.arg("l", x)
-						.arg("r", y)
-						.build())
+				.arg("l", x)
+				.arg("r", y)
 				.solving(x.unifies(y));
 		assertThat(answers(exclude(diagonal).and(x.unifies("v")).and(y.unifies("v")), x)).isEmpty();
 		Unifiable<String> x2 = lvar();
 		Unifiable<String> y2 = lvar();
 		Literal<?> diagonal2 = Literal.relation(RuleNegationTest.class, "diag")
-				.schema(Schema.builder()
-						.arg("l", x2)
-						.arg("r", y2)
-						.build())
+				.arg("l", x2)
+				.arg("r", y2)
 				.solving(x2.unifies(y2));
 		assertThat(answers(exclude(diagonal2).and(x2.unifies("v")).and(y2.unifies("w")), x2))
 				.containsExactly("{v}");
@@ -194,28 +179,22 @@ public class RuleNegationTest {
 	public void negatedAnyIsUnconditionalFailure() {
 		Unifiable<Integer> x = lvar();
 		Literal<?> tautology = Literal.relation(RuleNegationTest.class, "taut")
-				.schema(Schema.builder()
-						.arg("item", x)
-						.build())
+				.arg("item", x)
 				.solving(Goal.success());
 		assertThat(answers(exclude(tautology).and(x.unifies(2)), x)).isEmpty();
 	}
 
 	private static External<?> edge(AnswerSource db, Unifiable<Integer> src, Unifiable<Integer> dst) {
 		return Literal.relation(RuleNegationTest.class, "edge")
-				.schema(Schema.builder()
-						.arg("src", src).indexed()
-						.arg("dst", dst).indexed()
-						.build())
+				.arg("src", src).indexed()
+				.arg("dst", dst).indexed()
 				.from(db);
 	}
 
 	private static Literal<?> reach(AnswerSource db, Unifiable<Integer> x, Unifiable<Integer> y) {
 		return Literal.relation(RuleNegationTest.class, "reach")
-				.schema(Schema.builder()
-						.arg("from", x)
-						.arg("to", y)
-						.build())
+				.arg("from", x)
+				.arg("to", y)
 				.solving(edge(db, x, y)
 						.or(defer(() -> {
 							Unifiable<Integer> z = lvar();

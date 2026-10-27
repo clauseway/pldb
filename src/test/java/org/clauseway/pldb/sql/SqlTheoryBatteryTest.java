@@ -36,7 +36,6 @@ import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Answers;
 import org.clauseway.pldb.relations.literals.External;
 import org.clauseway.pldb.relations.literals.Literal;
-import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.relations.Property;
 import org.clauseway.pldb.relations.Relation;
 import org.junit.After;
@@ -54,10 +53,8 @@ public class SqlTheoryBatteryTest {
 
 	private static External<?> person(AnswerSource db, Unifiable<Long> id, Unifiable<String> name) {
 		return Literal.relation(SqlTheoryBatteryTest.class, "person")
-				.schema(Schema.builder()
-						.arg("id", id).indexed()
-						.arg("name", name)
-						.build())
+				.arg("id", id).indexed()
+				.arg("name", name)
 				.from(db);
 	}
 
@@ -67,10 +64,8 @@ public class SqlTheoryBatteryTest {
 
 	private static External<?> edge(AnswerSource db, Unifiable<Long> lo, Unifiable<Long> hi) {
 		return Literal.relation(SqlTheoryBatteryTest.class, "edge")
-				.schema(Schema.builder()
-						.arg("lo", lo).indexed()
-						.arg("hi", hi).indexed()
-						.build())
+				.arg("lo", lo).indexed()
+				.arg("hi", hi).indexed()
 				.from(db);
 	}
 

@@ -24,7 +24,6 @@ import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.relations.literals.External;
 import org.clauseway.pldb.relations.literals.Literal;
-import org.clauseway.pldb.relations.Schema;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,10 +55,8 @@ public class CodecTest {
 
 	private static External<?> loan(AnswerSource db, Unifiable<Integer> id, Unifiable<LocalDate> due) {
 		return Literal.relation(CodecTest.class, "loan")
-				.schema(Schema.builder()
-						.arg("id", id).indexed()
-						.arg("due", due)
-						.build())
+				.arg("id", id).indexed()
+				.arg("due", due)
 				.from(db);
 	}
 
@@ -69,10 +66,8 @@ public class CodecTest {
 	 */
 	private static External<?> event(AnswerSource db, Unifiable<LocalDate> at, Unifiable<LocalDate> logged) {
 		return Literal.relation(CodecTest.class, "event")
-				.schema(Schema.builder()
-						.arg("at", at).indexed()
-						.arg("logged", logged)
-						.build())
+				.arg("at", at).indexed()
+				.arg("logged", logged)
 				.from(db);
 	}
 
@@ -149,10 +144,8 @@ public class CodecTest {
 	@Test
 	public void aStructuralValueKeepsTheModellingRefusal() {
 		External<?> bad = Literal.relation(CodecTest.class, "loan")
-				.schema(Schema.builder()
-						.arg("id", lval(1)).indexed()
-						.arg("due", lval((Object) Arrays.asList(1, 2)))
-						.build())
+				.arg("id", lval(1)).indexed()
+				.arg("due", lval((Object) Arrays.asList(1, 2)))
 				.from(null);
 		assertThatThrownBy(() -> SqlFlush.over(connection).flush(Arrays.asList(bad)))
 				.isInstanceOf(IllegalStateException.class)
@@ -167,7 +160,7 @@ public class CodecTest {
 		}
 		try (CachingSqlFetch source = CachingSqlFetch.pinned("h2", connection)) {
 			Unifiable<String> name = lvar();
-			Query.of(Literal.relation(CodecTest.class, "person").schema(Schema.builder().arg("id", lvar()).indexed().arg("name", name).build()).from(source)).solve(name).collect(Collectors.toList());
+			Query.of(Literal.relation(CodecTest.class, "person").arg("id", lvar()).indexed().arg("name", name).from(source)).solve(name).collect(Collectors.toList());
 			assertThatThrownBy(() -> source.withCodec(loan(null, lvar(), AS_DATE.arg())))
 					.isInstanceOf(IllegalStateException.class)
 					.hasMessageContaining("before first use");

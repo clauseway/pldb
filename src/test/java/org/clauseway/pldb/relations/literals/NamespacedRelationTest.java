@@ -12,7 +12,6 @@ import org.clauseway.logic.solving.Call;
 import org.clauseway.logic.unification.terms.Any;
 import org.clauseway.pldb.relations.Relation;
 import org.clauseway.pldb.relations.RelationN;
-import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.relations.Answers;
 
 import org.clauseway.pldb.inmemory.AnswerStore;
@@ -29,10 +28,8 @@ public class NamespacedRelationTest {
 
 	private static Relation loan(Class<?> namespace) {
 		return Literal.relation(namespace, "loan")
-				.schema(Schema.builder()
-						.arg("member", lvar()).indexed()
-						.arg("copy", lvar())
-						.build())
+				.arg("member", lvar()).indexed()
+				.arg("copy", lvar())
 				.from(null)
 				.getRelation();
 	}

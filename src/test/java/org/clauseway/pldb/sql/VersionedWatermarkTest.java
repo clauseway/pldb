@@ -24,7 +24,6 @@ import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.relations.literals.External;
 import org.clauseway.pldb.relations.literals.Literal;
-import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.transaction.Transaction;
 import org.junit.After;
 import org.junit.Before;
@@ -83,19 +82,15 @@ public class VersionedWatermarkTest {
 
 	private static External<?> loan(AnswerSource db, Unifiable<String> member, Unifiable<String> copy) {
 		return Literal.relation(VersionedWatermarkTest.class, "loan")
-				.schema(Schema.builder()
-						.arg("member", member).indexed()
-						.arg("copy", copy)
-						.build())
+				.arg("member", member).indexed()
+				.arg("copy", copy)
 				.from(db);
 	}
 
 	private static External<?> book(AnswerSource db, Unifiable<String> isbn, Unifiable<String> title) {
 		return Literal.relation(VersionedWatermarkTest.class, "book")
-				.schema(Schema.builder()
-						.arg("isbn", isbn).indexed()
-						.arg("title", title)
-						.build())
+				.arg("isbn", isbn).indexed()
+				.arg("title", title)
 				.from(db);
 	}
 
@@ -244,10 +239,8 @@ public class VersionedWatermarkTest {
 
 	private static External<?> invoice(AnswerSource db, Unifiable<String> member, Unifiable<Long> day) {
 		return Literal.relation(VersionedWatermarkTest.class, "invoice")
-				.schema(Schema.builder()
-						.arg("member", member)
-						.arg("due", day)
-						.build())
+				.arg("member", member)
+				.arg("due", day)
 				.from(db);
 	}
 

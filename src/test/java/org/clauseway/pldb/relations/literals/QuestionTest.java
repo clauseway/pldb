@@ -5,7 +5,6 @@ package org.clauseway.pldb.relations.literals;
 
 import org.clauseway.pldb.relations.Relation;
 import org.clauseway.pldb.relations.Property;
-import org.clauseway.pldb.relations.Schema;
 
 import org.clauseway.pldb.relations.Answers;
 import org.clauseway.logic.solving.Answer;
@@ -29,18 +28,14 @@ public class QuestionTest {
 
 	private static External<?> loan(Unifiable<Integer> id, Unifiable<String> copy) {
 		return Literal.relation(QuestionTest.class, "loan")
-				.schema(Schema.builder()
-						.arg("loanId", id).indexed()
-						.arg("copy", copy)
-						.build())
+				.arg("loanId", id).indexed()
+				.arg("copy", copy)
 				.from(null);
 	}
 
 	private static External<?> returned(Unifiable<Integer> id) {
 		return Literal.relation(QuestionTest.class, "returned")
-				.schema(Schema.builder()
-						.arg("loanId", id).indexed()
-						.build())
+				.arg("loanId", id).indexed()
 				.from(null);
 	}
 

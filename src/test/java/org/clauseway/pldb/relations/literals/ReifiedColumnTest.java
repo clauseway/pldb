@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.unification.structures.LOption;
 import org.clauseway.logic.unification.terms.Unifiable;
-import org.clauseway.pldb.relations.Schema;
 
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.inmemory.AnswerStore;
@@ -24,10 +23,8 @@ public class ReifiedColumnTest {
 
 	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(ReifiedColumnTest.class, "person")
-				.schema(Schema.builder()
-						.arg("id", id).indexed()
-						.arg("name", name)
-						.build())
+				.arg("id", id).indexed()
+				.arg("name", name)
 				.from(db);
 	}
 
@@ -78,11 +75,9 @@ public class ReifiedColumnTest {
 		Unifiable<Boolean> known = lvar();
 		Unifiable<LOption<String>> name = lvar();
 		Literal<?> card = Literal.relation(ReifiedColumnTest.class, "card")
-				.schema(Schema.builder()
-						.arg("id", id)
-						.arg("known", known)
-						.arg("name", name)
-						.build())
+				.arg("id", id)
+				.arg("known", known)
+				.arg("name", name)
 				.solving(flag(person(db, id, projected()), known)
 						.and(option(n -> person(db, id, n), name)));
 		assertThat(Query.of(id.unifies(1).and(card)).solve(known)

@@ -28,7 +28,6 @@ import org.clauseway.pldb.inmemory.AnswerStore;
 import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.literals.External;
 import org.clauseway.pldb.relations.literals.Literal;
-import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.relations.Property;
 import org.clauseway.pldb.relations.Relation;
 import org.junit.After;
@@ -51,10 +50,8 @@ public class PostgresFactSourceTest {
 
 	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(PostgresFactSourceTest.class, "person")
-				.schema(Schema.builder()
-						.arg("id", id).indexed()
-						.arg("name", name)
-						.build())
+				.arg("id", id).indexed()
+				.arg("name", name)
 				.from(db);
 	}
 
@@ -64,10 +61,8 @@ public class PostgresFactSourceTest {
 
 	private static External<?> edge(AnswerSource db, Unifiable<Integer> src, Unifiable<Integer> dst) {
 		return Literal.relation(PostgresFactSourceTest.class, "edge")
-				.schema(Schema.builder()
-						.arg("src", src).indexed()
-						.arg("dst", dst).indexed()
-						.build())
+				.arg("src", src).indexed()
+				.arg("dst", dst).indexed()
 				.from(db);
 	}
 
@@ -211,10 +206,8 @@ public class PostgresFactSourceTest {
 	 */
 	private static Literal<?> reach(AnswerSource backing, Unifiable<Integer> x, Unifiable<Integer> y) {
 		return Literal.relation(PostgresFactSourceTest.class, "reachable")
-				.schema(Schema.builder()
-						.arg("src", x)
-						.arg("dst", y)
-						.build())
+				.arg("src", x)
+				.arg("dst", y)
 				.solving(edge(backing, x, y)
 						.or(defer(() -> {
 							Unifiable<Integer> z = lvar();
