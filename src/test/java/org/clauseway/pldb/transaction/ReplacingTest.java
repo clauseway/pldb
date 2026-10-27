@@ -1,7 +1,7 @@
 package org.clauseway.pldb.transaction;
 
 // ABOUTME: The refresh doors: replacing lands what a derived literal answers in a stored relation's
-// ABOUTME: shape after everything the stored literal answers has left; clearing is the retract half alone.
+// ABOUTME: shape after everything the stored literal answers has left, on the query's own driver; clearing is the retract half alone.
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.clauseway.logic.unification.terms.LVal.lval;
@@ -9,7 +9,9 @@ import static org.clauseway.logic.unification.terms.LVar.lvar;
 import static org.clauseway.pldb.relations.Projected.projected;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
 import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
@@ -57,12 +59,28 @@ public class ReplacingTest {
 		SharedDatabase store = seeded();
 		Transaction writer = Transaction.recording(store.open("w"));
 		Unifiable<String> name = lvar();
-		writer = writer.replacing(person(writer, lval(1), name), titled(writer, lval(1), name));
+		writer = writer.replacing(person(writer, lval(1), name), Query.of(titled(writer, lval(1), name)));
 		assertThat(names(writer)).containsExactly("Bob", "Dr. Ada");
 		writer.commit();
 		try (Transaction reader = Transaction.recording(store.open("r"))) {
 			assertThat(names(reader)).containsExactly("Bob", "Dr. Ada");
 		}
+	}
+
+	/** The derivation is the caller's query: whatever driver it names runs the refresh. */
+	@Test
+	public void theRefreshRunsOnTheQuerysDriver() throws Exception {
+		SharedDatabase store = seeded();
+		Transaction writer = Transaction.recording(store.open("w"));
+		Unifiable<String> name = lvar();
+		AtomicBoolean driven = new AtomicBoolean();
+		Query derived = Query.of(titled(writer, lval(1), name)).on(fiber -> {
+			driven.set(true);
+			return new BreadthFirstScheduler<>(fiber);
+		});
+		writer = writer.replacing(person(writer, lval(1), name), derived);
+		assertThat(driven.get()).isTrue();
+		assertThat(names(writer)).containsExactly("Bob", "Dr. Ada");
 	}
 
 	@Test

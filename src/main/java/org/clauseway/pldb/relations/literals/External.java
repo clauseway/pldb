@@ -3,7 +3,14 @@ package org.clauseway.pldb.relations.literals;
 // ABOUTME: The write face of a literal: one over an external relation, a relation a backend holds, which a
 // ABOUTME: transaction can assert and retract. A rule literal is not one, so a rule cannot be written, by type.
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
 import org.clauseway.logic.solving.Answer;
+import org.clauseway.logic.solving.Selector;
+import org.clauseway.logic.solving.Solution;
+import org.clauseway.logic.unification.terms.Reified;
+import org.clauseway.logic.unification.terms.Unifiable;
+import org.clauseway.pldb.relations.Property;
 import org.clauseway.pldb.relations.Relation;
 import org.clauseway.pldb.relations.Schema;
 import org.clauseway.pldb.relations.Answers;
@@ -33,5 +40,45 @@ public interface External<R extends Schema<?>> extends Literal<R> {
 			return t._1.get();
 		});
 		return Answers.answer(rel, values.toJavaList());
+	}
+
+	/**
+	 * The literal as the reading of a question's solutions into its facts: a
+	 * {@link Selector} over the literal's columns, mapping every solution to
+	 * one row of the relation under the solution's condition. A constant
+	 * column rides into each fact; a column the solution leaves free is
+	 * refused by the select before it maps. A {@code projected()} column has
+	 * left the relation, so a literal with one has no facts to land.
+	 */
+	default Selector<Answer<Relation>> facts() {
+		int position = 0;
+		for (Unifiable<?> key : getRow().keys()) {
+			if (Projection.marker(key).isPresent()) {
+				throw new IllegalStateException("column '" + getRow().columns().get(position).getName()
+						+ "' is projected() — a projection leaves the relation; a literal landing facts"
+						+ " needs a variable or a value in every column");
+			}
+			position++;
+		}
+		Relation rel = getRelation();
+		Array<Unifiable<?>> args = getArgs();
+		return new Selector<Answer<Relation>>() {
+			@Override
+			public Iterable<? extends Unifiable<?>> keys() {
+				return args;
+			}
+
+			@Override
+			public Iterable<String> names() {
+				return Arrays.stream(rel.getProperties()).map(Property::getName).collect(Collectors.toList());
+			}
+
+			@Override
+			public Answer<Relation> map(Solution solution) {
+				return Answer.of(rel,
+						Answers.image(args.<Reified<?>> map(solution::get).toJavaList()),
+						solution.getCondition());
+			}
+		};
 	}
 }

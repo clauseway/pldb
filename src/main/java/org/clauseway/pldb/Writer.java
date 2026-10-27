@@ -8,14 +8,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
-import org.clauseway.logic.goals.Goal;
+import java.util.stream.Stream;
 import org.clauseway.logic.solving.Query;
 import org.clauseway.logic.solving.Answer;
-import org.clauseway.pldb.relations.literals.Question;
+import org.clauseway.logic.solving.Selection;
 import org.clauseway.pldb.relations.literals.External;
 import org.clauseway.pldb.relations.literals.Literal;
-import org.clauseway.pldb.relations.Schema;
 
 /**
  * A value that accepts writes. The PRIMITIVE doors speak {@link Answer}
@@ -52,30 +50,39 @@ public interface Writer<S extends Writer<S>> {
 		return retracting(Arrays.asList(rows));
 	}
 
-	/**
-	 * Every row the stored literal answers leaves: the retract half of a
-	 * refresh. The question is driven to exhaustion on the default fair
-	 * scheduler; a caller wanting another drives {@link Question#select} itself.
-	 */
+	/** Every fact a select streams lands, driven by the query's own driver. */
+	default S asserting(Selection<Answer<Relation>> facts) {
+		return asserting(collected(facts));
+	}
+
+	/** Every fact a select streams leaves, driven by the query's own driver. */
+	default S retracting(Selection<Answer<Relation>> facts) {
+		return retracting(collected(facts));
+	}
+
+	/** Every row the stored literal answers leaves: the retract half of a refresh. */
 	default S clearing(External<?> stored) {
-		return retracting(rows(stored, stored));
+		return retracting(Query.of(stored).select(stored.facts()));
 	}
 
 	/**
 	 * The refresh of a stored derivation: every row the stored literal
-	 * answers leaves, and every row the derived literal answers lands in
-	 * the stored relation's shape. The template is the stored literal's own
-	 * row over no source, so both literals must be built over the same row;
-	 * a derived cell the row does not share rides wide and the door refuses
-	 * it. A row that leaves and lands unchanged cancels to nothing.
+	 * answers leaves, and every solution of the derived query lands as a
+	 * fact of the stored literal ({@link External#facts()}), so the query
+	 * is over the stored literal's own row. A derived cell the row does not
+	 * share is refused as not ground before it lands. The query's driver
+	 * runs the refresh. A row that leaves and lands unchanged cancels to
+	 * nothing.
 	 */
-	default <R extends Schema<?>> S replacing(External<R> stored, Literal<R> derived) {
-		return clearing(stored).asserting(rows(derived, stored));
+	default S replacing(External<?> stored, Query derived) {
+		return clearing(stored).asserting(derived.select(stored.facts()));
 	}
 
-	/** The question's answers in the template's shape, driven to exhaustion. */
-	static List<Answer<Relation>> rows(Goal question, External<?> template) {
-		return new BreadthFirstScheduler<>(Question.select(Query.of(question), template)).get();
+	/** The select driven to exhaustion and closed. */
+	static List<Answer<Relation>> collected(Selection<Answer<Relation>> facts) {
+		try (Stream<Answer<Relation>> all = facts.stream()) {
+			return all.collect(Collectors.toList());
+		}
 	}
 
 	/** The threshold conversion: statements become rows, holes refuse. */

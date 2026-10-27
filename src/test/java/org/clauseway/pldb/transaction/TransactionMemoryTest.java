@@ -13,14 +13,11 @@ import static org.clauseway.logic.unification.terms.LVar.lvar;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.inmemory.SharedDatabase;
-import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.literals.External;
 import org.clauseway.pldb.relations.literals.Literal;
-import org.clauseway.pldb.relations.literals.Question;
 import org.junit.Test;
 
 public class TransactionMemoryTest {
@@ -168,12 +165,10 @@ public class TransactionMemoryTest {
 		RecordingTransaction tx = Transaction.recording(store.open("compact"));
 		Unifiable<Integer> id = lvar();
 		Unifiable<String> copy = lvar();
-		List<Answer<Relation>> cluster = new BreadthFirstScheduler<>(Question.select(
-				Query.of(loanOf(tx, id, copy).and(returnedOf(tx, id))),
-				loanOf(null, id, copy), returnedOf(null, id))).get();
-		assertThat(cluster).hasSize(2);
-
-		tx.retracting(cluster).commit();
+		Query closed = Query.of(loanOf(tx, id, copy).and(returnedOf(tx, id)));
+		tx.retracting(closed.select(loanOf(null, id, copy).facts()))
+				.retracting(closed.select(returnedOf(null, id).facts()))
+				.commit();
 
 		try (Transaction reader = Transaction.recording(store.open("after"))) {
 			Unifiable<String> c = lvar();
