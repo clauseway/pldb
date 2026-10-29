@@ -13,13 +13,13 @@ public final class DockerGate {
 	private DockerGate() {
 	}
 
-	/** Lets the receipt run with Docker; without it, skips on a developer's machine and fails on CI. */
+	/** Lets the receipt run with Docker; without it, skips on a developer's machine and fails on CI, the reason saying what needs it. */
 	public static void require(String reason) {
 		require(reason, System.getenv("CI") != null, DockerClientFactory.instance().isDockerAvailable());
 	}
 
 	static void require(String reason, boolean ci, boolean available) {
-		String message = "Docker unavailable — " + reason + " need it";
+		String message = "Docker unavailable — " + reason;
 		if (ci) {
 			assertThat(available).as("CI: " + message).isTrue();
 		}

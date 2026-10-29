@@ -93,7 +93,7 @@ public class PostgresFactSourceTest {
 
 	@BeforeClass
 	public static void startPostgres() {
-		DockerGate.require("the Phase 2 proof");
+		DockerGate.require("the Phase 2 proof needs it");
 		postgres = new PostgreSQLContainer<>("postgres:16-alpine");
 		postgres.start();
 	}

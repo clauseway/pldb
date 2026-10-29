@@ -12,24 +12,24 @@ public class DockerGateTest {
 
 	@Test
 	public void withDockerTheGateOpens() {
-		DockerGate.require("the receipts", false, true);
-		DockerGate.require("the receipts", true, true);
+		DockerGate.require("the receipts need it", false, true);
+		DockerGate.require("the receipts need it", true, true);
 	}
 
 	@Test
 	public void withoutDockerOffCiTheTestIsSkipped() {
-		assertThatThrownBy(() -> DockerGate.require("the receipts", false, false))
+		assertThatThrownBy(() -> DockerGate.require("the receipts need it", false, false))
 				.isInstanceOf(AssumptionViolatedException.class)
 				.hasMessageContaining("Docker unavailable")
-				.hasMessageContaining("the receipts");
+				.hasMessageContaining("the receipts need it");
 	}
 
 	@Test
 	public void withoutDockerOnCiTheTestFails() {
-		assertThatThrownBy(() -> DockerGate.require("the receipts", true, false))
+		assertThatThrownBy(() -> DockerGate.require("the receipts need it", true, false))
 				.isInstanceOf(AssertionError.class)
 				.hasMessageContaining("CI")
 				.hasMessageContaining("Docker unavailable")
-				.hasMessageContaining("the receipts");
+				.hasMessageContaining("the receipts need it");
 	}
 }

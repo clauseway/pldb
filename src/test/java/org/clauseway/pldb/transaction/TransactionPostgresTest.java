@@ -35,7 +35,7 @@ public class TransactionPostgresTest {
 
 	@BeforeClass
 	public static void startPostgres() {
-		DockerGate.require("the commit receipts");
+		DockerGate.require("the commit receipts need it");
 		postgres = new PostgreSQLContainer<>("postgres:16-alpine");
 		postgres.start();
 	}
