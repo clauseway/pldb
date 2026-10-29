@@ -23,11 +23,10 @@ import org.clauseway.pldb.relations.literals.External;
 import org.clauseway.pldb.relations.literals.Literal;
 import org.clauseway.pldb.sql.SerializableSource;
 import org.junit.AfterClass;
-import org.junit.Assume;
 import org.junit.Before;
+import org.clauseway.pldb.DockerGate;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 public class TransactionPostgresTest {
@@ -36,8 +35,7 @@ public class TransactionPostgresTest {
 
 	@BeforeClass
 	public static void startPostgres() {
-		Assume.assumeTrue("Docker unavailable — the commit receipts need it",
-				DockerClientFactory.instance().isDockerAvailable());
+		DockerGate.require("the commit receipts need it");
 		postgres = new PostgreSQLContainer<>("postgres:16-alpine");
 		postgres.start();
 	}
