@@ -47,7 +47,7 @@ public class SchemaTest {
 
 		@Override
 		public Coordinates map(Row row) {
-			return new Coordinates(row.get(x).get(), row.get(y).get());
+			return new Coordinates(row.get(x), row.get(y));
 		}
 
 		static Point anyPoint() {
@@ -127,7 +127,7 @@ public class SchemaTest {
 		Literal<Schema.Anonymous> third = point(twoPoints(), lval(3), y);
 		List<Row> rows = all(Query.of(third).select(third.getRow()).stream());
 		assertThat(rows).hasSize(1);
-		assertThat(rows.get(0).get(y).get()).isEqualTo(4);
+		assertThat(rows.get(0).get(y)).isEqualTo(4);
 	}
 
 	@Test
@@ -146,9 +146,9 @@ public class SchemaTest {
 		assertThat(all(Query.of(atOrigin).select(origin).stream())).containsExactly(new Coordinates(0, 0));
 	}
 
-	/** A Java value has no place for an open cell: the row is refused before the schema maps it, shown by column. */
+	/** A Java value has no place for an open cell: the row is refused where the schema's map reads it, shown by column. */
 	@Test
-	public void aWideAnswerIsRefusedBeforeMapping() {
+	public void aWideAnswerIsRefusedWhereTheMapperReadsIt() {
 		Point any = Point.anyPoint();
 		Literal<Point> anyPoint = Literal.relation(SchemaTest.class, "anyPoint").schema(any)
 				.solving(any.getX().unifies(1));

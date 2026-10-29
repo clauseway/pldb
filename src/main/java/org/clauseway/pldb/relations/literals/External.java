@@ -47,7 +47,7 @@ public interface External<R extends Schema<?>> extends Literal<R> {
 	 * {@link Selector} over the literal's columns, mapping every row to
 	 * one row of the relation under the row's condition. A constant
 	 * column rides into each fact; a column the row leaves free is
-	 * refused by the select before it maps. A {@code projected()} column has
+	 * refused with the row rendered whole. A {@code projected()} column has
 	 * left the relation, so a literal with one has no facts to land.
 	 */
 	default Selector<Answer<Relation>> facts() {
@@ -75,8 +75,9 @@ public interface External<R extends Schema<?>> extends Literal<R> {
 
 			@Override
 			public Answer<Relation> map(Row row) {
+				row.ground();
 				return Answer.of(rel,
-						Answers.image(args.<Reified<?>> map(row::get).toJavaList()),
+						Answers.image(args.<Reified<?>> map(row::cell).toJavaList()),
 						row.getCondition());
 			}
 		};

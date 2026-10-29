@@ -22,7 +22,7 @@ import org.clauseway.logic.unification.terms.Unifiable;
  * states both in one place: {@link #describe()} names its columns over
  * its fields, and its keys and columns are read off that. That is all a
  * relation needs from a type: a literal over a row
- * ({@code relation(ns, name).args(row)}) zips the columns over the keys,
+ * ({@code relation(ns, name).schema(row)}) zips the columns over the keys,
  * and {@code Query.select(row)} streams the values. A row with no Java
  * type is an {@link Anonymous}, built column by column through
  * {@link #builder()} — each step offers only what is legal next — and

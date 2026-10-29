@@ -14,10 +14,14 @@
 - **obligations**:
   - (1) MET. `Selector<D>` in logic's `solving`: `keys()`, `names()`
     (what a solution shows the keys by; a Schema answers its columns) and
-    `map(Row)`; `Query.select(selector)` → `Selection<D>`, each
-    solution through `ground()` before `map`, whose refusal renders the
-    solution whole, `(name: cell, …) : residuals`. The solutions reading is
-    the identity mapping; `stream()` is the one terminal.
+    `map(Row)`; `Query.select(selector)` → `Selection<D>`, `map` reading
+    each solution through `Row.get`, which refuses a cell that is not
+    ground where the mapper touches it with the solution rendered whole,
+    `(name: cell, …) : residuals`. The solutions reading is the identity
+    mapping; `stream()` delivers, `rows()` the rows unmapped. The map came
+    off the Selector for a day and went back on: the fault it was blamed
+    for — a sort key or a fact needing a door of its own — was the typed
+    stream being the only terminal.
   - (2) MET. `Schema<D> extends Selector<D>` adds `columns()`, one
     `Property` per key in order; a typed row states both in one
     `describe()` chain and `keys()`/`columns()` are read off it; the
@@ -30,16 +34,16 @@
     fields directly, `map(Row)` reads each cell by its field,
     reads are `Query.of(row.stored(db)).select(row).stream()`. The two
     rows whose Java value drops the ordinal (`Leg`, `HandlingActivity`)
-    map to `Tuple2<Integer, Dto>` so the reads can sort by it.
+    sort on `rows()` by the index cell before mapping, so the ordinal
+    never enters the value.
   - (4) OPEN. Generation: a description with plain types from which
     `keys()`, `columns()` and the DTO constructor call in `map` could be
     generated. Six schemas is not enough to pay for an annotation
     processor; the hand-written form is what it would be measured
     against. Trigger: a second application with more than a dozen
     row types.
-  - (5) OPEN. The ordinal problem in (3) is solved by a tuple; a named
-    value or a selector that carries its sort key would read better.
-    Trigger: a third row type that needs it.
+  - (5) CLOSED by (3): the sort key is a second reading of the same
+    row, taken off `rows()`; no tuple and no second selector.
 - **links**: logic `structure-is-one-contract.md` (the contract a row
   does NOT sign; `CandidateLeg` is its receipt instead),
   `relational-structs.md` (the design sketch this corrects: its Row of
@@ -62,9 +66,9 @@ What it buys. One class per row type that is variables in and value out,
 with the mapping free-form Java: `DeliveryDto`'s next activity, built
 from three columns, is three lines in `map`, which no rebuild or
 generator could express. Rule bodies unify the fields directly; there is
-no cast and no hoisting. A wide cell is refused before the mapping, at
-the solution, naming the key — a Java value has no place for an open
-cell, and the refusal is the engine's, not each schema's. The stored and
+no cast and no hoisting. A wide cell is refused at `Row.get`, where
+the mapping reads it, naming the key — a Java value has no place for an
+open cell, and the refusal is the engine's, not each schema's. The stored and
 the derived face of a materialized row are still two literals over one
 row, so `replacing(stored, derived)` keeps its type. And the refusal of a
 projected() member moved from an eager pldb check to the same open-cell
@@ -99,4 +103,9 @@ that ended it: `Structural` is the honest term tier and should keep
 Structural at all, and the merged type Java needs already exists in the
 engine as the variable read through a `Row`. Promoted to logic as
 `Selector` because it is the whole of the Java interop story, and more
-important than `Structural` itself.
+important than `Structural` itself. The two tiers, stated once: a
+`Structural` is rebuilt by the reifier with whatever the answer holds,
+so its members are `Term`s and it is a term; a `Selector`'s value is
+built by the user's `map`, so its keys are `Unifiable`s and the value
+is plain Java, with the `Row` between them the keyed `Unifiable` to
+`Reified` mapping where the engine's half ends and the user's begins.
