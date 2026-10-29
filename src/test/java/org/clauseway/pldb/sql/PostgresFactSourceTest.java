@@ -32,11 +32,10 @@ import org.clauseway.pldb.relations.Property;
 import org.clauseway.pldb.relations.Relation;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Assume;
 import org.junit.Before;
+import org.clauseway.pldb.DockerGate;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 /**
@@ -94,8 +93,7 @@ public class PostgresFactSourceTest {
 
 	@BeforeClass
 	public static void startPostgres() {
-		Assume.assumeTrue("Docker unavailable — the Phase 2 proof needs it",
-				DockerClientFactory.instance().isDockerAvailable());
+		DockerGate.require("the Phase 2 proof");
 		postgres = new PostgreSQLContainer<>("postgres:16-alpine");
 		postgres.start();
 	}
