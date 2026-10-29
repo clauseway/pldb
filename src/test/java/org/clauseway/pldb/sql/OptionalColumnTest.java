@@ -90,7 +90,7 @@ public class OptionalColumnTest {
 			Unifiable<Integer> id = lvar();
 			Unifiable<String> name = lvar();
 			assertThat(Query.of(person(source, id, some(name))).select(id, name).stream()
-					.map(row -> row.get(id).get() + ":" + row.get(name).get())
+					.map(row -> row.get(id) + ":" + row.get(name))
 					.collect(Collectors.toList())).containsExactly("1:Ada");
 		}
 	}
