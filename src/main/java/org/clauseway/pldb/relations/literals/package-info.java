@@ -7,7 +7,7 @@
  * that picks its kind: {@code from} a source, {@code produced} by a producer, or
  * {@code solving} a rule. The first two are
  * {@link org.clauseway.pldb.relations.literals.External}, the write face a
- * transaction asserts and retracts; a rule literal is not. A {@code projected()}
+ * transaction asserts and retracts; a rule literal is not. An {@code ignored()}
  * column drops out of the head into a generated projection rule, applied by the
  * builder. {@link org.clauseway.pldb.relations.literals.Question#select} runs a
  * goal through {@code Query} and collects its answers as rows shaped by template

@@ -6,7 +6,7 @@ package org.clauseway.pldb.transaction;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
-import static org.clauseway.pldb.relations.Projected.projected;
+import static org.clauseway.pldb.relations.Ignored.ignored;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -35,7 +35,7 @@ public class ReplacingTest {
 		return Literal.relation(ReplacingTest.class, "titled")
 				.arg("id", id)
 				.arg("name", name)
-				.solving(person(db, id, projected()).and(name.unifies("Dr. Ada")));
+				.solving(person(db, id, ignored()).and(name.unifies("Dr. Ada")));
 	}
 
 	private static List<String> names(AnswerSource db) {

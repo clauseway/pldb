@@ -8,7 +8,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
 import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
-import static org.clauseway.pldb.relations.Projected.projected;
+import static org.clauseway.pldb.relations.Ignored.ignored;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -128,13 +128,13 @@ public class ExternalTest {
 		assertThat(facts(id.unifies(1).and(id.unifies(2)), loan(id, lval("c1")))).isEmpty();
 	}
 
-	/** A projected() column leaves the relation; a template with one would land facts in a relation nobody stores. */
+	/** An ignored() column leaves the relation; a template with one would land facts in a relation nobody stores. */
 	@Test
-	public void aTemplateWithAProjectedColumnHasNoFacts() {
+	public void aTemplateWithAnIgnoredColumnHasNoFacts() {
 		Unifiable<Integer> id = lvar();
-		assertThatThrownBy(() -> loan(id, projected()).facts())
+		assertThatThrownBy(() -> loan(id, ignored()).facts())
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("copy")
-				.hasMessageContaining("projected");
+				.hasMessageContaining("ignored()");
 	}
 }

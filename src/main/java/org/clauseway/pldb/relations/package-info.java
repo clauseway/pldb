@@ -7,7 +7,7 @@
  * {@link org.clauseway.pldb.relations.RelationN} is its value implementation.
  * {@link org.clauseway.pldb.relations.Schema} is a relation schema as a type, an
  * instance being a row of it, with {@link org.clauseway.pldb.relations.Schema.Anonymous}
- * for a row of no Java type. {@link org.clauseway.pldb.relations.Projected} marks a
+ * for a row of no Java type. {@link org.clauseway.pldb.relations.Ignored} marks a
  * column projected away at the call site, {@link org.clauseway.pldb.relations.MagicVar}
  * being the marker base. {@link org.clauseway.pldb.relations.Answers} encodes and
  * decodes {@code Answer<Relation>} rows. A relation applied to a row is a literal,

@@ -9,7 +9,7 @@ import static org.clauseway.logic.unification.structures.LOption.none;
 import static org.clauseway.logic.unification.structures.LOption.some;
 import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
-import static org.clauseway.pldb.relations.Projected.projected;
+import static org.clauseway.pldb.relations.Ignored.ignored;
 
 import java.util.function.Function;
 import org.clauseway.functional.Nothing;
@@ -77,7 +77,7 @@ public interface Literal<S extends Schema<?>> extends Goal, Bounded, Postable {
 	/**
 	 * A literal reified to a boolean column: true where it answers, false where
 	 * it does not. The false branch is an exclusion, so a column the literal does
-	 * not care about must be {@code projected()}, never a free {@code lvar()}.
+	 * not care about must be {@code ignored()}, never a free {@code lvar()}.
 	 */
 	static Goal flag(Literal<?> rule, Unifiable<Boolean> column) {
 		return rule.and(column.unifies(true)).or(exclude(rule).and(column.unifies(false)));
@@ -93,7 +93,7 @@ public interface Literal<S extends Schema<?>> extends Goal, Bounded, Postable {
 		return defer(() -> {
 			Unifiable<T> value = lvar();
 			return rule.apply(value).and(column.unifies(some(value)));
-		}).or(exclude(rule.apply(projected())).and(column.unifies(none())));
+		}).or(exclude(rule.apply(ignored())).and(column.unifies(none())));
 	}
 
 	@Override
