@@ -35,7 +35,7 @@ Java 8, vavr, lombok. Auto-loaded every session — read before changing code.
   x)….build()` is an anonymous row (`Schema<Row>`), each step typed to offer only what
   may follow it. `Property<T>` is a typed column
   (`indexed()`, `ground()`); `RelationN` the relation value; `Answers` the row algebra;
-  `MagicVar`/`Projected` are marker variables one consumer recognises and claims; unclaimed, a
+  `MagicVar`/`Ignored` are marker variables one consumer recognises and claims; unclaimed, a
   marker refuses at the first walk.
 - `relations.literals` — `Literal.relation(ns, name)` opens a `LiteralBuilder`: `.schema(row)`
   for a typed row, or `.arg(name, x)` chains naming an anonymous row on the literal

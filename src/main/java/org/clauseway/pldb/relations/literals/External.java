@@ -47,7 +47,7 @@ public interface External<R extends Schema<?>> extends Literal<R> {
 	 * {@link Selector} over the literal's columns, mapping every row to
 	 * one row of the relation under the row's condition. A constant
 	 * column rides into each fact; a column the row leaves free is
-	 * refused with the row rendered whole. A {@code projected()} column has
+	 * refused with the row rendered whole. An {@code ignored()} column has
 	 * left the relation, so a literal with one has no facts to land.
 	 */
 	default Selector<Answer<Relation>> facts() {
@@ -55,7 +55,7 @@ public interface External<R extends Schema<?>> extends Literal<R> {
 		for (Unifiable<?> key : getRow().keys()) {
 			if (Projection.marker(key).isPresent()) {
 				throw new IllegalStateException("column '" + getRow().columns().get(position).getName()
-						+ "' is projected() — a projection leaves the relation; a literal landing facts"
+						+ "' is ignored() — a projection leaves the relation; a literal landing facts"
 						+ " needs a variable or a value in every column");
 			}
 			position++;

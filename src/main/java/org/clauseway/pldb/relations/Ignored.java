@@ -1,6 +1,6 @@
 package org.clauseway.pldb.relations;
 
-// ABOUTME: The projection marker: an ∃-projected column stated inline — a real
+// ABOUTME: The ignored-column marker: an ∃-projected column stated inline — a real
 // ABOUTME: fresh variable everywhere except the builder, which sees the wrapper.
 
 import org.clauseway.logic.unification.terms.Unifiable;
@@ -15,17 +15,17 @@ import org.clauseway.logic.unification.terms.Unifiable;
  * {@code exclude} an honest ¬∃. Fresh per call: two markers never
  * couple. Outside any literal it refuses at the first walk.
  */
-public final class Projected<T> extends MagicVar<T> {
+public final class Ignored<T> extends MagicVar<T> {
 
-	private Projected() {
+	private Ignored() {
 	}
 
 	@Override
 	protected String unclaimed() {
-		return "a projected() marker no literal claimed — a projection is a literal's column, not a variable";
+		return "an ignored() marker no literal claimed — a projection is a literal's column, not a variable";
 	}
 
-	public static <T> Unifiable<T> projected() {
-		return new Projected<>();
+	public static <T> Unifiable<T> ignored() {
+		return new Ignored<>();
 	}
 }

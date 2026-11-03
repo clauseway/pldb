@@ -14,7 +14,7 @@ import org.clauseway.logic.unification.terms.Unifiable;
  * fresh variable, so anywhere but its consumer the marker IS an
  * ordinary lvar — passed into a body it joins, unifies, and projects
  * like any free — and exactly one consumer instanceof-checks the
- * wrapper to read what it carries ({@link Projected}'s claim, a codec,
+ * wrapper to read what it carries ({@link Ignored}'s claim, a codec,
  * an index declaration). The defining method's signature type-checks
  * the association for free: a marker is a {@code Unifiable<T>}, so it
  * cannot land in a differently-typed slot. Fresh per mint: two markers

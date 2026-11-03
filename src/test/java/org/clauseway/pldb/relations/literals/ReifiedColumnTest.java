@@ -8,7 +8,7 @@ import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
 import static org.clauseway.pldb.relations.literals.Literal.flag;
 import static org.clauseway.pldb.relations.literals.Literal.option;
-import static org.clauseway.pldb.relations.Projected.projected;
+import static org.clauseway.pldb.relations.Ignored.ignored;
 
 import java.util.stream.Collectors;
 import org.clauseway.logic.solving.Query;
@@ -38,7 +38,7 @@ public class ReifiedColumnTest {
 	@Test
 	public void aFlagIsTrueWhereTheLiteralAnswers() {
 		Unifiable<Boolean> known = lvar();
-		assertThat(Query.of(flag(person(db(), lval(1), projected()), known)).solve(known)
+		assertThat(Query.of(flag(person(db(), lval(1), ignored()), known)).solve(known)
 				.map(Object::toString).collect(Collectors.toList()))
 				.containsExactly("{true}");
 	}
@@ -46,7 +46,7 @@ public class ReifiedColumnTest {
 	@Test
 	public void aFlagIsFalseWhereTheLiteralDoesNot() {
 		Unifiable<Boolean> known = lvar();
-		assertThat(Query.of(flag(person(db(), lval(9), projected()), known)).solve(known)
+		assertThat(Query.of(flag(person(db(), lval(9), ignored()), known)).solve(known)
 				.map(Object::toString).collect(Collectors.toList()))
 				.containsExactly("{false}");
 	}
@@ -78,7 +78,7 @@ public class ReifiedColumnTest {
 				.arg("id", id)
 				.arg("known", known)
 				.arg("name", name)
-				.solving(flag(person(db, id, projected()), known)
+				.solving(flag(person(db, id, ignored()), known)
 						.and(option(n -> person(db, id, n), name)));
 		assertThat(Query.of(id.unifies(1).and(card)).solve(known)
 				.map(Object::toString).collect(Collectors.toList()))

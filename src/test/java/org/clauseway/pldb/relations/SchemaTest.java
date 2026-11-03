@@ -7,7 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
-import static org.clauseway.pldb.relations.Projected.projected;
+import static org.clauseway.pldb.relations.Ignored.ignored;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -158,10 +158,10 @@ public class SchemaTest {
 				.hasMessageContaining("(x: {1}, y: _.");
 	}
 
-	/** A projected() member is a literal-definition marker; selected, it is an open cell like any other. */
+	/** An ignored() member is a literal-definition marker; selected, it is an open cell like any other. */
 	@Test
 	public void aProjectedMemberSelectsAsAnOpenCell() {
-		Point probe = new Point(lval(1), projected());
+		Point probe = new Point(lval(1), ignored());
 		assertThatThrownBy(() -> all(Query.of(point(twoPoints(), probe)).select(probe).stream()))
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("not ground");
@@ -169,7 +169,7 @@ public class SchemaTest {
 
 	@Test
 	public void aProbeProjectsEveryColumnAway() {
-		Point probe = new Point(projected(), projected());
+		Point probe = new Point(ignored(), ignored());
 		assertThat(point(null, probe).getRelation().getProperties()).isEmpty();
 	}
 }

@@ -1,6 +1,6 @@
 package org.clauseway.pldb.relations.literals;
 
-// ABOUTME: The projection a literal's builder applies: the projected() markers among a row's keys, claimed
+// ABOUTME: The projection a literal's builder applies: the ignored() markers among a row's keys, claimed
 // ABOUTME: by the first head they appear in, and the head that remains once those columns drop out of it.
 
 import java.util.ArrayList;
@@ -12,14 +12,14 @@ import org.clauseway.logic.unification.MiniKanren;
 import org.clauseway.logic.unification.structures.LOption;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
-import org.clauseway.pldb.relations.Projected;
+import org.clauseway.pldb.relations.Ignored;
 import org.clauseway.pldb.relations.Property;
 import org.clauseway.pldb.relations.Relation;
 import org.clauseway.pldb.relations.RelationN;
 import org.clauseway.vavr.collection.Array;
 
 /**
- * A {@link Projected} column drops out of the head into a GENERATED
+ * A {@link Ignored} column drops out of the head into a GENERATED
  * projection rule over the full literal — the tabled cell folds
  * duplicates (∃-projection is set semantics), the posted form makes
  * {@code exclude} an honest ¬∃, and inside the body the marker is an
@@ -41,21 +41,21 @@ final class Projection {
 	}
 
 	/** The projection marker at the arg, or one level inside a some(): present, don't care. */
-	static Optional<Projected<?>> marker(Term<?> value) {
-		if (value instanceof Projected) {
-			return Optional.of((Projected<?>) value);
+	static Optional<Ignored<?>> marker(Term<?> value) {
+		if (value instanceof Ignored) {
+			return Optional.of((Ignored<?>) value);
 		}
 		return value.asVal()
 				.flatMap(MiniKanren::asLOption)
 				.filter(option -> !option.isNone())
 				.map(LOption::getValue)
-				.filter(Projected.class::isInstance)
-				.map(inner -> (Projected<?>) inner);
+				.filter(Ignored.class::isInstance)
+				.map(inner -> (Ignored<?>) inner);
 	}
 
 	/** Whether the value is a marker this head now owns: the first head a marker appears in claims it. */
 	static boolean claimed(Unifiable<?> value) {
-		return marker(value).map(Projected::claim).orElse(false);
+		return marker(value).map(Ignored::claim).orElse(false);
 	}
 
 	/** The head without the projected columns; empty when nothing is projected and the full literal is the literal. */
