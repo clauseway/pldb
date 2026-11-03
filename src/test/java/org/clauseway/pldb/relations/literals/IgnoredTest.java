@@ -14,6 +14,7 @@ import static org.clauseway.logic.unification.terms.LVar.lvar;
 import static org.clauseway.pldb.relations.Ignored.ignored;
 
 import org.clauseway.logic.finitedomain.Ints;
+import org.clauseway.logic.goals.Knowledge;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -207,6 +208,21 @@ public class IgnoredTest {
 		assertThat(Query.of(y.unifies(9).and(exclude(known(db(), y)))).solve(y)
 				.map(Object::toString)
 				.collect(Collectors.toList())).containsExactly("{9}");
+	}
+
+	/**
+	 * A projected literal prices as the literal it projects: the source's
+	 * estimate for the full probe, the marked columns free. A rule prices at
+	 * the maximum because its body is opaque; the projection's body is one
+	 * stored literal, and the planner must see it.
+	 */
+	@Test
+	public void aProjectedLiteralPricesAsTheFullLiteral() {
+		assertThat(person(db(), lval(1), ignored()).answers(Knowledge.empty()))
+				.isEqualTo(person(db(), lval(1), lvar()).answers(Knowledge.empty()));
+		assertThat(person(db(), ignored(), lval("Ada")).answers(Knowledge.empty()))
+				.isEqualTo(person(db(), lvar(), lval("Ada")).answers(Knowledge.empty()));
+		assertThat(person(db(), lval(1), ignored()).answers(Knowledge.empty())).isLessThan(Long.MAX_VALUE);
 	}
 
 	/** A marker no literal claimed is a mistake, not a variable: the first walk refuses it by what it is. */
