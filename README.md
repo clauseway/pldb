@@ -56,7 +56,7 @@ dependency, and the JDBC driver is the application's own:
 <dependency>
     <groupId>org.clauseway</groupId>
     <artifactId>pldb</artifactId>
-    <version>0.2.0</version>
+    <version>0.3.0</version>
 </dependency>
 ```
 
@@ -273,7 +273,7 @@ and an append-only system quietly lends one book twice. Certifying
 
 No ORM, no migrations, no connection pooling, no entity lifecycle —
 facts are values, answers are facts, and the transaction is the only
-session there is. Pre-1.0 like its siblings: 0.2.0 is on Maven Central,
+session there is. Pre-1.0 like its siblings: 0.3.0 is on Maven Central,
 the shape is settled, the API carries no compatibility guarantee yet —
 and honesty over polish: the interesting failure modes are receipted as
 tests, not documented around.
