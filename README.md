@@ -3,6 +3,11 @@
 The data boundary of the [`logic`](../logic) engine: relations as plain
 Java functions over real backends.
 
+The essay that argues for this stack, the development notes and the
+tutorial are at [clauseway.org](https://clauseway.org/): start with the
+[blog](https://clauseway.org/blog/) or the
+[tutorial](https://clauseway.org/tutorial/).
+
 ## Why
 
 If your facts live in a database, writing *logic* over them usually
@@ -51,7 +56,7 @@ dependency, and the JDBC driver is the application's own:
 <dependency>
     <groupId>org.clauseway</groupId>
     <artifactId>pldb</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
 </dependency>
 ```
 
@@ -72,8 +77,8 @@ Query in any direction — bound, free, or half of each:
 
 ```java
 Unifiable<String> name = lvar();
-person(db, lval(2), name).solve(name);      // who is #2?
-person(db, lvar(), lval("Ada")).solve(...); // which ids are Ada?
+Query.of(person(db, lval(2), name)).solve(name);      // who is #2?
+Query.of(person(db, lvar(), lval("Ada"))).solve(...); // which ids are Ada?
 ```
 
 Facts are the same functions, ground — stated to the write face, which
@@ -128,7 +133,7 @@ annotations:
 ```java
 try (CachingSqlFetch source = CachingSqlFetch.pinned("app", connection)) {
     // the same person() method, now backed by a real table
-    person(source, lvar(), name).solve(name);
+    Query.of(person(source, lvar(), name)).solve(name);
 }
 ```
 
@@ -139,8 +144,8 @@ families pluggable):
 
 ```java
 Unifiable<Integer> id = lvar();
-FiniteDomain.dom(id, EnumeratedDomain.range(2, 5))
-        .and(person(source, id, name))
+Query.of(FiniteDomain.dom(id, EnumeratedDomain.range(2, 5))
+        .and(person(source, id, name)))
         .solve(name);
 // one round trip: SELECT name FROM person WHERE id IN (2, 3, 4)
 // — the engine's pruning ran INSIDE the database; comparisons (leq,
@@ -150,10 +155,10 @@ FiniteDomain.dom(id, EnumeratedDomain.range(2, 5))
 And what lands, stays:
 
 ```java
-person(source, lvar(), lvar()).solve(...);   // fetches the relation, ONE SELECT
-person(source, lval(2), lvar()).solve(...);  // no SQL at all: the ledger proves
-                                             // this probe is covered; answered
-                                             // from the pool, priced exactly
+Query.of(person(source, lvar(), lvar())).solve(...);   // fetches the relation, ONE SELECT
+Query.of(person(source, lval(2), lvar())).solve(...);  // no SQL at all: the ledger proves
+                                                       // this probe is covered; answered
+                                                       // from the pool, priced exactly
 ```
 
 The connection is pinned at construction — a REPEATABLE READ (or
@@ -171,8 +176,8 @@ try (Transaction tx = Transaction.over(
         Watermark.over(CachingSqlFetch.pinned("app", connection), pool::get))) {
 
     // validate against the snapshot — every probe is recorded
-    boolean free = copy(tx, lval(1), lvar())
-            .and(exclude(onLoan(tx, lval(1))))
+    boolean free = Query.of(copy(tx, lval(1), lvar())
+            .and(exclude(onLoan(tx, lval(1)))))
             .solve(lvar()).findAny().isPresent();
 
     if (free) {
@@ -268,7 +273,7 @@ and an append-only system quietly lends one book twice. Certifying
 
 No ORM, no migrations, no connection pooling, no entity lifecycle —
 facts are values, answers are facts, and the transaction is the only
-session there is. Pre-1.0 like its siblings: 0.1.0 is on Maven Central,
+session there is. Pre-1.0 like its siblings: 0.2.0 is on Maven Central,
 the shape is settled, the API carries no compatibility guarantee yet —
 and honesty over polish: the interesting failure modes are receipted as
 tests, not documented around.
