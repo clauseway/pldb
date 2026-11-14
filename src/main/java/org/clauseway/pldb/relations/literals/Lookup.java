@@ -8,7 +8,6 @@ import static org.clauseway.logic.unification.terms.LVal.lval;
 import java.util.function.BiFunction;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.clauseway.functional.fibers.Cont;
 import org.clauseway.functional.tuples.Tuple;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.solving.Answer;
@@ -25,12 +24,14 @@ final class Lookup {
 
 	/** Mint the probe at apply, then hand it with its anchor to the dispatcher. */
 	static Goal of(Literal<?> lit, BiFunction<Call<Relation>, Unifiable<?>, Goal> dispatcher) {
-		return s -> Cont.defer(() -> {
+		return s -> k -> {
 			Unifiable<?> anchor = buildAnchor(s.substitution(), lit.getArgs());
 			return Residues.about(s, anchor)
-					.map(key -> dispatcher
-							.apply(Call.of(lit.getRelation(), key._1, key._2), anchor).apply(s));
-		});
+					.flatMap(key -> dispatcher
+							.apply(Call.of(lit.getRelation(), key._1, key._2), anchor)
+							.apply(s)
+							.apply(k));
+		};
 	}
 
 	/** One answer, forked per condition conjunct, each restated at the anchor. */

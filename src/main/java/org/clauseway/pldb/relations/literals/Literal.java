@@ -116,11 +116,16 @@ public interface Literal<S extends Schema<?>> extends Goal, Bounded, Postable {
 
 	@Override
 	default long answers(Substitutions s) {
+		return estimate(probe(s));
+	}
+
+	/** The call the literal makes under the given bindings, as pricing sees it. */
+	default Call<Relation> probe(Substitutions s) {
 		Reified<?> image = MiniKanren.reify(s,
 						lval(Tuple.ofAll(getArgs().map(u ->
 								s.walk(u).getObjectTerm()).toJavaArray()))
 								.getObjectTerm())
 				.ground();
-		return estimate(Call.of(getRelation(), image));
+		return Call.of(getRelation(), image);
 	}
 }

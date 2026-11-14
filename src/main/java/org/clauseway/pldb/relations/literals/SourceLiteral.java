@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.clauseway.logic.constraints.Posting;
 import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.solving.Call;
-import org.clauseway.logic.solving.Residues;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.relations.Relation;
 import org.clauseway.pldb.relations.Schema;
@@ -30,8 +29,7 @@ final class SourceLiteral<S extends Schema<?>> implements External<S> {
 	public Goal read() {
 		return Lookup.of(this, (probe, anchor) ->
 				StreamSupport.stream(source.answers(probe).spliterator(), false)
-						.flatMap(answer -> answer.getCondition().conjuncts().toJavaStream()
-								.map(conjunct -> (Goal) Residues.restate(answer.getReified(), conjunct, anchor)))
+						.map(answer -> Lookup.deliver(answer, anchor))
 						.reduce(Goal::or)
 						.orElseGet(Goal::failure));
 	}
