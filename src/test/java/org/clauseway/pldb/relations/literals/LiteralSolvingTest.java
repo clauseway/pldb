@@ -181,6 +181,25 @@ public class LiteralSolvingTest {
 	}
 
 	@Test(timeout = 5000)
+	public void aSealedRulePricesAtItsAnswerCount() {
+		// the optimizer prices a rule by the table it reads: unpriced until
+		// the call seals, the sealed entry's answer count afterwards
+		AnswerStore db = edges(new int[][]{{1, 2}, {1, 3}, {2, 4}});
+		Knowledge world = Knowledge.empty().withStore(Table.empty());
+		assertThat(counted(db, new AtomicInteger(), lval(1), lvar()).answers(world)).isEqualTo(Long.MAX_VALUE);
+		Unifiable<Integer> y = lvar();
+		assertThat(Query.of(counted(db, new AtomicInteger(), lval(1), y)).from(world).on(BreadthFirstScheduler::new).solve(y)
+				.collect(Collectors.toList())).hasSize(2);
+		assertThat(counted(db, new AtomicInteger(), lval(1), lvar()).answers(world)).isEqualTo(2);
+		assertThat(counted(db, new AtomicInteger(), lval(2), lvar()).answers(world))
+				.describedAs("a call no sealed entry covers stays unpriced")
+				.isEqualTo(Long.MAX_VALUE);
+		assertThat(counted(db, new AtomicInteger(), lval(1), lvar()).answers(Knowledge.empty()))
+				.describedAs("outside a solve there is no table to read")
+				.isEqualTo(Long.MAX_VALUE);
+	}
+
+	@Test(timeout = 5000)
 	public void ruleAnswersAgreeWithTheBareLookup() {
 		AnswerStore db = edges(new int[][]{{1, 2}, {1, 3}, {2, 4}});
 		Unifiable<Integer> a = lvar();
