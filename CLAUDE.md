@@ -6,7 +6,7 @@ Java 8, vavr, lombok. Auto-loaded every session — read before changing code.
 
 ## Workflow rules (same as the logic repo)
 
-- TDD; `mvn test` must end `BUILD SUCCESS` (297 tests) before any commit/merge. The
+- TDD; `mvn test` must end `BUILD SUCCESS` (306 tests) before any commit/merge. The
   Postgres tests run under Testcontainers — Docker must be up; H2 covers the rest.
 - Branch per task off `develop`; `git add` explicit paths (never `-A`); a branch lands in
   `develop` through a pull request Tom merges, `develop` lands in `master` the same way
@@ -88,3 +88,7 @@ Java 8, vavr, lombok. Auto-loaded every session — read before changing code.
 - `docs/notes/` — AS-BUILT receipts: `transaction.md` (a write is a claim about the reads
   that justified it), `table-as-the-source.md`, `wire-face.md`, `persist.md`,
   `pins-stay-off-engine.md`, `namespaced-relations.md`. `TEMPLATE.md` for new ones.
+- `../logic/docs/method.md` — the design method both repos follow; logic's `CLAUDE.md`
+  lists when to open it. Two of its moves apply here most: an implementation is
+  finished only when its document graduates in the same change, and a design is tried
+  against a real application before it is trusted.
