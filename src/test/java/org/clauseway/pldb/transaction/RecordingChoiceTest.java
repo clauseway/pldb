@@ -14,7 +14,7 @@ import org.clauseway.logic.solving.Answer;
 import org.clauseway.logic.solving.Call;
 import org.clauseway.pldb.inmemory.AnswerStore;
 import org.clauseway.pldb.relations.Answers;
-import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.literals.Literal;
 import org.clauseway.pldb.relations.Relation;
 import org.junit.Test;
 
@@ -72,7 +72,7 @@ public class RecordingChoiceTest {
 			.arg("id", lvar()).indexed()
 			.arg("name", lvar())
 			.from(AnswerStore.empty())
-			.getRel();
+			.getRelation();
 
 	private static Call<Relation> anyone() {
 		return Call.of(PERSON, Answers.image(lvar(), lvar()));

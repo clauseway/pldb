@@ -30,7 +30,7 @@ import org.clauseway.logic.unification.terms.Any;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Answers;
-import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.literals.Literal;
 import org.clauseway.pldb.relations.Property;
 import org.clauseway.pldb.relations.Relation;
 import org.clauseway.pldb.sql.compiler.FiniteDomainSqlCompiler;
@@ -212,13 +212,13 @@ public final class SqlFetch implements JdbcSource {
 				}
 				return IntStream.range(0, args.length())
 						.filter(i -> term.equals(args.get(i)))
-						.mapToObj(i -> relation.getArgs()[i].getName())
+						.mapToObj(i -> relation.getProperties()[i].getName())
 						.collect(Collectors.toList());
 			}
 
 			@Override
 			public boolean optional(String column) {
-				for (Property<?> property : relation.getArgs()) {
+				for (Property<?> property : relation.getProperties()) {
 					if (property.getName().equals(column)) {
 						return codecs.optional(relation, property);
 					}
@@ -236,7 +236,7 @@ public final class SqlFetch implements JdbcSource {
 	}
 
 	private RegionSql regionSql(Relation relation, IndexedSeq<Term<Object>> args, List<SqlPredicate> predicates) {
-		Property<?>[] columns = relation.getArgs();
+		Property<?>[] columns = relation.getProperties();
 		List<String> conditions = new ArrayList<>();
 		List<Object> parameters = new ArrayList<>();
 		for (int i = 0; i < args.size(); i++) {
@@ -264,7 +264,7 @@ public final class SqlFetch implements JdbcSource {
 	}
 
 	private List<Answer<Relation>> rows(Relation relation, IndexedSeq<Term<Object>> args, List<SqlPredicate> predicates) {
-		Property<?>[] columns = relation.getArgs();
+		Property<?>[] columns = relation.getProperties();
 		List<String> unboundColumns = new ArrayList<>();
 		List<Property<?>> unboundProperties = new ArrayList<>();
 		for (int i = 0; i < args.size(); i++) {

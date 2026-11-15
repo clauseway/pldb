@@ -18,7 +18,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
-import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.literals.External;
+import org.clauseway.pldb.relations.literals.Literal;
 import org.clauseway.pldb.sql.SqlFetch;
 import org.clauseway.pldb.sql.Watermark;
 import org.junit.Before;
@@ -57,14 +58,14 @@ public class TransactionTest {
 		}
 	}
 
-	private static Literal person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
+	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(TransactionTest.class, "person")
 				.arg("id", id).indexed()
 				.arg("name", name)
 				.from(db);
 	}
 
-	private static Literal book(AnswerSource db, Unifiable<String> isbn, Unifiable<String> title) {
+	private static External<?> book(AnswerSource db, Unifiable<String> isbn, Unifiable<String> title) {
 		return Literal.relation(TransactionTest.class, "book")
 				.arg("isbn", isbn).indexed()
 				.arg("title", title)

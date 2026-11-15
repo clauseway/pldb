@@ -34,7 +34,8 @@ import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.inmemory.AnswerStore;
 import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Answers;
-import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.literals.External;
+import org.clauseway.pldb.relations.literals.Literal;
 import org.clauseway.pldb.relations.Property;
 import org.clauseway.pldb.relations.Relation;
 import org.junit.After;
@@ -50,7 +51,7 @@ import org.junit.Test;
  */
 public class SqlTheoryBatteryTest {
 
-	private static Literal person(AnswerSource db, Unifiable<Long> id, Unifiable<String> name) {
+	private static External<?> person(AnswerSource db, Unifiable<Long> id, Unifiable<String> name) {
 		return Literal.relation(SqlTheoryBatteryTest.class, "person")
 				.arg("id", id).indexed()
 				.arg("name", name)
@@ -58,10 +59,10 @@ public class SqlTheoryBatteryTest {
 	}
 
 	private static Relation personRel() {
-		return person(null, lvar(), lvar()).getRel();
+		return person(null, lvar(), lvar()).getRelation();
 	}
 
-	private static Literal edge(AnswerSource db, Unifiable<Long> lo, Unifiable<Long> hi) {
+	private static External<?> edge(AnswerSource db, Unifiable<Long> lo, Unifiable<Long> hi) {
 		return Literal.relation(SqlTheoryBatteryTest.class, "edge")
 				.arg("lo", lo).indexed()
 				.arg("hi", hi).indexed()
@@ -69,7 +70,7 @@ public class SqlTheoryBatteryTest {
 	}
 
 	private static Relation edgeRel() {
-		return edge(null, lvar(), lvar()).getRel();
+		return edge(null, lvar(), lvar()).getRelation();
 	}
 
 	private static final Property<Long> id = Property.of("id");
@@ -95,7 +96,7 @@ public class SqlTheoryBatteryTest {
 	/** The whole reference relation, enumerated through the answers face. */
 	private static Stream<Answer<Relation>> allFacts(Relation relation) {
 		List<Term<?>> members = new ArrayList<>();
-		for (int i = 0; i < relation.getArgs().length; i++) {
+		for (int i = 0; i < relation.getProperties().length; i++) {
 			members.add(Any.of(i));
 		}
 		return StreamSupport.stream(reference.answers(

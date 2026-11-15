@@ -6,25 +6,44 @@ Java 8, vavr, lombok. Auto-loaded every session — read before changing code.
 
 ## Workflow rules (same as the logic repo)
 
-- TDD; `mvn test` must end `BUILD SUCCESS` (265 tests) before any commit/merge. The
+- TDD; `mvn test` must end `BUILD SUCCESS` (297 tests) before any commit/merge. The
   Postgres tests run under Testcontainers — Docker must be up; H2 covers the rest.
-- Branch per task; `git add` explicit paths (never `-A`); ff-merge to master; push only
-  when asked.
-- `logic` resolves from Central at the released version in the POM. To build against a
-  local logic change, point the dependency at logic's `-SNAPSHOT`, `mvn install` logic
-  (and `functional` beneath it if it moved), and restore the released version before
-  merging. `apps/library` consumes pldb the same way.
+- Branch per task off `develop`; `git add` explicit paths (never `-A`); a branch lands in
+  `develop` through a pull request Tom merges, `develop` lands in `master` the same way
+  and that merge IS the release; push only when asked.
+- Every merge to `develop` publishes the POM's `-SNAPSHOT` to the Central Portal's
+  snapshot repository (`snapshot.yml`); the merge to `master` releases the version minus
+  `-SNAPSHOT` once, by tag (`release.yml`). Central allows a handful of releases a month
+  across all three artifacts, so a release is a milestone Tom names, never a step to make
+  a merge legal. The first branch after a release bumps `develop`'s POM to the next
+  `-SNAPSHOT`.
+- `logic` resolves from Central. On `master` the POM names a released version; on
+  `develop` it may name logic's `-SNAPSHOT`, which logic's `develop` publishes and this
+  POM's `<repositories>` block resolves. The `develop` → `master` pull request restores
+  the released version. `mvn install` logic locally only for a change not yet merged to
+  its `develop`. `apps/cargo` and `apps/library` consume pldb the same way.
 
 ## Architecture by package
 
 - `org.clauseway.pldb` — the contracts. `AnswerSource` answers a `Call<Relation>` probe
   inline; `AnswerProducer` is the async kind (rows as a `Fiber`, `AnswerProducer.of` lifts a
   source); `GoalProducer` runs a rule through the solve's table; `Writer` asserts/retracts.
-- `relations` — the schema and the question. `Literal.relation(ns, name).arg(col, x)…`
-  then `.from(source)` / `.produced(producer)` / `.solving(goal)`; `Property<T>` is a typed
-  column (`indexed()`, `ground()`); `RelationN` the relation value;
-  `Question.select(goal, templates…)` lands answers as rows; `Answers` the row algebra;
-  `MagicVar`/`Projected` are marker variables one consumer recognises.
+- `relations` — the schema and the question. `Schema<D>` is a logic `Selector<D>` plus
+  `columns()`: a row type's fields are its keys (`Unifiable`), `describe()` names its columns
+  over them in one chain (`keys()`, `columns()` and `names()` are read off it), `map(Row)` is the row
+  as Java reads it, `Query.select(row).stream()` streams the values; `Schema.builder().arg(name,
+  x)….build()` is an anonymous row (`Schema<Row>`), each step typed to offer only what
+  may follow it. `Property<T>` is a typed column
+  (`indexed()`, `ground()`); `RelationN` the relation value; `Answers` the row algebra;
+  `MagicVar`/`Ignored` are marker variables one consumer recognises and claims; unclaimed, a
+  marker refuses at the first walk.
+- `relations.literals` — `Literal.relation(ns, name)` opens a `LiteralBuilder`: `.schema(row)`
+  for a typed row, or `.arg(name, x)` chains naming an anonymous row on the literal
+  (`Columns`); then `.from(source)` / `.produced(producer)` / `.solving(goal)` (`Backend<S>`).
+  A flag before a column or a literal without a backend does not compile. `Literal<S>` is the read type, `External<S>` the
+  write face (`fact()` is the literal as a stored row, `facts()` a `Selector` reading a query's
+  solutions as rows of its relation); the kinds are package-private. `Writer` lands or removes
+  what a `Selection` of facts streams, on the query's own driver (`clearing`/`replacing` ride it).
 - `constraints` — the lookup AS a constraint. `TableConstraints.posted` parks a
   `TablePropagator` (sync) or `TableParkingPropagator` (async/rule); `Support` is the finite
   domain a free column narrows to; `labelo` enumerates.

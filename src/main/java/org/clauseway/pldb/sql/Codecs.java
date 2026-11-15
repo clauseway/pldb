@@ -8,7 +8,7 @@ import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 import org.clauseway.logic.unification.terms.Unifiable;
-import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.literals.Literal;
 import org.clauseway.pldb.relations.Property;
 import org.clauseway.pldb.relations.Relation;
 import org.clauseway.vavr.collection.Array;
@@ -59,16 +59,18 @@ public final class Codecs {
 	 * at its position. A markerless template refuses — it registers
 	 * nothing. A doubly-bound column refuses.
 	 */
-	public Codecs withCodec(Literal template) {
-		Relation relation = template.getRel();
-		Property<?>[] columns = relation.getArgs();
+	public Codecs withCodec(Literal<?> template) {
+		Relation relation = template.getRelation();
+		Property<?>[] columns = relation.getProperties();
 		Array<Unifiable<?>> args = template.getArgs();
 		boolean bound = false;
 		for (int i = 0; i < columns.length; i++) {
 			if (!(args.get(i) instanceof Codec.Arg)) {
 				continue;
 			}
-			Codec<?> codec = ((Codec.Arg<?>) args.get(i)).getCodec();
+			Codec.Arg<?> marker = (Codec.Arg<?>) args.get(i);
+			marker.claim();
+			Codec<?> codec = marker.getCodec();
 			Map<String, Codec<?>> perColumn = byColumn.computeIfAbsent(relation.getName(), name -> new HashMap<>());
 			if (perColumn.putIfAbsent(columns[i].getName(), codec) != null) {
 				throw new IllegalStateException(relation.getName() + ": column '"

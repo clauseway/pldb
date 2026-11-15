@@ -26,7 +26,8 @@ import org.clauseway.pldb.constraints.Support;
 import org.clauseway.pldb.constraints.TableConstraints;
 import org.clauseway.pldb.inmemory.AnswerStore;
 import org.clauseway.logic.solving.Answer;
-import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.literals.External;
+import org.clauseway.pldb.relations.literals.Literal;
 import org.clauseway.pldb.relations.Property;
 import org.clauseway.pldb.relations.Relation;
 import org.junit.Test;
@@ -40,7 +41,7 @@ import org.junit.Test;
  */
 public class TableConstraintsTest {
 
-	private static Literal r(AnswerSource db, Unifiable<Integer> item, Unifiable<String> tag) {
+	private static External<?> r(AnswerSource db, Unifiable<Integer> item, Unifiable<String> tag) {
 		return Literal.relation(TableConstraintsTest.class, "r")
 				.arg("item", item).indexed()
 				.arg("tag", tag).indexed()
@@ -48,10 +49,10 @@ public class TableConstraintsTest {
 	}
 
 	private static Relation rRel() {
-		return r(null, lvar(), lvar()).getRel();
+		return r(null, lvar(), lvar()).getRelation();
 	}
 
-	private static Literal s(AnswerSource db, Unifiable<String> label, Unifiable<Integer> price) {
+	private static External<?> s(AnswerSource db, Unifiable<String> label, Unifiable<Integer> price) {
 		return Literal.relation(TableConstraintsTest.class, "s")
 				.arg("label", label).indexed()
 				.arg("price", price).indexed()
@@ -59,10 +60,10 @@ public class TableConstraintsTest {
 	}
 
 	private static Relation sRel() {
-		return s(null, lvar(), lvar()).getRel();
+		return s(null, lvar(), lvar()).getRelation();
 	}
 
-	private static Literal t(AnswerSource db, Unifiable<Integer> item, Unifiable<String> tag) {
+	private static External<?> t(AnswerSource db, Unifiable<Integer> item, Unifiable<String> tag) {
 		return Literal.relation(TableConstraintsTest.class, "t")
 				.arg("item", item).indexed()
 				.arg("tag", tag).indexed()
@@ -70,7 +71,7 @@ public class TableConstraintsTest {
 	}
 
 	private static Relation tRel() {
-		return t(null, lvar(), lvar()).getRel();
+		return t(null, lvar(), lvar()).getRelation();
 	}
 
 	private static final Property<Integer> item = Property.of("item");

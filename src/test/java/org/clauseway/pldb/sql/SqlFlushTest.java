@@ -22,7 +22,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
-import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.literals.External;
+import org.clauseway.pldb.relations.literals.Literal;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,11 +46,11 @@ public class SqlFlushTest {
 		connection.close();
 	}
 
-	private static Literal person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
+	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(SqlFlushTest.class, "person").arg("id", id).indexed().arg("name", name).from(db);
 	}
 
-	private static Literal visited(AnswerSource db, Unifiable<Object> city) {
+	private static External<?> visited(AnswerSource db, Unifiable<Object> city) {
 		return Literal.relation(SqlFlushTest.class, "visited").arg("city", city).from(db);
 	}
 
@@ -87,7 +88,7 @@ public class SqlFlushTest {
 
 	@Test
 	public void aStructuralColumnValueRefusesByNameBeforeAnyRowLands() throws Exception {
-		Literal structural = visited(null, lval((Object) Arrays.asList("Zurich", "Bern")));
+		External<?> structural = visited(null, lval((Object) Arrays.asList("Zurich", "Bern")));
 		assertThatThrownBy(() -> SqlFlush.over(connection).flush(Arrays.asList(
 				person(null, lval(1), lval("Ada")),
 				structural)))

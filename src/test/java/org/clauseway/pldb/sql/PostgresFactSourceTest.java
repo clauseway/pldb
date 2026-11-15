@@ -26,16 +26,16 @@ import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.inmemory.AnswerStore;
 import org.clauseway.logic.solving.Answer;
-import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.literals.External;
+import org.clauseway.pldb.relations.literals.Literal;
 import org.clauseway.pldb.relations.Property;
 import org.clauseway.pldb.relations.Relation;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Assume;
 import org.junit.Before;
+import org.clauseway.pldb.DockerGate;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 /**
@@ -47,7 +47,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
  */
 public class PostgresFactSourceTest {
 
-	private static Literal person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
+	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(PostgresFactSourceTest.class, "person")
 				.arg("id", id).indexed()
 				.arg("name", name)
@@ -55,10 +55,10 @@ public class PostgresFactSourceTest {
 	}
 
 	private static Relation personRel() {
-		return person(null, lvar(), lvar()).getRel();
+		return person(null, lvar(), lvar()).getRelation();
 	}
 
-	private static Literal edge(AnswerSource db, Unifiable<Integer> src, Unifiable<Integer> dst) {
+	private static External<?> edge(AnswerSource db, Unifiable<Integer> src, Unifiable<Integer> dst) {
 		return Literal.relation(PostgresFactSourceTest.class, "edge")
 				.arg("src", src).indexed()
 				.arg("dst", dst).indexed()
@@ -66,7 +66,7 @@ public class PostgresFactSourceTest {
 	}
 
 	private static Relation edgeRel() {
-		return edge(null, lvar(), lvar()).getRel();
+		return edge(null, lvar(), lvar()).getRelation();
 	}
 
 	private static final Property<Integer> id = Property.of("id");
@@ -74,7 +74,7 @@ public class PostgresFactSourceTest {
 	private static final Property<Integer> src = Property.of("src");
 	private static final Property<Integer> dst = Property.of("dst");
 
-	private static final List<Literal> facts = Arrays.asList(
+	private static final List<External<?>> facts = Arrays.asList(
 			person(null, lval(1), lval("Ada")),
 			person(null, lval(2), lval("Alan")),
 			person(null, lval(3), lval("Kurt")),
@@ -93,8 +93,7 @@ public class PostgresFactSourceTest {
 
 	@BeforeClass
 	public static void startPostgres() {
-		Assume.assumeTrue("Docker unavailable — the Phase 2 proof needs it",
-				DockerClientFactory.instance().isDockerAvailable());
+		DockerGate.require("the Phase 2 proof needs it");
 		postgres = new PostgreSQLContainer<>("postgres:16-alpine");
 		postgres.start();
 	}
@@ -120,9 +119,9 @@ public class PostgresFactSourceTest {
 	 * names the columns, column types inferred from the values. One fact
 	 * list feeds both worlds — the proof compares backings, not fixtures.
 	 */
-	private static void push(Connection connection, List<Literal> facts) throws SQLException {
+	private static void push(Connection connection, List<External<?>> facts) throws SQLException {
 		Map<Relation, List<Answer<Relation>>> byRelation = facts.stream()
-				.map(Literal::fact)
+				.map(External::fact)
 				.collect(Collectors.groupingBy(Answer::getRelation,
 						LinkedHashMap::new, Collectors.toList()));
 		try (Statement ddl = connection.createStatement()) {
@@ -152,7 +151,7 @@ public class PostgresFactSourceTest {
 	}
 
 	private static String createTable(Relation relation, Answer<Relation> sample) {
-		Property<?>[] columns = relation.getArgs();
+		Property<?>[] columns = relation.getProperties();
 		StringBuilder ddl = new StringBuilder("CREATE TABLE ")
 				.append(relation.getName()).append("(");
 		for (int i = 0; i < columns.length; i++) {
@@ -203,7 +202,7 @@ public class PostgresFactSourceTest {
 	 * ground answers. On data whose recursive steps branch, the guard would
 	 * park and answers would go conditional.
 	 */
-	private static Literal reach(AnswerSource backing, Unifiable<Integer> x, Unifiable<Integer> y) {
+	private static Literal<?> reach(AnswerSource backing, Unifiable<Integer> x, Unifiable<Integer> y) {
 		return Literal.relation(PostgresFactSourceTest.class, "reachable")
 				.arg("src", x)
 				.arg("dst", y)

@@ -1,0 +1,50 @@
+# Publishes the POM's -SNAPSHOT version to the Central Portal's snapshot
+# repository on every merge to develop, so a sibling repo's develop builds
+# against it from Central instead of a local install. No bundle, no Portal
+# button, no tag: a snapshot overwrites the last one of its version and the
+# Portal cleans it up after 90 days. A version without -SNAPSHOT refuses
+# here; releasing is master's job (release.yml).
+name: Snapshot
+
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+concurrency:
+  group: snapshot
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 8
+          cache: maven
+          server-id: central
+          server-username: CENTRAL_USERNAME
+          server-password: CENTRAL_TOKEN
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+      - name: Maven 3.9.11 — the runner's 3.10 writes resolver bookkeeping into the publishing plugin's staging directory and the Portal rejects the bundle
+        run: |
+          curl -fsSL "https://archive.apache.org/dist/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.tar.gz" | tar xz -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/apache-maven-3.9.11/bin" >> "$GITHUB_PATH"
+      - name: Only a -SNAPSHOT version publishes from develop
+        run: |
+          version=$(mvn -q -ntp org.apache.maven.plugins:maven-help-plugin:3.4.0:evaluate -Dexpression=project.version -DforceStdout)
+          case "$version" in
+            *-SNAPSHOT) echo "publishing $version" ;;
+            *) echo "::error::$version is not a -SNAPSHOT: develop carries the next release's -SNAPSHOT version; a release is a merge to master"; exit 1 ;;
+          esac
+      - name: Deploy the snapshot (the publishing plugin routes a -SNAPSHOT to the snapshot repository)
+        run: mvn -B -ntp clean deploy -P release
+        env:
+          CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+          CENTRAL_TOKEN: ${{ secrets.CENTRAL_TOKEN }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}

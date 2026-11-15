@@ -2,7 +2,15 @@
 
 **STATUS: DESIGN SKETCH (July 2026, human-driven, corrected once — an earlier
 draft over-built codegen "to name args," which the builder does for free; the
-real justification is SCHEMA-AS-A-TYPE). Nothing built. Companions:
+real justification is SCHEMA-AS-A-TYPE). CORRECTED AGAIN (October 2026,
+`docs/notes/schema-is-a-selector.md`, which is AS BUILT): the Row of §3 is
+`Schema<D>`, a logic `Selector` — the row's variables as keys, a `map` from
+a `Row` into the Java value — plus `columns()`; it is NOT a signed
+structure, since the engine never rebuilds a row. §6's generator is that
+note's open obligation (4): it would emit `keys()`, `columns()` and the
+value constructor call from a plain-typed description, and the
+hand-written schemas in `apps/cargo` are what it is measured against.
+Companions:
 `external-relations.md` (the backend contract and endpoint generation this
 authors over), `database-ergonomics.md` (db-rides-the-Package).**
 

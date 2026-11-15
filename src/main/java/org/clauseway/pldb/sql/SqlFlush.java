@@ -19,7 +19,7 @@ import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.clauseway.pldb.Writer;
 import org.clauseway.logic.solving.Answer;
-import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.literals.External;
 import org.clauseway.pldb.relations.Property;
 import org.clauseway.pldb.relations.Relation;
 import org.clauseway.vavr.collection.Array;
@@ -62,12 +62,12 @@ public class SqlFlush {
 	}
 
 	/** The statement face: literals convert at the threshold, holes refuse. */
-	public void flush(Collection<Literal> statements) {
+	public void flush(Collection<? extends External<?>> statements) {
 		flush(Writer.facts(statements));
 	}
 
 	/** The statement face of the removal lane. */
-	public void delete(Collection<Literal> statements) {
+	public void delete(Collection<? extends External<?>> statements) {
 		delete(Writer.facts(statements));
 	}
 
@@ -164,11 +164,11 @@ public class SqlFlush {
 
 	private static String deleteSql(Relation relation, Row shape) {
 		StringBuilder where = new StringBuilder();
-		for (int i = 0; i < relation.getArgs().length; i++) {
+		for (int i = 0; i < relation.getProperties().length; i++) {
 			if (where.length() > 0) {
 				where.append(" AND ");
 			}
-			where.append(relation.getArgs()[i].getName())
+			where.append(relation.getProperties()[i].getName())
 					.append(shape.getCells().get(i) == null ? " IS NULL" : " = ?");
 		}
 		return "DELETE FROM " + relation.getName() + " WHERE " + where;
@@ -184,10 +184,10 @@ public class SqlFlush {
 	}
 
 	private String insertSql(Relation relation) {
-		String columns = Arrays.stream(relation.getArgs())
+		String columns = Arrays.stream(relation.getProperties())
 				.map(Property::getName)
 				.collect(Collectors.joining(", "));
-		String holes = Arrays.stream(relation.getArgs())
+		String holes = Arrays.stream(relation.getProperties())
 				.map(p -> "?")
 				.collect(Collectors.joining(", "));
 		if (stampColumn != null) {
@@ -203,7 +203,7 @@ public class SqlFlush {
 	 * codec to NULL; everything must have a codec.
 	 */
 	private Row encoded(Answer<Relation> fact) {
-		Property<?>[] columns = fact.getRelation().getArgs();
+		Property<?>[] columns = fact.getRelation().getProperties();
 		List<Object> values = Answers.values(fact.getReified());
 		Object[] cells = new Object[columns.length];
 		for (int i = 0; i < columns.length; i++) {

@@ -30,7 +30,8 @@ import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.GoalProducer;
 import org.clauseway.logic.solving.Answer;
 import org.clauseway.pldb.relations.Answers;
-import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.literals.External;
+import org.clauseway.pldb.relations.literals.Literal;
 import org.clauseway.pldb.relations.Relation;
 import org.junit.Test;
 
@@ -40,7 +41,7 @@ public class AnswerStoreTest {
 			.arg("member", lvar()).indexed()
 			.arg("copy", lvar())
 			.from(null)
-			.getRel();
+			.getRelation();
 
 	private static Answer<Relation> row(Object member, Object copy) {
 		return Answers.answer(LOAN, Arrays.asList(member, copy));
@@ -69,7 +70,7 @@ public class AnswerStoreTest {
 		assertThat(store.estimate(probe(Any.of(0), Any.of(1)))).isEqualTo(3);
 	}
 
-	private static Literal loanFact(String member, String copy) {
+	private static External<?> loanFact(String member, String copy) {
 		return Literal.relation(AnswerStoreTest.class, "loan")
 				.arg("member", lval(member)).indexed()
 				.arg("copy", lval(copy))
@@ -272,7 +273,7 @@ public class AnswerStoreTest {
 			.arg("a", lvar()).indexed()
 			.arg("b", lvar()).indexed()
 			.from(null)
-			.getRel();
+			.getRelation();
 
 	private static Answer<Relation> pair(Object a, Object b) {
 		return Answers.answer(PAIR, Arrays.asList(a, b));
@@ -328,7 +329,7 @@ public class AnswerStoreTest {
 			.arg("member", lvar())
 			.arg("copy", lvar())
 			.from(null)
-			.getRel();
+			.getRelation();
 
 	@Test
 	public void anUnflaggedRelationFullScansCorrectly() {

@@ -10,7 +10,7 @@ import org.clauseway.vavr.collection.Stream;
 /**
  * A named relation with a declared column list: {@link #getName()} is the
  * physical name a backend spells (the table, the endpoint), and
- * {@link #getArgs()} the {@link Property} columns in positional order.
+ * {@link #getProperties()} the {@link Property} columns in positional order.
  * {@link #getId()} renders the name with its column names, and
  * {@link #indexOf} locates a column by name. {@link RelationN} is the value
  * implementation; a relation is the token every {@code Answer<Relation>}
@@ -19,18 +19,18 @@ import org.clauseway.vavr.collection.Stream;
 public interface Relation {
 	String getName();
 
-	Property<?>[] getArgs();
+	Property<?>[] getProperties();
 
 	default String getId() {
 		return String.format("%s(%s)", getName(),
-				Arrays.stream(getArgs())
+				Arrays.stream(getProperties())
 						.map(Property::getName)
 						.collect(Collectors.joining(", ")));
 	}
 
 	default Optional<Integer> indexOf(Property<?> property) {
-		return Stream.range(0, getArgs().length)
-				.map(i -> Tuple.of(i, getArgs()[i]))
+		return Stream.range(0, getProperties().length)
+				.map(i -> Tuple.of(i, getProperties()[i]))
 				.filter(t -> property.getName().equals(t._2.getName()))
 				.headOption()
 				.toJavaOptional()

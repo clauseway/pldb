@@ -12,14 +12,15 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.inmemory.AnswerStore;
-import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.literals.External;
+import org.clauseway.pldb.relations.literals.Literal;
 import org.clauseway.pldb.relations.Property;
 import org.clauseway.pldb.relations.Relation;
 import org.junit.Test;
 
 public class AnswerSourceTest {
 
-	private static Literal person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
+	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(AnswerSourceTest.class, "person")
 				.arg("id", id).indexed()
 				.arg("name", name)
@@ -27,7 +28,7 @@ public class AnswerSourceTest {
 	}
 
 	private static Relation personRel() {
-		return person(null, lvar(), lvar()).getRel();
+		return person(null, lvar(), lvar()).getRelation();
 	}
 
 	private static final Property<Integer> id = Property.of("id");

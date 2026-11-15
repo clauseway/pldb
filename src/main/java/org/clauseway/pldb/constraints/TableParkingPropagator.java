@@ -86,7 +86,7 @@ final class TableParkingPropagator extends ParkingPropagator<TableConstraints> {
 	 * arrives in. One field, one question: given a package, what do I drain?
 	 */
 	static TableParkingPropagator rule(Relation rel, Goal rule, Array<Unifiable<?>> heads) {
-		return new TableParkingPropagator(rel, "rule",
+		return new TableParkingPropagator(rel, "tabled",
 				pkg -> GoalProducer.of(rel, rule, heads.toJavaList(), tableOf(pkg, rel)), heads);
 	}
 

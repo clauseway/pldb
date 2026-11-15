@@ -3,6 +3,8 @@ package org.clauseway.pldb.relations;
 // ABOUTME: Property flags: ground() and indexed() are chainable metadata copies;
 // ABOUTME: lookup identity stays the NAME, so flagged copies never break reads.
 
+import org.clauseway.pldb.relations.literals.Literal;
+
 import org.clauseway.logic.solving.Answer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -37,7 +39,7 @@ public class PropertyTest {
 		Relation rel = Literal.relation(PropertyTest.class, "r")
 				.arg("id", lvar()).indexed().ground()
 				.arg("tag", lvar())
-				.from(null).getRel();
+				.from(null).getRelation();
 
 		// the bare constant finds the flagged copy's column
 		assertThat(rel.indexOf(id)).contains(0);

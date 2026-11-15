@@ -6,7 +6,7 @@
 
 	<groupId>org.clauseway</groupId>
 	<artifactId>pldb</artifactId>
-	<version>0.2.0-SNAPSHOT</version>
+	<version>0.3.0-SNAPSHOT</version>
 
 	<name>Clauseway PLDB</name>
 	<description>The Clauseway data boundary: relations as functions over real backends - SQL with constraint and nogood pushdown, a coverage cache, and a transactional write face.</description>
@@ -43,7 +43,7 @@
 		<dependency>
 			<groupId>org.clauseway</groupId>
 			<artifactId>logic</artifactId>
-			<version>0.2.0</version>
+			<version>0.3.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -66,7 +66,7 @@
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>postgresql</artifactId>
-			<version>1.19.8</version>
+			<version>1.21.3</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -106,6 +106,21 @@
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
+
+	<!-- A sibling's develop publishes its -SNAPSHOT here; master names released versions only. -->
+	<repositories>
+		<repository>
+			<id>central-portal-snapshots</id>
+			<name>Central Portal Snapshots</name>
+			<url>https://central.sonatype.com/repository/maven-snapshots/</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
 
 	<build>
 		<plugins>

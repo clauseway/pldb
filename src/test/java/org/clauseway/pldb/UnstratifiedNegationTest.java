@@ -11,13 +11,13 @@ import static org.clauseway.logic.unification.terms.LVar.lvar;
 
 import java.util.stream.Collectors;
 import org.clauseway.logic.unification.terms.Unifiable;
-import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.literals.Literal;
 import org.junit.Test;
 
 public class UnstratifiedNegationTest {
 
 	/** p(x) :- x=1, NOT p(x) — negation through its own recursion. */
-	private static Literal selfNeg(Unifiable<Integer> x) {
+	private static Literal<?> selfNeg(Unifiable<Integer> x) {
 		return Literal.relation(UnstratifiedNegationTest.class, "selfNeg")
 				.arg("x", x)
 				.solving(x.unifies(1).and(defer(() -> exclude(selfNeg(x)))));

@@ -15,13 +15,14 @@ import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.inmemory.SharedDatabase;
 import org.clauseway.pldb.relations.Answers;
-import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.literals.External;
+import org.clauseway.pldb.relations.literals.Literal;
 import org.clauseway.pldb.relations.Relation;
 import org.junit.Test;
 
 public class PinWorldIdentityTest {
 
-	private static Literal person(Unifiable<Integer> id, Unifiable<String> name) {
+	private static External<?> person(Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(PinWorldIdentityTest.class, "person")
 				.arg("id", id).indexed()
 				.arg("name", name)
@@ -29,15 +30,15 @@ public class PinWorldIdentityTest {
 	}
 
 	private static Call<Relation> probe() {
-		Relation relation = person(LVar.lvar(), LVar.lvar()).getRel();
-		Term<?>[] anys = new Term<?>[relation.getArgs().length];
+		Relation relation = person(LVar.lvar(), LVar.lvar()).getRelation();
+		Term<?>[] anys = new Term<?>[relation.getProperties().length];
 		for (int i = 0; i < anys.length; i++) {
 			anys[i] = Any.of(i);
 		}
 		return Call.of(relation, Answers.image(anys));
 	}
 
-	private static Literal loan(Unifiable<Integer> id, Unifiable<String> copy) {
+	private static External<?> loan(Unifiable<Integer> id, Unifiable<String> copy) {
 		return Literal.relation(PinWorldIdentityTest.class, "loan")
 				.arg("id", id).indexed()
 				.arg("copy", copy)
@@ -74,7 +75,7 @@ public class PinWorldIdentityTest {
 
 	/** A stranger's relation wearing the same bare name, other namespace. */
 	private static final class Elsewhere {
-		private static Literal person(Unifiable<Integer> id, Unifiable<String> name) {
+		private static External<?> person(Unifiable<Integer> id, Unifiable<String> name) {
 			return Literal.relation(Elsewhere.class, "person")
 					.arg("id", id).indexed()
 					.arg("name", name)

@@ -3,6 +3,8 @@ package org.clauseway.pldb.relations;
 // ABOUTME: The answer codec: a ground row encodes as (reified image, ONE); the image
 // ABOUTME: decodes per position — cells in Term vocabulary, values for rows.
 
+import org.clauseway.pldb.relations.literals.Literal;
+
 import org.clauseway.logic.solving.Answer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
@@ -27,7 +29,7 @@ import org.junit.Test;
 public class AnswersTest {
 
 	private final Relation person = Literal.relation(AnswersTest.class, "person")
-			.arg("id", lvar()).arg("name", lvar()).from(null).getRel();
+			.arg("id", lvar()).arg("name", lvar()).from(null).getRelation();
 
 	@Test
 	public void aFactEncodesAsAGroundRowAtOne() {

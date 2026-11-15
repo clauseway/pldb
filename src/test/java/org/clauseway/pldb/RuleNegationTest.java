@@ -18,12 +18,13 @@ import org.clauseway.logic.goals.Goal;
 import org.clauseway.logic.unification.terms.Term;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.inmemory.AnswerStore;
-import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.relations.literals.External;
+import org.clauseway.pldb.relations.literals.Literal;
 import org.junit.Test;
 
 public class RuleNegationTest {
 
-	private static Literal p(Unifiable<Integer> i, Unifiable<String> t) {
+	private static Literal<?> p(Unifiable<Integer> i, Unifiable<String> t) {
 		return Literal.relation(RuleNegationTest.class, "p")
 				.arg("item", i)
 				.arg("tag", t)
@@ -50,14 +51,14 @@ public class RuleNegationTest {
 	public void aWideRowNegatesToAStrongerExclusion() {
 		Unifiable<Integer> x = lvar();
 		Unifiable<String> y = lvar();
-		Literal wide = Literal.relation(RuleNegationTest.class, "wide")
+		Literal<?> wide = Literal.relation(RuleNegationTest.class, "wide")
 				.arg("item", x)
 				.arg("tag", y)
 				.solving(x.unifies(1));
 		assertThat(answers(exclude(wide).and(x.unifies(1)).and(y.unifies("z")), x)).isEmpty();
 		Unifiable<Integer> x2 = lvar();
 		Unifiable<String> y2 = lvar();
-		Literal wide2 = Literal.relation(RuleNegationTest.class, "wide")
+		Literal<?> wide2 = Literal.relation(RuleNegationTest.class, "wide")
 				.arg("item", x2)
 				.arg("tag", y2)
 				.solving(x2.unifies(1));
@@ -69,14 +70,14 @@ public class RuleNegationTest {
 	public void aConditionalRowNegatesAsAFilter() {
 		Unifiable<Integer> x = lvar();
 		Unifiable<String> y = lvar();
-		Literal guarded = Literal.relation(RuleNegationTest.class, "guarded")
+		Literal<?> guarded = Literal.relation(RuleNegationTest.class, "guarded")
 				.arg("item", x)
 				.arg("tag", y)
 				.solving(x.unifies(1).and(exclude(y.unifies("q"))));
 		assertThat(answers(exclude(guarded).and(x.unifies(1)).and(y.unifies("z")), x)).isEmpty();
 		Unifiable<Integer> x2 = lvar();
 		Unifiable<String> y2 = lvar();
-		Literal guarded2 = Literal.relation(RuleNegationTest.class, "guarded")
+		Literal<?> guarded2 = Literal.relation(RuleNegationTest.class, "guarded")
 				.arg("item", x2)
 				.arg("tag", y2)
 				.solving(x2.unifies(1).and(exclude(y2.unifies("q"))));
@@ -148,14 +149,14 @@ public class RuleNegationTest {
 		// the diagonal (Any0, Any0) negates to x != y
 		Unifiable<String> x = lvar();
 		Unifiable<String> y = lvar();
-		Literal diagonal = Literal.relation(RuleNegationTest.class, "diag")
+		Literal<?> diagonal = Literal.relation(RuleNegationTest.class, "diag")
 				.arg("l", x)
 				.arg("r", y)
 				.solving(x.unifies(y));
 		assertThat(answers(exclude(diagonal).and(x.unifies("v")).and(y.unifies("v")), x)).isEmpty();
 		Unifiable<String> x2 = lvar();
 		Unifiable<String> y2 = lvar();
-		Literal diagonal2 = Literal.relation(RuleNegationTest.class, "diag")
+		Literal<?> diagonal2 = Literal.relation(RuleNegationTest.class, "diag")
 				.arg("l", x2)
 				.arg("r", y2)
 				.solving(x2.unifies(y2));
@@ -177,20 +178,20 @@ public class RuleNegationTest {
 	@Test(timeout = 5000)
 	public void negatedAnyIsUnconditionalFailure() {
 		Unifiable<Integer> x = lvar();
-		Literal tautology = Literal.relation(RuleNegationTest.class, "taut")
+		Literal<?> tautology = Literal.relation(RuleNegationTest.class, "taut")
 				.arg("item", x)
 				.solving(Goal.success());
 		assertThat(answers(exclude(tautology).and(x.unifies(2)), x)).isEmpty();
 	}
 
-	private static Literal edge(AnswerSource db, Unifiable<Integer> src, Unifiable<Integer> dst) {
+	private static External<?> edge(AnswerSource db, Unifiable<Integer> src, Unifiable<Integer> dst) {
 		return Literal.relation(RuleNegationTest.class, "edge")
 				.arg("src", src).indexed()
 				.arg("dst", dst).indexed()
 				.from(db);
 	}
 
-	private static Literal reach(AnswerSource db, Unifiable<Integer> x, Unifiable<Integer> y) {
+	private static Literal<?> reach(AnswerSource db, Unifiable<Integer> x, Unifiable<Integer> y) {
 		return Literal.relation(RuleNegationTest.class, "reach")
 				.arg("from", x)
 				.arg("to", y)

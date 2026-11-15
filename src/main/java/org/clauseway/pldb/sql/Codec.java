@@ -79,11 +79,16 @@ public final class Codec<T> {
 		return decoder.apply(cell);
 	}
 
-	/** A fresh variable everywhere except {@code withCodec}, which reads the wrapper. */
+	/** A fresh variable everywhere except {@code withCodec}, which reads the wrapper and claims it. */
 	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 	static final class Arg<T> extends MagicVar<T> {
 
 		@Getter(AccessLevel.PACKAGE)
 		private final Codec<T> codec;
+
+		@Override
+		protected String unclaimed() {
+			return "a codec marker no withCodec claimed — Codec.arg() rides a template literal into withCodec, not a query";
+		}
 	}
 }

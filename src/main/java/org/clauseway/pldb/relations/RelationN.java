@@ -45,20 +45,8 @@ public class RelationN implements Relation {
 	}
 
 	@Override
-	public Property<?>[] getArgs() {
+	public Property<?>[] getProperties() {
 		return args;
-	}
-
-	public Literal apply(AnswerSource source, Unifiable<?>... args) {
-		return relation(source, this, args);
-	}
-
-	public static Literal relation(AnswerSource source, Relation rel, Unifiable<?>... args) {
-		return Literal.of(source, rel, Arrays.asList(args));
-	}
-
-	public static Literal relation(AnswerProducer producer, Relation rel, Unifiable<?>... args) {
-		return Literal.of(producer, rel, Arrays.asList(args));
 	}
 
 	public Posting posted(AnswerSource source, Unifiable<?>... args) {

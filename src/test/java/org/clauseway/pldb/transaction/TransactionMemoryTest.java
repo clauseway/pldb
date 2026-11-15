@@ -13,25 +13,23 @@ import static org.clauseway.logic.unification.terms.LVar.lvar;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import org.clauseway.pldb.inmemory.SharedDatabase;
-import org.clauseway.logic.solving.Answer;
-import org.clauseway.pldb.relations.Literal;
-import org.clauseway.pldb.relations.Question;
+import org.clauseway.pldb.relations.literals.External;
+import org.clauseway.pldb.relations.literals.Literal;
 import org.junit.Test;
 
 public class TransactionMemoryTest {
 
-	private static Literal person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
+	private static External<?> person(AnswerSource db, Unifiable<Integer> id, Unifiable<String> name) {
 		return Literal.relation(TransactionMemoryTest.class, "person")
 				.arg("id", id).indexed()
 				.arg("name", name)
 				.from(db);
 	}
 
-	private static Literal book(AnswerSource db, Unifiable<String> isbn, Unifiable<String> title) {
+	private static External<?> book(AnswerSource db, Unifiable<String> isbn, Unifiable<String> title) {
 		return Literal.relation(TransactionMemoryTest.class, "book")
 				.arg("isbn", isbn).indexed()
 				.arg("title", title)
@@ -122,30 +120,33 @@ public class TransactionMemoryTest {
 				.isInstanceOf(Transaction.Conflict.class);
 	}
 
+	/** The delta is a signed set: a fact staged and taken back in one transaction lands nothing, either way round. */
 	@Test
-	public void assertingAndRetractingOneFactRefusesTheWrite() throws Exception {
+	public void assertingAndRetractingOneFactCancelsOut() throws Exception {
 		SharedDatabase store = seededWithAda();
 
-		assertThatThrownBy(() -> Transaction.recording(store.open("a"))
+		Transaction.recording(store.open("a"))
 				.asserting(Collections.singletonList(book(null, lval("i1"), lval("Tar Pit"))))
-				.retracting(Collections.singletonList(book(null, lval("i1"), lval("Tar Pit")))))
-				.describedAs("a transaction asserting and retracting one fact has not decided what it believes")
-				.isInstanceOf(IllegalStateException.class);
-
-		assertThatThrownBy(() -> Transaction.recording(store.open("b"))
+				.retracting(Collections.singletonList(book(null, lval("i1"), lval("Tar Pit"))))
+				.commit();
+		Transaction.recording(store.open("b"))
 				.retracting(Collections.singletonList(person(null, lval(1), lval("Ada"))))
-				.asserting(Collections.singletonList(person(null, lval(1), lval("Ada")))))
-				.isInstanceOf(IllegalStateException.class);
+				.asserting(Collections.singletonList(person(null, lval(1), lval("Ada"))))
+				.commit();
+
+		Transaction reader = Transaction.recording(store.open("reader"));
+		assertThat(names(reader)).containsExactly("{Ada}");
+		assertThat(Query.of(book(reader, lvar(), lvar())).solve(lval(true)).count()).isZero();
 	}
 
-	private static Literal loanOf(AnswerSource db, Unifiable<Integer> id, Unifiable<String> copy) {
+	private static External<?> loanOf(AnswerSource db, Unifiable<Integer> id, Unifiable<String> copy) {
 		return Literal.relation(TransactionMemoryTest.class, "loan")
 				.arg("loanId", id).indexed()
 				.arg("copy", copy)
 				.from(db);
 	}
 
-	private static Literal returnedOf(AnswerSource db, Unifiable<Integer> id) {
+	private static External<?> returnedOf(AnswerSource db, Unifiable<Integer> id) {
 		return Literal.relation(TransactionMemoryTest.class, "returned")
 				.arg("loanId", id).indexed()
 				.from(db);
@@ -164,12 +165,10 @@ public class TransactionMemoryTest {
 		RecordingTransaction tx = Transaction.recording(store.open("compact"));
 		Unifiable<Integer> id = lvar();
 		Unifiable<String> copy = lvar();
-		List<Answer<Relation>> cluster = new BreadthFirstScheduler<>(Question.select(
-				loanOf(tx, id, copy).and(returnedOf(tx, id)),
-				loanOf(null, id, copy), returnedOf(null, id))).get();
-		assertThat(cluster).hasSize(2);
-
-		tx.retracting(cluster).commit();
+		Query closed = Query.of(loanOf(tx, id, copy).and(returnedOf(tx, id)));
+		tx.retracting(closed.select(loanOf(null, id, copy).facts()))
+				.retracting(closed.select(returnedOf(null, id).facts()))
+				.commit();
 
 		try (Transaction reader = Transaction.recording(store.open("after"))) {
 			Unifiable<String> c = lvar();
